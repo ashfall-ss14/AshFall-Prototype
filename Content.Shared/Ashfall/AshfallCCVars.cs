@@ -57,6 +57,12 @@ public sealed class AshfallCCVars
         CVarDef.Create("ashfall.agony_overlay", true, CVar.CLIENTONLY | CVar.ARCHIVE);
 
     /// <summary>
+    ///     Whether tinnitus high-pitch ringing sound is played upon suffering ear damage or muzzle blast.
+    /// </summary>
+    public static readonly CVarDef<bool> TinnitusAudioEnabled =
+        CVarDef.Create("ashfall.tinnitus_audio_enabled", false, CVar.CLIENTONLY | CVar.ARCHIVE);
+
+    /// <summary>
     ///     Whether inter-character memory links are generated and active.
     /// </summary>
     public static readonly CVarDef<bool> MemoryEnabled =

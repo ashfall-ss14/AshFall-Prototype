@@ -24,6 +24,8 @@ public sealed partial class AgonyOverlay : Overlay
     public float PainIntensity;
     public float ShockIntensity;
     public float CritIntensity;
+    public float OxygenIntensity;
+    public float FireIntensity;
 
     public AgonyOverlay()
     {
@@ -37,7 +39,7 @@ public sealed partial class AgonyOverlay : Overlay
         if (!_config.GetCVar(AshfallCCVars.AgonyOverlayEnabled))
             return false;
 
-        if (PainIntensity <= 0.005f && ShockIntensity <= 0.005f && CritIntensity <= 0.005f)
+        if (PainIntensity <= 0.005f && ShockIntensity <= 0.005f && CritIntensity <= 0.005f && OxygenIntensity <= 0.005f && FireIntensity <= 0.005f)
             return false;
 
         if (!_entityManager.TryGetComponent(_playerManager.LocalEntity, out EyeComponent? eyeComp))
@@ -55,6 +57,8 @@ public sealed partial class AgonyOverlay : Overlay
         _shader.SetParameter("PainIntensity", PainIntensity);
         _shader.SetParameter("ShockIntensity", ShockIntensity);
         _shader.SetParameter("CritIntensity", CritIntensity);
+        _shader.SetParameter("OxygenIntensity", OxygenIntensity);
+        _shader.SetParameter("FireIntensity", FireIntensity);
 
         var handle = args.WorldHandle;
         handle.UseShader(_shader);

@@ -1,10 +1,18 @@
-// Ashfall Dynamic Agony & Trauma Post-Processing Shader
-// Activates dynamically upon taking damage, during severe pain/blood loss, and in critical state.
+// Ashfall Unified Cinematic Trauma, Damage & Vitals Post-Processing Shader
+// Features:
+// - Non-linear organic procedural blood vignette with natural corner pooling
+// - Realistic dual-beat (systole/diastole) arterial heartbeat pulse
+// - Instant acute hit shock: directional chromatic aberration burst + impulse shock blur
+// - Oxygen deprivation / asphyxiation tunnel-vision and hypoxic fading
+// - Burning heat haze shimmer distortion and perimeter ember glow
+// - Gritty trauma film grain and near-crit desaturation
 
 uniform sampler2D SCREEN_TEXTURE;
-uniform highp float PainIntensity; // 0.0 to 1.0 (approaching crit / intense trauma)
-uniform highp float ShockIntensity; // 0.0 to 1.0 (acute damage spike)
-uniform highp float CritIntensity; // 0.0 to 1.0 (in crit / dying)
+uniform highp float PainIntensity;   // 0.0 to 1.0 (brute / slash / blunt trauma)
+uniform highp float ShockIntensity;  // 0.0 to 1.0 (acute damage spike / hit impact)
+uniform highp float CritIntensity;   // 0.0 to 1.0 (critical state / near death)
+uniform highp float OxygenIntensity; // 0.0 to 1.0 (airloss / asphyxiation)
+uniform highp float FireIntensity;   // 0.0 to 1.0 (on fire / burning)
 
 highp float hash21(highp vec2 p) {
     p = fract(p * vec2(123.34, 456.21) + vec2(TIME * 13.1, TIME * 7.7));
@@ -16,43 +24,96 @@ void fragment() {
     highp vec2 coord = FRAGCOORD.xy * SCREEN_PIXEL_SIZE.xy;
     highp vec2 centerOffset = coord - vec2(0.5);
     highp float aspect = SCREEN_PIXEL_SIZE.y / SCREEN_PIXEL_SIZE.x;
-    centerOffset.x *= aspect;
-    highp float dist = length(centerOffset);
+    highp vec2 aspectOffset = vec2(centerOffset.x * aspect, centerOffset.y);
+    highp float dist = length(aspectOffset);
 
-    // Dynamic chromatic aberration on acute damage shock
-    highp vec2 shockDir = centerOffset * ShockIntensity * 0.012;
-    highp float r = zTextureSpec(SCREEN_TEXTURE, coord + shockDir).r;
-    highp float g = zTextureSpec(SCREEN_TEXTURE, coord).g;
-    highp float b = zTextureSpec(SCREEN_TEXTURE, coord - shockDir).b;
-    highp vec3 col = vec3(r, g, b);
+    // 1. Burning heat haze distortion around screen perimeter
+    highp vec2 workingCoord = coord;
+    if (FireIntensity > 0.005) {
+        highp float edgeDist = min(min(coord.x, 1.0 - coord.x), min(coord.y, 1.0 - coord.y));
+        highp float fireEdgeMask = smoothstep(0.35, 0.02, edgeDist);
+        highp float heatHaze = sin(coord.y * 38.0 + TIME * 14.0) * cos(coord.x * 28.0 + TIME * 9.0);
+        workingCoord += vec2(heatHaze * 0.005 * fireEdgeMask * FireIntensity, heatHaze * 0.003 * fireEdgeMask * FireIntensity);
+    }
 
-    // Heartbeat pulsation when near crit or in crit
-    highp float heartbeat = (sin(TIME * 5.0) + 1.0) * 0.5;
-    highp float pulse = 1.0 + heartbeat * 0.12 * (PainIntensity + CritIntensity);
+    // 2. Acute hit shock: chromatic aberration and impulse blur
+    highp vec3 col;
+    if (ShockIntensity > 0.005) {
+        highp vec2 shockVec = centerOffset * ShockIntensity * 0.016;
+        highp float r = zTextureSpec(SCREEN_TEXTURE, workingCoord + shockVec).r;
+        highp float g = zTextureSpec(SCREEN_TEXTURE, workingCoord).g;
+        highp float b = zTextureSpec(SCREEN_TEXTURE, workingCoord - shockVec).b;
 
-    // Vignette calculation
-    highp float vigRadius = 0.85 - (PainIntensity * 0.35 + CritIntensity * 0.45);
-    highp float vigSoftness = 0.40;
-    highp float vignette = smoothstep(vigRadius * pulse, vigRadius * pulse - vigSoftness, dist);
+        // Concussive impulse radial blur sample blend
+        highp vec2 blurStep = centerOffset * ShockIntensity * 0.007;
+        highp vec3 blurSample1 = zTextureSpec(SCREEN_TEXTURE, workingCoord + blurStep).rgb;
+        highp vec3 blurSample2 = zTextureSpec(SCREEN_TEXTURE, workingCoord - blurStep).rgb;
+        col = mix(vec3(r, g, b), (blurSample1 + blurSample2) * 0.5, ShockIntensity * 0.45);
+    } else {
+        col = zTextureSpec(SCREEN_TEXTURE, workingCoord).rgb;
+    }
 
-    // Desaturation as brain loses consciousness / oxygen / blood
-    highp float desatAmount = clamp(PainIntensity * 0.75 + CritIntensity * 0.95, 0.0, 1.0);
+    // 3. Realistic arterial heartbeat pulse (systole-diastole rhythm)
+    highp float heartRate = 1.1 + 0.65 * (PainIntensity + CritIntensity * 0.5);
+    highp float heartCycle = fract(TIME * heartRate);
+    highp float thump1 = smoothstep(0.0, 0.08, heartCycle) * (1.0 - smoothstep(0.08, 0.18, heartCycle));
+    highp float thump2 = smoothstep(0.20, 0.28, heartCycle) * (1.0 - smoothstep(0.28, 0.38, heartCycle)) * 0.65;
+    highp float heartbeat = thump1 + thump2;
+    highp float pulseScale = 1.0 + heartbeat * 0.14 * (PainIntensity + CritIntensity);
+
+    // 4. Organic noise-shaped blood vignette
+    // Uses angular harmonic perturbation + corner pooling for an authentic visceral border
+    highp float angle = atan(aspectOffset.y, aspectOffset.x);
+    highp float edgeNoise = sin(angle * 3.0 + 1.2) * 0.10 + sin(angle * 7.0 - 0.9) * 0.05 + cos(angle * 11.0 + 2.3) * 0.03;
+    highp float cornerFactor = pow(abs(aspectOffset.x * 1.3), 2.2) + pow(abs(aspectOffset.y * 1.3), 2.2);
+    highp float effectiveDist = mix(dist + edgeNoise * 0.30, cornerFactor, 0.40);
+
+    // Dynamic vignette radius based on injury and critical state
+    highp float baseRadius = 0.90 - (PainIntensity * 0.38 + CritIntensity * 0.48);
+    highp float vigSoftness = 0.38;
+    highp float bloodVignette = smoothstep(baseRadius * pulseScale, baseRadius * pulseScale - vigSoftness, effectiveDist);
+
+    // 5. Asphyxiation / oxygen deprivation tunnel-vision
+    highp float oxyTunnel = 1.0;
+    if (OxygenIntensity > 0.005) {
+        highp float oxyBreath = sin(TIME * 1.6) * 0.03 * OxygenIntensity;
+        highp float oxyRadius = (0.85 - OxygenIntensity * 0.55) + oxyBreath;
+        oxyTunnel = smoothstep(oxyRadius, oxyRadius - 0.32, dist);
+    }
+
+    // 6. Desaturation (brain fading from blood loss / asphyxia / dying)
+    highp float desatAmount = clamp(PainIntensity * 0.50 + CritIntensity * 0.92 + OxygenIntensity * 0.65, 0.0, 1.0);
     highp float gray = zGrayscale(col);
     col = mix(col, vec3(gray), desatAmount);
 
-    // Red tint on acute shock & peripheral pain
-    highp float redFlash = ShockIntensity * 0.30 + PainIntensity * 0.12 * (1.0 - vignette);
-    col.r += redFlash;
+    // Cold blueish tinge on severe asphyxiation
+    if (OxygenIntensity > 0.05) {
+        col.b += OxygenIntensity * 0.08 * (1.0 - oxyTunnel);
+    }
 
-    // Apply vignette darkening to background
-    col *= clamp(vignette, 0.0, 1.0);
+    // 7. Visceral blood tint and peripheral darkening
+    highp float bloodTint = (1.0 - bloodVignette) * (PainIntensity * 0.45 + CritIntensity * 0.25);
+    highp float shockRedFlash = ShockIntensity * 0.32;
+    col.r += bloodTint * 0.70 + shockRedFlash;
+    col.gb -= bloodTint * 0.25;
 
-    // Gritty film grain when taking damage (shock), enduring pain, or dying (crit)
-    // Applied everywhere across the entire screen. Multiplicative so it stays visible
-    // over the desaturated/grainy area outside the vision cone, where additive noise vanishes.
-    highp float noiseStrength = 0.35 * ShockIntensity + 0.25 * PainIntensity + 0.45 * CritIntensity;
-    highp float noise = (hash21(coord * vec2(aspect, 1.0) * 350.0) - 0.5) * noiseStrength;
-    col *= 1.0 + noise;
+    // Apply combined vignette (blood trauma + oxygen blackout)
+    highp float totalVignette = clamp(bloodVignette * oxyTunnel, 0.0, 1.0);
+    col *= totalVignette;
+
+    // 8. Fire ember glow & flickering flame perimeter
+    if (FireIntensity > 0.005) {
+        highp float flameFlicker = sin(TIME * 19.0) * 0.18 + cos(TIME * 29.0) * 0.14 + 0.68;
+        highp float flameGlow = smoothstep(0.40, 0.85, effectiveDist) * FireIntensity * flameFlicker;
+        col += vec3(0.95, 0.35, 0.05) * flameGlow;
+    }
+
+    // 9. Shock and trauma film grain
+    highp float grainStrength = 0.32 * ShockIntensity + 0.20 * PainIntensity + 0.40 * CritIntensity + 0.22 * OxygenIntensity;
+    if (grainStrength > 0.01) {
+        highp float grain = (hash21(coord * vec2(aspect, 1.0) * 360.0) - 0.5) * grainStrength;
+        col *= 1.0 + grain;
+    }
 
     COLOR = vec4(col, 1.0);
 }

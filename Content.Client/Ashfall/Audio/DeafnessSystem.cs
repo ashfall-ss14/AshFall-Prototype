@@ -1,3 +1,4 @@
+using Content.Shared.Ashfall;
 using Content.Shared.Ashfall.Audio;
 using Content.Shared.CCVar;
 using Content.Shared.Mobs;
@@ -110,7 +111,16 @@ public sealed partial class DeafnessSystem : EntitySystem
             _tinnitusStream = null;
         }
 
-        if (_tinnitusStream == null)
+        var tinnitusEnabled = _cfg.GetCVar(AshfallCCVars.TinnitusAudioEnabled);
+        if (!tinnitusEnabled && _tinnitusStream != null)
+        {
+            if (TryComp<AudioComponent>(_tinnitusStream.Value.Entity, out var audioComp))
+                _audioSystem.SetVolume(_tinnitusStream.Value.Entity, float.NegativeInfinity, audioComp);
+            _audioSystem.Stop(_tinnitusStream.Value.Entity);
+            _tinnitusStream = null;
+        }
+
+        if (tinnitusEnabled && _tinnitusStream == null)
         {
             _tinnitusStream = _audioSystem.PlayGlobal(
                 new SoundPathSpecifier("/Audio/Ashfall/Effects/tinnitus_ring.ogg"),

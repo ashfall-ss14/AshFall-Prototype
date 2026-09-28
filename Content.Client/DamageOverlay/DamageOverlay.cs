@@ -1,8 +1,10 @@
 using System.Numerics;
+using Content.Shared.Ashfall;
 using Content.Shared.DamageOverlay;
 using Content.Shared.Mobs;
 using Robust.Client.Graphics;
 using Robust.Client.Player;
+using Robust.Shared.Configuration;
 using Robust.Shared.Enums;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
@@ -20,6 +22,7 @@ public sealed partial class DamageOverlay : Overlay
     [Dependency] private IPrototypeManager _prototypeManager = default!;
     [Dependency] private IEntityManager _entityManager = default!;
     [Dependency] private IPlayerManager _playerManager = default!;
+    [Dependency] private IConfigurationManager _config = default!;
 
     public override OverlaySpace Space => OverlaySpace.WorldSpace;
 
@@ -63,6 +66,9 @@ public sealed partial class DamageOverlay : Overlay
 
     protected override void Draw(in OverlayDrawArgs args)
     {
+        if (_config.GetCVar(AshfallCCVars.AgonyOverlayEnabled))
+            return;
+
         if (!_entityManager.TryGetComponent(_playerManager.LocalEntity, out EyeComponent? eyeComp))
             return;
 
