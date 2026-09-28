@@ -14,6 +14,9 @@
     - Anchorable
   - type: Rotatable
   - type: StationAiWhitelist
+  - type: TargetLockPick
+    time: 12.0
+    chance: 0.45
   - type: MeleeSound
     soundGroups:
       Brute:
@@ -192,6 +195,11 @@
     cost: 6
     delay: 8
     fx: EffectRCDDeconstruct8
+  - type: ComplexRepairable
+    qualityNeeded: Welding
+    fuelCost: 5
+    material: Steel
+    materialRepairTreshold: 50
   - type: Destructible
     thresholds:
     - trigger:

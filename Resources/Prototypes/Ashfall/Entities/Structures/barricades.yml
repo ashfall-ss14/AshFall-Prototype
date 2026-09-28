@@ -1,0 +1,368 @@
+- type: entity
+  id: AshfallBaseBarricade
+  parent: BaseStructure
+  abstract: true
+  components:
+  - type: InteractionOutline
+  - type: Sprite
+    sprite: Ashfall/Structures/barricades.rsi
+    drawdepth: BlastDoors
+    noRot: false
+  - type: Physics
+  - type: Fixtures
+    fixtures:
+      fix1:
+        shape:
+          !type:PhysShapeAabb {}
+        mask:
+        - FullTileMask
+        layer:
+        - WallLayer
+  - type: Barricade
+    minHitChance: 0.0
+    maxHitChance: 0.75
+    minDistance: 1.5
+    maxDistance: 12.0
+  - type: Damageable
+  - type: Injurable
+    damageContainer: StructuralInorganic
+  - type: ComplexRepairable
+    qualityNeeded: Welding
+    fuelCost: 5
+    material: Steel
+    materialRepairTreshold: 40
+
+- type: entity
+  id: AshfallBaseBarricadeDirectional
+  parent: AshfallBaseBarricade
+  abstract: true
+  components:
+  - type: Fixtures
+    fixtures:
+      fix1:
+        shape:
+          !type:PhysShapeAabb
+          bounds: "-0.5,-0.5,0.5,-0.36"
+        mask:
+        - FullTileMask
+        layer:
+        - WallLayer
+
+- type: entity
+  id: AshfallBaseBarricadeFloor
+  parent: AshfallBaseBarricade
+  abstract: true
+  components:
+  - type: Sprite
+    drawdepth: SmallObjects
+  - type: Barricade
+    minHitChance: 0.0
+    maxHitChance: 0.50
+    minDistance: 1.5
+    maxDistance: 10.0
+  - type: Fixtures
+    fixtures:
+      fix1:
+        shape:
+          !type:PhysShapeAabb
+          bounds: "-0.5,-0.5,0.5,-0.2"
+        mask:
+        - FullTileMask
+        layer:
+        - WallLayer
+
+# Full tile barricades
+- type: entity
+  id: AshfallBarricadeWooden
+  name: ashfall-barricade-wooden
+  description: ashfall-barricade-wooden-desc
+  parent: AshfallBaseBarricade
+  placement:
+    mode: SnapgridCenter
+  components:
+  - type: Sprite
+    state: barricade_wooden
+  - type: Tag
+    tags:
+    - Wooden
+  - type: Flammable
+    fireSpread: true
+    damage:
+      types:
+        Heat: 2
+  - type: FireVisuals
+    sprite: Effects/fire.rsi
+    normalState: 1
+  - type: Damageable
+    damageModifierSet: Wood
+  - type: ComplexRepairable
+    material: WoodPlank
+    materialRepairTreshold: 25
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 120
+      behaviors:
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          MaterialWoodPlank1:
+            min: 2
+            max: 3
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+
+- type: entity
+  id: AshfallBarricadeSteel
+  name: ashfall-barricade-steel
+  description: ashfall-barricade-steel-desc
+  parent: AshfallBaseBarricade
+  placement:
+    mode: SnapgridCenter
+  components:
+  - type: Sprite
+    state: barricade_steel
+  - type: Damageable
+    damageModifierSet: StructuralMetallic
+  - type: ComplexRepairable
+    material: Steel
+    materialRepairTreshold: 60
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 480
+      behaviors:
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          SheetSteel1:
+            min: 2
+            max: 3
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+
+- type: entity
+  id: AshfallBarricadePlasteel
+  name: ashfall-barricade-plasteel
+  description: ashfall-barricade-plasteel-desc
+  parent: AshfallBaseBarricade
+  placement:
+    mode: SnapgridCenter
+  components:
+  - type: Sprite
+    state: barricade_plasteel
+  - type: Damageable
+    damageModifierSet: StructuralMetallic
+  - type: ComplexRepairable
+    material: Plasteel
+    materialRepairTreshold: 100
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 1000
+      behaviors:
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          SheetSteel1:
+            min: 2
+            max: 2
+          SheetPlasteel1:
+            min: 1
+            max: 2
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+
+# Directional barricades
+- type: entity
+  id: AshfallBarricadeWoodenDirectional
+  name: ashfall-barricade-wooden-directional
+  description: ashfall-barricade-wooden-directional-desc
+  parent: AshfallBaseBarricadeDirectional
+  placement:
+    mode: SnapgridCenter
+  components:
+  - type: Sprite
+    state: barricade_wooden_directional
+  - type: Tag
+    tags:
+    - Wooden
+  - type: Flammable
+    fireSpread: true
+    damage:
+      types:
+        Heat: 2
+  - type: FireVisuals
+    sprite: Effects/fire.rsi
+    normalState: 1
+  - type: Damageable
+    damageModifierSet: Wood
+  - type: ComplexRepairable
+    material: WoodPlank
+    materialRepairTreshold: 20
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 90
+      behaviors:
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          MaterialWoodPlank1:
+            min: 1
+            max: 2
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+
+- type: entity
+  id: AshfallBarricadeSteelDirectional
+  name: ashfall-barricade-steel-directional
+  description: ashfall-barricade-steel-directional-desc
+  parent: AshfallBaseBarricadeDirectional
+  placement:
+    mode: SnapgridCenter
+  components:
+  - type: Sprite
+    state: barricade_steel_directional
+  - type: Damageable
+    damageModifierSet: StructuralMetallic
+  - type: ComplexRepairable
+    material: Steel
+    materialRepairTreshold: 40
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 320
+      behaviors:
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          SheetSteel1:
+            min: 1
+            max: 2
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+
+- type: entity
+  id: AshfallBarricadePlasteelDirectional
+  name: ashfall-barricade-plasteel-directional
+  description: ashfall-barricade-plasteel-directional-desc
+  parent: AshfallBaseBarricadeDirectional
+  placement:
+    mode: SnapgridCenter
+  components:
+  - type: Sprite
+    state: barricade_plasteel_directional
+  - type: Damageable
+    damageModifierSet: StructuralMetallic
+  - type: ComplexRepairable
+    material: Plasteel
+    materialRepairTreshold: 80
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 750
+      behaviors:
+      - !type:SpawnEntitiesBehavior
+        spawn:
+          SheetSteel1:
+            min: 1
+            max: 1
+          SheetPlasteel1:
+            min: 1
+            max: 1
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+
+# Floor low barricades
+- type: entity
+  id: AshfallBarricadeWoodenFloor
+  name: ashfall-barricade-wooden-floor
+  description: ashfall-barricade-wooden-floor-desc
+  parent: AshfallBaseBarricadeFloor
+  placement:
+    mode: SnapgridCenter
+  components:
+  - type: Sprite
+    state: barricade_wooden_floor
+  - type: Tag
+    tags:
+    - Wooden
+  - type: Flammable
+    fireSpread: true
+    damage:
+      types:
+        Heat: 2
+  - type: Damageable
+    damageModifierSet: Wood
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 80
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+
+- type: entity
+  id: AshfallBarricadeSteelFloor
+  name: ashfall-barricade-steel-floor
+  description: ashfall-barricade-steel-floor-desc
+  parent: AshfallBaseBarricadeFloor
+  placement:
+    mode: SnapgridCenter
+  components:
+  - type: Sprite
+    state: barricade_steel_floor
+  - type: Damageable
+    damageModifierSet: StructuralMetallic
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 240
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+
+- type: entity
+  id: AshfallBarricadePlasteelFloor
+  name: ashfall-barricade-plasteel-floor
+  description: ashfall-barricade-plasteel-floor-desc
+  parent: AshfallBaseBarricadeFloor
+  placement:
+    mode: SnapgridCenter
+  components:
+  - type: Sprite
+    state: barricade_plasteel_floor
+  - type: Damageable
+    damageModifierSet: StructuralMetallic
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 550
+      behaviors:
+      - !type:DoActsBehavior
+        acts: [ "Destruction" ]
+
+# Tactical deployable barrier enhanced with barricade & complex repair
+- type: entity
+  id: AshfallDeployableBarrier
+  name: ashfall-deployable-barrier
+  description: ashfall-deployable-barrier-desc
+  parent: DeployableBarrier
+  components:
+  - type: Barricade
+    minHitChance: 0.0
+    maxHitChance: 0.70
+    minDistance: 1.5
+    maxDistance: 10.0
+  - type: ComplexRepairable
+    qualityNeeded: Welding
+    material: Plasteel
+    materialRepairTreshold: 40
+  - type: TargetLockPick
+    time: 10.0
+    chance: 0.50

@@ -1,0 +1,74 @@
+- type: constructionGraph
+  id: AshfallBarricadeWoodenGraph
+  start: start
+  graph:
+    - node: start
+      edges:
+        - to: barricade
+          steps:
+            - material: WoodPlank
+              amount: 4
+              doAfter: 3
+    - node: barricade
+      entity: AshfallBarricadeWooden
+      edges:
+        - to: start
+          completed:
+            - !type:SpawnPrototype
+              prototype: MaterialWoodPlank1
+              amount: 3
+            - !type:DeleteEntity {}
+          steps:
+            - tool: Prying
+              doAfter: 5
+
+- type: constructionGraph
+  id: AshfallBarricadeSteelGraph
+  start: start
+  graph:
+    - node: start
+      edges:
+        - to: barricade
+          steps:
+            - material: Steel
+              amount: 4
+              doAfter: 3
+    - node: barricade
+      entity: AshfallBarricadeSteel
+      edges:
+        - to: start
+          completed:
+            - !type:SpawnPrototype
+              prototype: SheetSteel1
+              amount: 3
+            - !type:DeleteEntity {}
+          steps:
+            - tool: Prying
+              doAfter: 5
+
+- type: constructionGraph
+  id: AshfallBarricadePlasteelGraph
+  start: start
+  graph:
+    - node: start
+      edges:
+        - to: barricade
+          steps:
+            - material: Plasteel
+              amount: 4
+              doAfter: 4
+    - node: barricade
+      entity: AshfallBarricadePlasteel
+      edges:
+        - to: start
+          completed:
+            - !type:SpawnPrototype
+              prototype: SheetSteel1
+              amount: 2
+            - !type:SpawnPrototype
+              prototype: SheetPlasteel1
+              amount: 1
+            - !type:DeleteEntity {}
+          steps:
+            - tool: Prying
+              doAfter: 8

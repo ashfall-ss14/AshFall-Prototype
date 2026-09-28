@@ -1,0 +1,26 @@
+- type: construction
+  parent: BaseStructureFullTile
+  id: AshfallBarricadeWooden
+  name: ashfall-barricade-wooden
+  description: ashfall-barricade-wooden-desc
+  graph: AshfallBarricadeWoodenGraph
+  targetNode: barricade
+  category: construction-category-structures
+
+- type: construction
+  parent: BaseStructureFullTile
+  id: AshfallBarricadeSteel
+  name: ashfall-barricade-steel
+  description: ashfall-barricade-steel-desc
+  graph: AshfallBarricadeSteelGraph
+  targetNode: barricade
+  category: construction-category-structures
+
+- type: construction
+  parent: BaseStructureFullTile
+  id: AshfallBarricadePlasteel
+  name: ashfall-barricade-plasteel
+  description: ashfall-barricade-plasteel-desc
+  graph: AshfallBarricadePlasteelGraph
+  targetNode: barricade
+  category: construction-category-structures

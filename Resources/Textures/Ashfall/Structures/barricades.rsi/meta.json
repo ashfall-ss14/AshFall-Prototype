@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "license": "CC-BY-SA-3.0",
+  "copyright": "Sprited by EstKemran (Github) for SS220",
+  "size": {
+    "x": 32,
+    "y": 32
+  },
+  "states": [
+    {
+      "name": "barricade_plasteel_directional",
+      "directions": 4
+    },
+    {
+      "name": "barricade_plasteel_floor",
+      "directions": 4
+    },
+    {
+      "name": "barricade_steel",
+      "directions": 4
+    },
+    {
+      "name": "barricade_steel_directional",
+      "directions": 4
+    },
+    {
+      "name": "barricade_steel_floor",
+      "directions": 4
+    },
+    {
+      "name": "barricade_wooden",
+      "directions": 4
+    },
+    {
+      "name": "barricade_wooden_directional",
+      "directions": 4
+    },
+    {
+      "name": "barricade_wooden_floor",
+      "directions": 4
+    },
+    {
+      "name": "barricade_plasteel",
+      "directions": 4
+    }
+  ]
+}
