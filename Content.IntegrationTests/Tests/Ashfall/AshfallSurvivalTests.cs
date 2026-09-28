@@ -88,6 +88,29 @@ public sealed class AshfallSurvivalTests : GameTest
     }
 
     [Test]
+    public async Task TestBarricadeClimbingAndCollision()
+    {
+        await using var pair = await PoolManager.GetServerClient();
+        var server = pair.Server;
+
+        await server.WaitPost(() =>
+        {
+            var entMan = server.EntMan;
+            var entity = entMan.SpawnEntity("AshfallBarricadeWooden", Robust.Shared.Map.MapCoordinates.Nullspace);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(entMan.HasComponent<Content.Shared.Climbing.Components.ClimbableComponent>(entity), Is.True);
+                Assert.That(entMan.HasComponent<Robust.Shared.Physics.Components.PhysicsComponent>(entity), Is.True);
+            });
+
+            entMan.DeleteEntity(entity);
+        });
+
+        await pair.CleanReturnAsync();
+    }
+
+    [Test]
     public async Task TestComplexRepairableMaterialThreshold()
     {
         await using var pair = await PoolManager.GetServerClient();
