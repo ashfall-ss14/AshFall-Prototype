@@ -7,8 +7,10 @@ using Content.Shared.Doors.Components;
 using Content.Shared.Interaction;
 using Content.Shared.Lock;
 using Content.Shared.Popups;
+using Content.Shared.Verbs;
 using Robust.Shared.Audio.Systems;
 using Robust.Shared.Random;
+using Robust.Shared.Utility;
 
 namespace Content.Server.Ashfall.LockPick.Systems;
 
@@ -26,6 +28,7 @@ public sealed partial class LockpickSystem : EntitySystem
         base.Initialize();
 
         SubscribeLocalEvent<LockpickComponent, AfterInteractEvent>(OnAfterInteract);
+        SubscribeLocalEvent<LockpickComponent, GetVerbsEvent<UtilityVerb>>(OnGetUtilityVerbs);
         SubscribeLocalEvent<LockpickComponent, LockPickDoAfterEvent>(OnLockPickDoAfter);
         SubscribeLocalEvent<TargetLockPickComponent, LockPickSuccessEvent>(OnLockPickSuccess);
     }
@@ -38,15 +41,55 @@ public sealed partial class LockpickSystem : EntitySystem
         if (!TryComp<TargetLockPickComponent>(target, out var targetLockPick))
             return;
 
-        if (TryComp<DoorComponent>(target, out var door) && door.State == DoorState.Welded)
+        if (TryStartLockpick(ent, args.User, target, targetLockPick))
+            args.Handled = true;
+    }
+
+    private void OnGetUtilityVerbs(Entity<LockpickComponent> ent, ref GetVerbsEvent<UtilityVerb> args)
+    {
+        if (!args.CanInteract || !args.CanAccess)
             return;
 
-        args.Handled = true;
+        var target = args.Target;
+        if (!TryComp<TargetLockPickComponent>(target, out var targetLockPick))
+            return;
+
+        if (!CanLockpick(target))
+            return;
+
+        var user = args.User;
+        var verb = new UtilityVerb
+        {
+            Act = () => TryStartLockpick(ent, user, target, targetLockPick),
+            Text = Loc.GetString("ashfall-lockpick-verb"),
+            Icon = new SpriteSpecifier.Rsi(new ResPath("Ashfall/Objects/Tools/lockpick.rsi"), "lockpick"),
+        };
+        args.Verbs.Add(verb);
+    }
+
+    public bool CanLockpick(EntityUid target)
+    {
+        if (TryComp<DoorComponent>(target, out var door))
+        {
+            if (door.State == DoorState.Welded || door.State != DoorState.Closed)
+                return false;
+        }
+
+        if (TryComp<LockComponent>(target, out var lockComp) && !lockComp.Locked && !HasComp<DoorComponent>(target))
+            return false;
+
+        return true;
+    }
+
+    public bool TryStartLockpick(Entity<LockpickComponent> ent, EntityUid user, EntityUid target, TargetLockPickComponent targetLockPick)
+    {
+        if (!CanLockpick(target))
+            return false;
 
         var duration = targetLockPick.Time * ent.Comp.SpeedModifier;
 
-        _doAfter.TryStartDoAfter(new DoAfterArgs(EntityManager,
-            args.User,
+        return _doAfter.TryStartDoAfter(new DoAfterArgs(EntityManager,
+            user,
             duration,
             new LockPickDoAfterEvent(),
             ent.Owner,
@@ -102,8 +145,8 @@ public sealed partial class LockpickSystem : EntitySystem
         // Handle door bolts and opening
         if (TryComp<DoorBoltComponent>(uid, out var boltComp) && boltComp.BoltsDown)
         {
-            _door.SetBoltsDown((uid, boltComp), false, args.User);
-            args.Success = true;
+            if (_door.TrySetBoltDown((uid, boltComp), false, args.User))
+                args.Success = true;
         }
 
         if (TryComp<DoorComponent>(uid, out var doorComp))

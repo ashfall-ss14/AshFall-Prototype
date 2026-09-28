@@ -14,7 +14,7 @@ namespace Content.Shared.Ashfall.ComplexRepairable;
 
 public sealed partial class ComplexRepairableSystem : EntitySystem
 {
-    [Dependency] private readonly IPrototypeManager _protoManager = default!;
+    [Dependency] private IPrototypeManager _protoManager = default!;
     [Dependency] private SharedToolSystem _toolSystem = default!;
     [Dependency] private DamageableSystem _damageableSystem = default!;
     [Dependency] private SharedPopupSystem _popup = default!;
@@ -32,6 +32,17 @@ public sealed partial class ComplexRepairableSystem : EntitySystem
 
     private void OnDamageChanged(Entity<ComplexRepairableComponent> ent, ref DamageChangedEvent args)
     {
+        if (_damageableSystem.GetTotalDamage(ent.Owner) == 0)
+        {
+            if (ent.Comp.LeftToInsert != 0 || ent.Comp.AccumulatedDamage != FixedPoint2.Zero)
+            {
+                ent.Comp.LeftToInsert = 0;
+                ent.Comp.AccumulatedDamage = FixedPoint2.Zero;
+                Dirty(ent);
+            }
+            return;
+        }
+
         var damageTaken = args.DamageDelta?.GetTotal() ?? FixedPoint2.Zero;
 
         if (damageTaken > 0 && ent.Comp.MaterialRepairTreshold > 0)
@@ -107,18 +118,27 @@ public sealed partial class ComplexRepairableSystem : EntitySystem
                     args.Handled = true;
                     return;
                 }
+
+                args.Handled = true;
+                return;
             }
 
-            var materialName = _protoManager.TryIndex(ent.Comp.Material, out var stackProto)
-                ? Loc.GetString(stackProto.Name)
-                : ent.Comp.Material.Id;
+            // Only prompt about missing materials if the player is trying to repair with the required tool (e.g. welder).
+            // Do not consume interactions for unrelated items like ID cards, crowbars, or wires.
+            if (_toolSystem.HasQuality(args.Used, ent.Comp.QualityNeeded))
+            {
+                var materialName = _protoManager.TryIndex(ent.Comp.Material, out var stackProto)
+                    ? Loc.GetString(stackProto.Name)
+                    : ent.Comp.Material.Id;
 
-            var needMsg = Loc.GetString("ashfall-complex-repairable-material-needed",
-                ("target", ent.Owner),
-                ("left", ent.Comp.LeftToInsert),
-                ("material", materialName));
-            _popup.PopupEntity(needMsg, ent.Owner, args.User);
-            args.Handled = true;
+                var needMsg = Loc.GetString("ashfall-complex-repairable-material-needed",
+                    ("target", ent.Owner),
+                    ("left", ent.Comp.LeftToInsert),
+                    ("material", materialName));
+                _popup.PopupEntity(needMsg, ent.Owner, args.User);
+                args.Handled = true;
+            }
+
             return;
         }
 

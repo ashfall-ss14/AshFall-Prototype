@@ -40,17 +40,19 @@ public abstract partial class SharedBarricadeSystem : EntitySystem
     private void OnLand(Entity<PassBarricadeComponent> entity, ref LandEvent args)
     {
         entity.Comp.CollideBarricades.Clear();
+        Dirty(entity);
     }
 
     private void OnProjectileHit(Entity<PassBarricadeComponent> entity, ref ProjectileHitEvent args)
     {
         entity.Comp.CollideBarricades.Clear();
+        Dirty(entity);
     }
 
     private void OnEndCollide(Entity<PassBarricadeComponent> entity, ref EndCollideEvent args)
     {
-        if (HasComp<BarricadeComponent>(args.OtherEntity))
-            entity.Comp.CollideBarricades.Remove(args.OtherEntity);
+        if (HasComp<BarricadeComponent>(args.OtherEntity) && entity.Comp.CollideBarricades.Remove(args.OtherEntity))
+            Dirty(entity);
     }
 
     protected virtual bool ProjectileTryPassBarricade(Entity<BarricadeComponent> entity, Entity<ProjectileComponent> projEnt)
@@ -61,6 +63,7 @@ public abstract partial class SharedBarricadeSystem : EntitySystem
             return isPass;
         }
 
-        return false;
+        // On client (prediction), avoid falsely stopping predicted projectiles before the server evaluates the hit roll.
+        return true;
     }
 }

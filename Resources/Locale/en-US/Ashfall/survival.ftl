@@ -1,4 +1,6 @@
 # Lockpicking
+ashfall-lockpick = lockpick
+ashfall-lockpick-desc = A set of thin tension wrenches and picks for bypassing mechanical and electronic locks.
 ashfall-lockpick-failed = The lockpick slips and jams inside the mechanism.
 ashfall-lockpick-success = The locking mechanism clicks open!
 ashfall-lockpick-verb = Pick lock

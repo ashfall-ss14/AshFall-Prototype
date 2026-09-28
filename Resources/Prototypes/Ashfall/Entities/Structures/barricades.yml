@@ -20,6 +20,7 @@
         - TableMask
         layer:
         - TableLayer
+        - BulletImpassable
   - type: Climbable
   - type: Barricade
     minHitChance: 0.0
@@ -50,6 +51,7 @@
         - TableMask
         layer:
         - TableLayer
+        - BulletImpassable
 
 - type: entity
   id: AshfallBaseBarricadeFloor
@@ -73,6 +75,7 @@
         - TableMask
         layer:
         - TableLayer
+        - BulletImpassable
 
 # Full tile barricades
 - type: entity

@@ -1,8 +1,8 @@
 - type: entity
-  name: отмычка
+  name: ashfall-lockpick
   parent: BaseItem
   id: AshfallLockpick
-  description: Набор тонких металлических щупов и воротка для вскрытия механических замков и затворов.
+  description: ashfall-lockpick-desc
   components:
   - type: Sprite
     sprite: Ashfall/Objects/Tools/lockpick.rsi

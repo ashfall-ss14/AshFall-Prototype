@@ -1,4 +1,6 @@
 # Отмычки
+ashfall-lockpick = отмычка
+ashfall-lockpick-desc = Набор тонких металлических щупов и воротка для вскрытия механических замков и затворов.
 ashfall-lockpick-failed = Отмычка соскальзывает и заклинивает в механизме замка.
 ashfall-lockpick-success = Механизм замка щёлкает и поддаётся взлому!
 ashfall-lockpick-verb = Взломать замок
