@@ -27,83 +27,89 @@ public sealed class AshfallDossierSheetlet : Sheetlet<AshfallStylesheet>
     public const string LedgerStepClass = "AshfallLedgerStep";
     public const string LedgerValueClass = "AshfallLedgerValue";
 
+    public const string WeaknessClass = "AshfallDossierWeakness";
+
     public override StyleRule[] GetRules(AshfallStylesheet sheet, object config)
     {
-        var pixelDisplay = ResCache.GetFont("/Fonts/Cozette/CozetteVectorBold.ttf", 16);
-        var pixelCandidate = ResCache.GetFont("/Fonts/Cozette/CozetteVectorBold.ttf", 14);
-        var pixelSubtle = ResCache.GetFont("/Fonts/Cozette/CozetteVector.ttf", 12);
-        var pixelTitle = ResCache.GetFont("/Fonts/Cozette/CozetteVectorBold.ttf", 13);
-        var pixelBody = ResCache.GetFont("/Fonts/Cozette/CozetteVector.ttf", 12);
-        var pixelItalic = ResCache.GetFont("/Fonts/Cozette/CozetteVectorItalic.ttf", 12);
-        var pixelSmall = ResCache.GetFont("/Fonts/Cozette/CozetteVector.ttf", 11);
+        var displayFont = ResCache.GetFont("/Fonts/NotoSans/NotoSans-Bold.ttf", 20);
+        var candidateFont = ResCache.GetFont("/Fonts/NotoSans/NotoSans-Bold.ttf", 16);
+        var titleFont = ResCache.GetFont("/Fonts/NotoSans/NotoSans-Bold.ttf", 15);
+        var bodyFont = ResCache.GetFont("/Fonts/Tahoma/tahoma.ttf", 14);
+        var monoLabelFont = ResCache.GetFont("/Fonts/RobotoMono/RobotoMono-Bold.ttf", 11);
+        var monoSmall = ResCache.GetFont("/Fonts/RobotoMono/RobotoMono-Regular.ttf", 11);
+        var weaknessFont = ResCache.GetFont("/Fonts/Tahoma/tahoma.ttf", 13);
 
-        // Lifepath option rows: tactile dark pixel cards with amber glow on hover
+        // Tactile dark option cards with clear borders and warm amber hover
         var optionNormal = new StyleBoxFlat
         {
-            BackgroundColor = Color.FromHex("#0B0D10D0"),
+            BackgroundColor = Color.FromHex("#10141CE6"),
             BorderThickness = new Thickness(1),
-            BorderColor = Color.FromHex("#1B1F26"),
+            BorderColor = Color.FromHex("#222936"),
         };
-        optionNormal.SetContentMarginOverride(StyleBox.Margin.Horizontal, 14);
-        optionNormal.SetContentMarginOverride(StyleBox.Margin.Vertical, 8);
+        optionNormal.SetContentMarginOverride(StyleBox.Margin.Horizontal, 18);
+        optionNormal.SetContentMarginOverride(StyleBox.Margin.Vertical, 12);
 
         var optionHover = new StyleBoxFlat
         {
-            BackgroundColor = Color.FromHex("#13171FEE"),
+            BackgroundColor = Color.FromHex("#18202CF0"),
             BorderThickness = new Thickness(1),
-            BorderColor = Color.FromHex("#5E4B32"),
+            BorderColor = Color.FromHex("#8C6A3E"),
         };
-        optionHover.SetContentMarginOverride(StyleBox.Margin.Horizontal, 14);
-        optionHover.SetContentMarginOverride(StyleBox.Margin.Vertical, 8);
+        optionHover.SetContentMarginOverride(StyleBox.Margin.Horizontal, 18);
+        optionHover.SetContentMarginOverride(StyleBox.Margin.Vertical, 12);
 
         var optionPressed = new StyleBoxFlat
         {
-            BackgroundColor = Color.FromHex("#0F1217EE"),
+            BackgroundColor = Color.FromHex("#131720F0"),
             BorderThickness = new Thickness(1),
-            BorderColor = Color.FromHex("#8C6B3E"),
+            BorderColor = Color.FromHex("#C89248"),
         };
-        optionPressed.SetContentMarginOverride(StyleBox.Margin.Horizontal, 14);
-        optionPressed.SetContentMarginOverride(StyleBox.Margin.Vertical, 8);
+        optionPressed.SetContentMarginOverride(StyleBox.Margin.Horizontal, 18);
+        optionPressed.SetContentMarginOverride(StyleBox.Margin.Vertical, 12);
 
         return new StyleRule[]
         {
-            // Prompt question: prominent retro header.
+            // Prompt question: bold, prominent, high contrast.
             E<Label>().Class(DisplayClass)
-                .Prop(Label.StylePropertyFont, pixelDisplay)
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#E6E2D8")),
+                .Prop(Label.StylePropertyFont, displayFont)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#F5F2EA")),
             // Candidate name on identity plate.
             E<Label>().Class(CandidateNameClass)
-                .Prop(Label.StylePropertyFont, pixelCandidate)
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#E6E2D8")),
-            // Quiet pixel text for sub-names and ghost states.
+                .Prop(Label.StylePropertyFont, candidateFont)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#F5F2EA")),
+            // Subtle descriptions.
             E<Label>().Class(DisplaySubtleClass)
-                .Prop(Label.StylePropertyFont, pixelSubtle)
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#6B7380")),
-            // Pixel body voice for introspective descriptions and records.
+                .Prop(Label.StylePropertyFont, bodyFont)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#8A92A0")),
+            // Main body voice for descriptions and choices.
             E<Label>().Class(SerifClass)
-                .Prop(Label.StylePropertyFont, pixelBody)
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#9B968B")),
+                .Prop(Label.StylePropertyFont, bodyFont)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#D6D1C4")),
+            // Weakness highlighting: clear toned-down amber.
+            E<Label>().Class(WeaknessClass)
+                .Prop(Label.StylePropertyFont, weaknessFont)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#E6923C")),
             // Quoted flavor lines.
             E<Label>().Class(SerifItalicClass)
-                .Prop(Label.StylePropertyFont, pixelItalic)
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#88837A")),
-            // Small pixel service labels.
+                .Prop(Label.StylePropertyFont, bodyFont)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#B0AAA0")),
+            // Mono service labels: warm legible bronze.
             E<Label>().Class(LabelClass)
-                .Prop(Label.StylePropertyFont, pixelSmall)
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#666D77")),
+                .Prop(Label.StylePropertyFont, monoLabelFont)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#B89E78")),
             // Ledger markers (chronicle of choices).
             E<Label>().Class(LedgerStepClass)
-                .Prop(Label.StylePropertyFont, pixelSmall)
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#C87D38")),
+                .Prop(Label.StylePropertyFont, monoLabelFont)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#C88A3E")),
             E<Label>().Class(LedgerValueClass)
-                .Prop(Label.StylePropertyFont, pixelBody)
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#D6D0C2")),
+                .Prop(Label.StylePropertyFont, bodyFont)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#E2DDD2")),
             E<Label>().Class(ChipClass)
-                .Prop(Label.StylePropertyFont, pixelSmall),
-            // Option titles: sharp amber/bone pixel font.
+                .Prop(Label.StylePropertyFont, monoSmall),
+            // Option titles: crisp white, prominent.
             E<Label>().Class(OptionTitleClass)
-                .Prop(Label.StylePropertyFont, pixelTitle)
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#DCD7CA")),
+                .Prop(Label.StylePropertyFont, titleFont)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#FFFFFF")),
 
             ButtonRule(OptionCardClass).PseudoNormal()
                 .Prop(ContainerButton.StylePropertyStyleBox, optionNormal),
@@ -113,7 +119,7 @@ public sealed class AshfallDossierSheetlet : Sheetlet<AshfallStylesheet>
                 .Prop(ContainerButton.StylePropertyStyleBox, optionPressed),
             ButtonRule(OptionCardClass).PseudoHovered()
                 .ParentOf(E<Label>().Class(OptionTitleClass))
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#E69C3C")),
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#F0A84E")),
         };
     }
 

@@ -8,8 +8,8 @@ ashfall-lifepath-prompt-step2 = What can these hands do?
 ashfall-lifepath-header-step3 = FRACTURE
 ashfall-lifepath-prompt-step3 = When did it all go wrong?
 
-ashfall-lifepath-header-step4 = CORE
-ashfall-lifepath-prompt-step4 = What kind of person are you?
+ashfall-lifepath-header-step4 = UNFINISHED BUSINESS
+ashfall-lifepath-prompt-step4 = What did you leave unfinished?
 
 ashfall-lifepath-header-step5 = DOSSIER
 ashfall-lifepath-prompt-step5 = Finalizing candidate profile
@@ -89,37 +89,37 @@ ashfall-lifepath-step3-diplomat-title = Maneuver
 ashfall-lifepath-step3-diplomat-desc = Smooth over any dispute before anyone draws a sidearm.
 ashfall-lifepath-step3-diplomat-weakness = Sweeping filth under the rug until it erupts.
 
-# Step 4: Core Archetype
-ashfall-lifepath-step4-balance-title = Equilibrium
-ashfall-lifepath-step4-balance-desc = The world stands on a balance of forces, not on sentiment.
+# Step 4: Unfinished Business
+ashfall-lifepath-step4-balance-title = Settle Accounts
+ashfall-lifepath-step4-balance-desc = No debts or empty promises, you leave with a clean slate.
 ashfall-lifepath-step4-balance-quirk = Quietly weighs odds before committing to any action.
 
-ashfall-lifepath-step4-decay-title = Decay
-ashfall-lifepath-step4-decay-desc = Everything rotted long ago, and you simply watch the collapse unfold.
+ashfall-lifepath-step4-decay-title = Speak the Truth
+ashfall-lifepath-step4-decay-desc = You kept quiet for too long while everything was falling apart.
 ashfall-lifepath-step4-decay-quirk = Tired stare of someone who has already seen the worst.
 
-ashfall-lifepath-step4-indifference-title = Indifference
-ashfall-lifepath-step4-indifference-desc = Screaming does not bother you as long as it stays out of your work area.
+ashfall-lifepath-step4-indifference-title = Forget Their Faces
+ashfall-lifepath-step4-indifference-desc = Your memory still clings to those you had to leave behind.
 ashfall-lifepath-step4-indifference-quirk = Ignores hysterical shouts and idle small talk.
 
-ashfall-lifepath-step4-stubborn-title = Stubbornness
-ashfall-lifepath-step4-stubborn-desc = You will not back down, even if your own bones break in the process.
+ashfall-lifepath-step4-stubborn-title = Finish the Job
+ashfall-lifepath-step4-stubborn-desc = They threw you out the door before you could finish what you started.
 ashfall-lifepath-step4-stubborn-quirk = Grits teeth and pushes forward despite direct warnings.
 
-ashfall-lifepath-step4-predator-title = Predator
-ashfall-lifepath-step4-predator-desc = In the dark, the one who strikes the throat first survives.
+ashfall-lifepath-step4-predator-title = Get Even
+ashfall-lifepath-step4-predator-desc = The score remains unsettled, waiting in the cold.
 ashfall-lifepath-step4-predator-quirk = Keeps back against the bulkhead and watches hands closely.
 
-ashfall-lifepath-step4-idealist-title = Idealist
-ashfall-lifepath-step4-idealist-desc = Something human must endure in this ash, no matter the cost.
+ashfall-lifepath-step4-idealist-title = Save Someone
+ashfall-lifepath-step4-idealist-desc = That scream in the burning airlock still rings in your ears.
 ashfall-lifepath-step4-idealist-quirk = Stands up for the weak even when it guarantees trouble.
 
-ashfall-lifepath-step4-ghost-title = Ghost
-ashfall-lifepath-step4-ghost-desc = Your name is on no roster, you simply walk right past.
+ashfall-lifepath-step4-ghost-title = Cover Your Tracks
+ashfall-lifepath-step4-ghost-desc = Somewhere in the station logs, a snapshot of your face remains.
 ashfall-lifepath-step4-ghost-quirk = Avoids security camera lenses and paper logs.
 
-ashfall-lifepath-step4-fatalist-title = Fatalist
-ashfall-lifepath-step4-fatalist-desc = Whatever is bound to burn will burn without extra drama.
+ashfall-lifepath-step4-fatalist-title = Let It Burn
+ashfall-lifepath-step4-fatalist-desc = It will turn to ash anyway, no point scrambling.
 ashfall-lifepath-step4-fatalist-quirk = Calmly lights up during the height of an alert.
 
 # Lobby Slot Screen
@@ -142,7 +142,7 @@ ashfall-lifepath-summary-name = Name: { $name }
 ashfall-lifepath-summary-job = Assignment: { $job }
 ashfall-lifepath-summary-experience = Experience: { $exp }
 ashfall-lifepath-summary-flaw = Fracture: { $flaw }
-ashfall-lifepath-summary-hook = Core: { $hook }
+ashfall-lifepath-summary-hook = Unfinished: { $hook }
 ashfall-lifepath-confirm-button = Confirm Candidate in Slot #{ $slot }
 ashfall-lifepath-back-button = Back
 ashfall-lifepath-reroll-name = Reroll Name
@@ -156,7 +156,7 @@ ashfall-lifepath-field-job = Assignment:
 ashfall-lifepath-ledger-origin = ORIGIN
 ashfall-lifepath-ledger-vector = CRAFT
 ashfall-lifepath-ledger-flaw = FRACTURE
-ashfall-lifepath-ledger-luggage = CORE
+ashfall-lifepath-ledger-luggage = UNFINISHED
 ashfall-lifepath-flaw-weakness = WEAKNESS
 
 # Service Captions

@@ -8,8 +8,8 @@ ashfall-lifepath-prompt-step2 = Что умеют эти руки?
 ashfall-lifepath-header-step3 = НАДЛОМ
 ashfall-lifepath-prompt-step3 = Когда всё пошло не так?
 
-ashfall-lifepath-header-step4 = СУТЬ
-ashfall-lifepath-prompt-step4 = Кем ты себя считаешь?
+ashfall-lifepath-header-step4 = БАГАЖ
+ashfall-lifepath-prompt-step4 = Что ты не успел сделать?
 
 ashfall-lifepath-header-step5 = ДОСЬЕ
 ashfall-lifepath-prompt-step5 = Завершение формирования служебного профиля
@@ -89,37 +89,37 @@ ashfall-lifepath-step3-diplomat-title = Лавирую
 ashfall-lifepath-step3-diplomat-desc = Замять конфликт любой ценой, пока не начали стрелять.
 ashfall-lifepath-step3-diplomat-weakness = Заметание грязи под ковер.
 
-# Шаг 4: Суть и характер
-ashfall-lifepath-step4-balance-title = Равновесие
-ashfall-lifepath-step4-balance-desc = Мир держится на балансе сил, а не на сантиментах.
-ashfall-lifepath-step4-balance-quirk = Хладнокровно взвешивает риски перед каждым шагом.
+# Шаг 4: Незаконченное дело и багаж
+ashfall-lifepath-step4-balance-title = Закрыть счета
+ashfall-lifepath-step4-balance-desc = Никаких долгов и пустых обещаний, ты уходишь с чистым балансом.
+ashfall-lifepath-step4-balance-quirk = Педантично сверяет каждую цифру и чужие обязательства.
 
-ashfall-lifepath-step4-decay-title = Упадок
-ashfall-lifepath-step4-decay-desc = Все давно сгнило, ты просто наблюдаешь за падением со стороны.
+ashfall-lifepath-step4-decay-title = Сказать правду
+ashfall-lifepath-step4-decay-desc = Слишком долго молчал о том, как всё рушится.
 ashfall-lifepath-step4-decay-quirk = Скучающий взгляд человека, повидавшего худшее.
 
-ashfall-lifepath-step4-indifference-title = Безразличие
-ashfall-lifepath-step4-indifference-desc = Чужие крики не трогают, пока не мешают делать дело.
+ashfall-lifepath-step4-indifference-title = Забыть чужие лица
+ashfall-lifepath-step4-indifference-desc = Память до сих пор цепляется за тех, кого пришлось бросить.
 ashfall-lifepath-step4-indifference-quirk = Игнорирует чужую панику и пустые разговоры.
 
-ashfall-lifepath-step4-stubborn-title = Упрямство
-ashfall-lifepath-step4-stubborn-desc = Ты не отступишь, даже если придется ломать собственные кости.
+ashfall-lifepath-step4-stubborn-title = Дожать своё
+ashfall-lifepath-step4-stubborn-desc = Тебя выставили за дверь раньше, чем ты закончил начатое.
 ashfall-lifepath-step4-stubborn-quirk = Стискивает зубы и прет напролом вопреки приказам.
 
-ashfall-lifepath-step4-predator-title = Хищник
-ashfall-lifepath-step4-predator-desc = В темноте выживает тот, кто бьет в горло первым.
+ashfall-lifepath-step4-predator-title = Отомстить
+ashfall-lifepath-step4-predator-desc = Список обидчиков остался открытым, долг висит в воздухе.
 ashfall-lifepath-step4-predator-quirk = Держит спину у стены и следит за руками окружающих.
 
-ashfall-lifepath-step4-idealist-title = Идеалист
-ashfall-lifepath-step4-idealist-desc = В этой золе обязано остаться хоть что-то человеческое.
+ashfall-lifepath-step4-idealist-title = Спасти человека
+ashfall-lifepath-step4-idealist-desc = Тот крик в горящем шлюзе до сих пор звенит в ушах.
 ashfall-lifepath-step4-idealist-quirk = Заступается за слабых, даже когда это грозит гибелью.
 
-ashfall-lifepath-step4-ghost-title = Призрак
-ashfall-lifepath-step4-ghost-desc = Твоего имени нет в списках, ты просто проходишь мимо.
+ashfall-lifepath-step4-ghost-title = Замести следы
+ashfall-lifepath-step4-ghost-desc = Где-то в протоколах станции осталась запись с твоим лицом.
 ashfall-lifepath-step4-ghost-quirk = Старается не попадать в объективы камер и рапорты.
 
-ashfall-lifepath-step4-fatalist-title = Фаталист
-ashfall-lifepath-step4-fatalist-desc = Чему суждено сгореть, сгорит без лишних метаний.
+ashfall-lifepath-step4-fatalist-title = Оставить как есть
+ashfall-lifepath-step4-fatalist-desc = Все равно сгорит, нет никакого смысла суетиться.
 ashfall-lifepath-step4-fatalist-quirk = Спокойно закуривает в самый критический момент.
 
 # Экран выбора слотов (Лобби)
@@ -142,7 +142,7 @@ ashfall-lifepath-summary-name = Имя: { $name }
 ashfall-lifepath-summary-job = Назначение: { $job }
 ashfall-lifepath-summary-experience = Опыт: { $exp }
 ashfall-lifepath-summary-flaw = Надлом: { $flaw }
-ashfall-lifepath-summary-hook = Суть: { $hook }
+ashfall-lifepath-summary-hook = Багаж: { $hook }
 ashfall-lifepath-confirm-button = Утвердить кандидата в слот #{ $slot }
 ashfall-lifepath-back-button = Назад
 ashfall-lifepath-reroll-name = Другое имя
@@ -156,7 +156,7 @@ ashfall-lifepath-field-job = Должность:
 ashfall-lifepath-ledger-origin = ИСТОК
 ashfall-lifepath-ledger-vector = РЕМЕСЛО
 ashfall-lifepath-ledger-flaw = НАДЛОМ
-ashfall-lifepath-ledger-luggage = СУТЬ
+ashfall-lifepath-ledger-luggage = БАГАЖ
 ashfall-lifepath-flaw-weakness = СЛАБОСТЬ
 
 # Служебные подписи

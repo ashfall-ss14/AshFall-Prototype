@@ -1,62 +1,49 @@
-// Retro pixelated deep space backdrop for Ashfall Lifepath.
-// Low-res chunky pixel grid, drifting cold grey-ash blobs, faint star dust.
+// Calm deep space backdrop with subtle cosmic dust and animated film grain noise.
+// Based on GodotShaders film grain and animated starfield patterns.
 
-highp float hash21(highp vec2 p) {
+highp float hash(highp vec2 p) {
     p = fract(p * vec2(123.34, 456.21));
     p += dot(p, p + 45.32);
     return fract(p.x * p.y);
 }
 
 void fragment() {
-    // 1. Chunky retro pixelation grid
-    highp float pixelBlock = 4.0;
+    // 1. Fine 2x2 pixel grid for crisp retro look without chunkiness
+    highp float pixelBlock = 2.0;
     highp vec2 pixelGrid = floor(FRAGCOORD.xy / pixelBlock);
     highp vec2 fragCoord = pixelGrid * pixelBlock;
     highp vec2 uv = fragCoord * SCREEN_PIXEL_SIZE.xy;
 
     highp float aspect = SCREEN_PIXEL_SIZE.y / SCREEN_PIXEL_SIZE.x;
-    highp vec2 p = (uv - vec2(0.5)) * vec2(1.0, 1.0 / aspect) * 2.0;
+    highp vec2 p = (uv - vec2(0.5)) * vec2(1.0, 1.0 / aspect) * 1.6;
 
-    highp float t = TIME * 0.18;
+    highp float t = TIME * 0.08;
 
-    // 2. Slow organic domain warp
-    highp vec2 q = vec2(
-        sin(p.y * 1.1 + t * 0.3) + cos(p.x * 0.8 - t * 0.2),
-        cos(p.x * 1.0 - t * 0.25) + sin(p.y * 1.2 + t * 0.35)
-    );
+    // 2. Calm, gentle cosmic ash nebula (smooth waves, zero concentric rings)
+    highp float w1 = sin(p.x * 1.2 + t * 0.3) * cos(p.y * 0.9 - t * 0.25);
+    highp float w2 = cos(p.x * 0.8 - t * 0.2 + w1 * 0.5) * sin(p.y * 1.1 + t * 0.35);
+    highp float nebula = clamp((w1 + w2) * 0.4 + 0.5, 0.0, 1.0);
+    nebula = smoothstep(0.25, 0.85, nebula);
 
-    highp vec2 r = vec2(
-        sin(p.x * 1.3 + q.x * 0.7 + t * 0.15),
-        cos(p.y * 1.2 + q.y * 0.7 - t * 0.2)
-    );
+    // 3. Toned-down colors: deep dark void (#080A0D) to faint ash-slate (#14181F)
+    highp vec3 colVoid = vec3(0.031, 0.039, 0.051);
+    highp vec3 colNebula = vec3(0.065, 0.075, 0.090);
+    highp vec3 colWarm = vec3(0.085, 0.080, 0.075);
 
-    highp float dist = length(p - r * 0.4);
-    highp float blob = sin(dist * 2.6 - t * 0.4) * 0.5 + 0.5;
-    blob *= (1.0 - smoothstep(0.2, 2.0, dist));
+    highp vec3 color = mix(colVoid, colNebula, nebula);
+    color = mix(color, colWarm, smoothstep(0.5, 0.95, nebula) * 0.35);
 
-    highp vec2 p2 = p + vec2(sin(t * 0.25) * 0.5, cos(t * 0.2) * 0.4);
-    highp float dist2 = length(p2);
-    highp float blob2 = (1.0 - smoothstep(0.0, 1.4, dist2)) * (sin(p2.x * 1.8 - t * 0.3) * 0.5 + 0.5);
-
-    highp float totalBlob = clamp(blob * 0.65 + blob2 * 0.35, 0.0, 1.0);
-
-    // 3. Deep space black with subtle grey-ash masses
-    highp vec3 colVoid = vec3(0.015, 0.017, 0.020);
-    highp vec3 colGrey = vec3(0.065, 0.072, 0.082);
-    highp vec3 colAsh  = vec3(0.095, 0.100, 0.110);
-
-    highp vec3 color = mix(colVoid, colGrey, smoothstep(0.2, 0.8, totalBlob));
-    color = mix(color, colAsh, smoothstep(0.5, 0.95, totalBlob) * 0.6);
-
-    // 4. Subtle pixel star dust in the cold void
-    highp float rnd = hash21(pixelGrid);
-    if (rnd > 0.9972) {
-        highp float twinkle = sin(t * 2.0 + rnd * 6.28) * 0.3 + 0.7;
-        color += vec3(0.18, 0.20, 0.24) * twinkle;
+    // 4. Subtle, tiny pixel stars in deep space (1-pixel scale, low brightness)
+    highp float starHash = hash(pixelGrid);
+    if (starHash > 0.998) {
+        highp float twinkle = sin(t * 3.0 + starHash * 6.28) * 0.25 + 0.75;
+        color += vec3(0.12, 0.13, 0.15) * twinkle;
     }
 
-    // 5. Retro 5-bit color step (32 levels) for pixel art banding
-    color = floor(color * 36.0) / 36.0;
+    // 5. Film grain noise animation (GodotShaders white noise algorithm)
+    highp float grainSeed = fract(TIME * 18.23);
+    highp float noise = (fract(sin(dot(uv + vec2(grainSeed), vec2(12.9898, 78.233))) * 43758.5453) - 0.5) * 2.0;
+    color += noise * 0.035;
 
     COLOR = vec4(color, 1.0);
 }
