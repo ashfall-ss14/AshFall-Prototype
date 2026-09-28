@@ -9,19 +9,24 @@
                     <Label Text="{Loc 'ui-options-display-label'}" StyleClasses="AshfallSectionHeader" Margin="0 4 0 2"/>
                     <ui:OptionCheckBox Name="FullscreenCheckBox" Title="{Loc 'ui-options-fullscreen'}" />
                     <ui:OptionCheckBox Name="VSyncCheckBox" Title="{Loc 'ui-options-vsync'}" />
-                    <BoxContainer Name="MaxFpsContainer"
-                                  Orientation="Horizontal"
-                                  Margin="0 2"
-                                  HorizontalExpand="True"
-                                  ToolTip="{Loc 'ui-options-max-fps-tooltip'}">
-                        <Label Text="{Loc 'ui-options-max-fps'}" ClipText="True" HorizontalExpand="True" />
-                        <BoxContainer Orientation="Horizontal" MinWidth="260" MaxWidth="260" HorizontalAlignment="Right">
-                            <ui:OptionIntInput Name="MaxFpsInput" HorizontalExpand="True" />
-                            <Button Name="MaxFpsDisplayRateButton"
-                                    Text="{Loc 'ui-options-max-fps-display-rate'}"
-                                    Margin="8 0 0 0" />
+                    <PanelContainer Name="MaxFpsRowPanel" HorizontalExpand="True" MouseFilter="Pass">
+                        <BoxContainer Name="MaxFpsContainer"
+                                      Orientation="Horizontal"
+                                      Margin="6 4"
+                                      HorizontalExpand="True"
+                                      ToolTip="{Loc 'ui-options-max-fps-tooltip'}">
+                            <Label Text="{Loc 'ui-options-max-fps'}" HorizontalExpand="True" VerticalAlignment="Center" />
+                            <BoxContainer Orientation="Horizontal" MinWidth="320" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <ui:OptionIntInput Name="MaxFpsInput" HorizontalExpand="True" VerticalAlignment="Center" />
+                                <Button Name="MaxFpsDisplayRateButton"
+                                        Text="{Loc 'ui-options-max-fps-display-rate'}"
+                                        StyleClasses="AshfallSecondaryAction"
+                                        MinHeight="26"
+                                        Margin="8 0 0 0"
+                                        VerticalAlignment="Center" />
+                            </BoxContainer>
                         </BoxContainer>
-                    </BoxContainer>
+                    </PanelContainer>
                 </BoxContainer>
 
                 <!-- Quality -->
@@ -37,6 +42,9 @@
                     <ui:OptionCheckBox Name="AmbientOcclusionCheckBox"
                                        Title="{Loc 'ui-options-ambient-occlusion'}"
                                        ToolTip="{Loc 'ui-options-ambient-occlusion-tooltip'}" />
+                    <ui:OptionCheckBox Name="AgonyOverlayCheckBox"
+                                       Title="{Loc 'ui-options-agony-overlay'}"
+                                       ToolTip="{Loc 'ui-options-agony-overlay-tooltip'}" />
                     <ui:OptionSlider Name="SharpnessSlider" Title="{Loc 'ui-options-sharpness'}" />
                 </BoxContainer>
 
@@ -47,8 +55,8 @@
                     <ui:OptionCheckBox Name="ViewportStretchCheckBox"
                                        Title="{Loc 'ui-options-vp-stretch'}"
                                        ToolTip="{Loc 'ui-options-vp-stretch-tooltip'}" />
-                    <ui:OptionSlider Name="ViewportScaleSlider" Title="{Loc ui-options-vp-scale}" />
-                    <ui:OptionSlider Name="ViewportWidthSlider" Title="{Loc ui-options-vp-width}" />
+                    <ui:OptionSlider Name="ViewportScaleSlider" Title="{Loc 'ui-options-vp-scale'}" />
+                    <ui:OptionSlider Name="ViewportWidthSlider" Title="{Loc 'ui-options-vp-width'}" />
                     <ui:OptionCheckBox Name="IntegerScalingCheckBox"
                                        Title="{Loc 'ui-options-vp-integer-scaling'}"
                                        ToolTip="{Loc 'ui-options-vp-integer-scaling-tooltip'}" />

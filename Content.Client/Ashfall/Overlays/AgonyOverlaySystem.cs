@@ -6,8 +6,10 @@ using Content.Shared.Damage.Components;
 using Content.Shared.Damage.Systems;
 using Content.Shared.DamageOverlay;
 using Content.Shared.Mobs;
+using Content.Shared.Ashfall;
 using Robust.Client.Graphics;
 using Robust.Client.Player;
+using Robust.Shared.Configuration;
 using Robust.Shared.Player;
 using Robust.Shared.Random;
 
@@ -20,6 +22,7 @@ public sealed partial class AgonyOverlaySystem : EntitySystem
     [Dependency] private IRobustRandom _random = default!;
     [Dependency] private CameraRecoilSystem _recoil = default!;
     [Dependency] private BloodstreamSystem _bloodstream = default!;
+    [Dependency] private IConfigurationManager _config = default!;
 
     private AgonyOverlay _overlay = default!;
     private float _lastPainLevel;
@@ -107,6 +110,22 @@ public sealed partial class AgonyOverlaySystem : EntitySystem
             }
         }
         _lastPainLevel = damageOverlay.PainLevel;
+
+        if (!_config.GetCVar(AshfallCCVars.AgonyOverlayEnabled))
+        {
+            _overlay.ShockIntensity = 0f;
+            _overlay.BlurIntensity = 0f;
+            _overlay.AberrationIntensity = 0f;
+            _overlay.ConcussionIntensity = 0f;
+            _overlay.BloodlossIntensity = 0f;
+            _overlay.CritIntensity = 0f;
+            _overlay.OxygenIntensity = 0f;
+            _overlay.FireIntensity = 0f;
+            _overlay.PainIntensity = 0f;
+            _shockBlur = 0f;
+            _acuteConcussion = 0f;
+            return;
+        }
 
         if (_overlay.ShockIntensity > 0f)
         {

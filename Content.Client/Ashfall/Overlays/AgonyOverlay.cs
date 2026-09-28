@@ -17,7 +17,11 @@ public sealed partial class AgonyOverlay : Overlay
     [Dependency] private IConfigurationManager _config = default!;
 
     public override OverlaySpace Space => OverlaySpace.WorldSpace;
-    public override bool RequestScreenTexture => true;
+    public override bool RequestScreenTexture =>
+        _config.GetCVar(AshfallCCVars.AgonyOverlayEnabled) &&
+        (PainIntensity > 0.005f || ShockIntensity > 0.005f || BlurIntensity > 0.005f ||
+         AberrationIntensity > 0.001f || ConcussionIntensity > 0.005f || BloodlossIntensity > 0.005f ||
+         CritIntensity > 0.005f || OxygenIntensity > 0.005f || FireIntensity > 0.005f);
 
     private readonly ShaderInstance _shader;
 

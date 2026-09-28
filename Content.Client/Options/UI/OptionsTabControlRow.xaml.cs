@@ -58,7 +58,6 @@ public sealed partial class OptionsTabControlRow : Control
         RobustXamlLoader.Load(this);
         IoCManager.InjectDependencies(this);
 
-        ResetButton.StyleClasses.Add(StyleClass.ButtonOpenRight);
         ApplyButton.OnPressed += ApplyButtonPressed;
         ResetButton.OnPressed += ResetButtonPressed;
         DefaultButton.OnPressed += DefaultButtonPressed;
@@ -227,19 +226,6 @@ public sealed partial class OptionsTabControlRow : Control
         DefaultButton.Disabled = !anyModifiedFromDefault;
         ApplyButton.Disabled = !anyModified;
         ResetButton.Disabled = !anyModified;
-
-        if (anyModified)
-        {
-            if (!ApplyButton.HasStyleClass(global::Ashfall.Client.Stylesheets.AshfallStylesheet.AccentActionClass))
-                ApplyButton.AddStyleClass(global::Ashfall.Client.Stylesheets.AshfallStylesheet.AccentActionClass);
-            if (!ApplyButton.HasStyleClass(StyleClass.Positive))
-                ApplyButton.AddStyleClass(StyleClass.Positive);
-        }
-        else
-        {
-            ApplyButton.RemoveStyleClass(global::Ashfall.Client.Stylesheets.AshfallStylesheet.AccentActionClass);
-            ApplyButton.RemoveStyleClass(StyleClass.Positive);
-        }
     }
 
     private void ApplyButtonPressed(BaseButton.ButtonEventArgs obj)

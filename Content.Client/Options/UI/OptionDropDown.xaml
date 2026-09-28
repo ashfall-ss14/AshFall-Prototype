@@ -2,10 +2,10 @@
     <PanelContainer Name="RowPanel" HorizontalExpand="True" MouseFilter="Pass">
         <BoxContainer Orientation="Horizontal" Margin="6 4" HorizontalExpand="True">
             <BoxContainer Orientation="Vertical" HorizontalExpand="True" VerticalAlignment="Center" Margin="0 0 10 0">
-                <Label Name="NameLabel" ClipText="True" HorizontalExpand="True" />
-                <Label Name="DescriptionLabel" Visible="False" ClipText="True" HorizontalExpand="True" FontColorOverride="#878C87" Margin="0 1 0 0" />
+                <Label Name="NameLabel" HorizontalExpand="True" />
+                <Label Name="DescriptionLabel" Visible="False" HorizontalExpand="True" FontColorOverride="#878C87" Margin="0 1 0 0" />
             </BoxContainer>
-            <OptionButton Name="Button" Access="Public" MinWidth="220" MaxWidth="220" HorizontalAlignment="Right" VerticalAlignment="Center" />
+            <OptionButton Name="Button" Access="Public" MinWidth="220" MaxWidth="280" HorizontalAlignment="Right" VerticalAlignment="Center" />
         </BoxContainer>
     </PanelContainer>
 </Control>

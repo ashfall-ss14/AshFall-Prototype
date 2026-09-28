@@ -23,7 +23,9 @@ ashfall-personal-files-slot-move-right = Сдвинуть кандидата в�
 
 ashfall-options-title = Настройки
 ui-options-log-actions-in-chat = Логировать действия и осмотр в чат
+ui-options-log-actions-in-chat-tooltip = Дублирует сообщения об использовании предметов, окружении и осмотре в панель чата.
 ui-options-coalesce-identical-messages = Группировать повторяющиеся сообщения в чате
+ui-options-coalesce-identical-messages-tooltip = Объединяет одинаковые идущие подряд сообщения в чате со счётчиком.
 
 ashfall-personal-files-title = АРХИВ СОТРУДНИКОВ // КРИОХРАНИЛИЩЕ ASHEN INDUSTRIAL
 ashfall-personal-files-subtitle = Выберите сотрудника и подтвердите назначение на смену.

@@ -1,11 +1,13 @@
 <Control xmlns="https://spacestation14.io" HorizontalExpand="True">
-    <BoxContainer Orientation="Horizontal" Margin="0 4" HorizontalExpand="True">
-        <BoxContainer Orientation="Vertical" HorizontalExpand="True" VerticalAlignment="Center">
-            <Label Name="TitleLabel" Access="Public" ClipText="True" />
-            <Label Name="ExampleLabel" Access="Public" ClipText="True" Margin="0 2 0 0" />
+    <PanelContainer Name="RowPanel" HorizontalExpand="True" MouseFilter="Pass">
+        <BoxContainer Orientation="Horizontal" Margin="6 4" HorizontalExpand="True">
+            <BoxContainer Orientation="Vertical" HorizontalExpand="True" VerticalAlignment="Center" Margin="0 0 10 0">
+                <Label Name="TitleLabel" Access="Public" HorizontalExpand="True" />
+                <Label Name="ExampleLabel" Access="Public" HorizontalExpand="True" Margin="0 2 0 0" />
+            </BoxContainer>
+            <BoxContainer Orientation="Horizontal" MinWidth="260" MaxWidth="300" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <ColorSelectorSliders Name="Slider" Access="Public" HorizontalExpand="True" />
+            </BoxContainer>
         </BoxContainer>
-        <BoxContainer Orientation="Horizontal" MinWidth="260" MaxWidth="260" HorizontalAlignment="Right">
-            <ColorSelectorSliders Name="Slider" Access="Public" HorizontalExpand="True" />
-        </BoxContainer>
-    </BoxContainer>
+    </PanelContainer>
 </Control>

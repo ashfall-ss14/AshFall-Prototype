@@ -14,14 +14,14 @@ void fragment() {
 
     // Dizziness wobble
     highp float wobble = sin(TIME * 2.0) * 0.006 * ConcussionIntensity;
-    highp vec2 wobbledCoord = coord + vec2(wobble * (centerOffset.y), wobble * (centerOffset.x));
+    highp vec2 wobbledCoord = coord + vec2(wobble * centerOffset.y, wobble * centerOffset.x);
 
-    // Double vision / blur separation
+    // Double vision / blur separation (minimal taps)
     highp float blurDist = 0.008 * ConcussionIntensity;
-    highp vec4 col1 = zTextureSpec(SCREEN_TEXTURE, wobbledCoord + vec2(blurDist, 0.0));
-    highp vec4 col2 = zTextureSpec(SCREEN_TEXTURE, wobbledCoord - vec2(blurDist, 0.0));
+    highp vec3 col1 = zTextureSpec(SCREEN_TEXTURE, wobbledCoord + vec2(blurDist, 0.0)).rgb;
+    highp vec3 col2 = zTextureSpec(SCREEN_TEXTURE, wobbledCoord - vec2(blurDist, 0.0)).rgb;
     highp vec4 colBase = zTextureSpec(SCREEN_TEXTURE, wobbledCoord);
-    highp vec3 col = (colBase.rgb * 0.5) + (col1.rgb * 0.25) + (col2.rgb * 0.25);
+    highp vec3 col = (colBase.rgb * 0.5) + (col1 + col2) * 0.25;
 
     // Dark tunnel vignette
     highp float vigRadius = 0.85 - (ConcussionIntensity * 0.50);
@@ -31,8 +31,5 @@ void fragment() {
 
     col *= vignette;
 
-    highp vec4 colOrig = zTextureSpec(SCREEN_TEXTURE, coord);
-    highp vec3 finalCol = mix(colOrig.rgb, col, clamp(ConcussionIntensity, 0.0, 1.0));
-
-    COLOR = vec4(finalCol, colOrig.a);
+    COLOR = vec4(col, colBase.a);
 }
