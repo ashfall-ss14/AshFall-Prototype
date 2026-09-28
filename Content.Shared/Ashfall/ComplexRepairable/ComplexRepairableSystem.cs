@@ -2,6 +2,7 @@ using Content.Shared.Administration.Logs;
 using Content.Shared.Damage.Systems;
 using Content.Shared.Database;
 using Content.Shared.DoAfter;
+using Content.Shared.Examine;
 using Content.Shared.FixedPoint;
 using Content.Shared.Interaction;
 using Content.Shared.Popups;
@@ -28,6 +29,7 @@ public sealed partial class ComplexRepairableSystem : EntitySystem
         SubscribeLocalEvent<ComplexRepairableComponent, InteractUsingEvent>(OnInteractUsing);
         SubscribeLocalEvent<ComplexRepairableComponent, ComplexRepairFinishedEvent>(OnRepairFinished);
         SubscribeLocalEvent<ComplexRepairableComponent, DamageChangedEvent>(OnDamageChanged);
+        SubscribeLocalEvent<ComplexRepairableComponent, ExaminedEvent>(OnExamined);
     }
 
     private void OnDamageChanged(Entity<ComplexRepairableComponent> ent, ref DamageChangedEvent args)
@@ -64,6 +66,9 @@ public sealed partial class ComplexRepairableSystem : EntitySystem
             return;
 
         if (_damageableSystem.GetTotalDamage(ent.Owner) == 0)
+            return;
+
+        if (ent.Comp.LeftToInsert > 0)
             return;
 
         if (ent.Comp.Damage != null)
@@ -160,6 +165,20 @@ public sealed partial class ComplexRepairableSystem : EntitySystem
             ent.Comp.QualityNeeded,
             new ComplexRepairFinishedEvent(),
             ent.Comp.FuelCost.Float());
+    }
+
+    private void OnExamined(Entity<ComplexRepairableComponent> ent, ref ExaminedEvent args)
+    {
+        if (ent.Comp.LeftToInsert <= 0)
+            return;
+
+        var materialName = _protoManager.TryIndex(ent.Comp.Material, out var stackProto)
+            ? Loc.GetString(stackProto.Name)
+            : ent.Comp.Material.Id;
+
+        args.PushMarkup(Loc.GetString("ashfall-complex-repairable-examine",
+            ("material", materialName),
+            ("amount", ent.Comp.LeftToInsert)));
     }
 }
 

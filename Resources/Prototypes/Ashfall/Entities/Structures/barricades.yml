@@ -30,6 +30,7 @@
   - type: Damageable
   - type: Injurable
     damageContainer: StructuralInorganic
+  - type: Occluder
   - type: ComplexRepairable
     qualityNeeded: Welding
     fuelCost: 5
@@ -41,6 +42,12 @@
   parent: AshfallBaseBarricade
   abstract: true
   components:
+  - type: Occluder
+    polygon:
+    - "-0.5,-0.5"
+    - "0.5,-0.5"
+    - "0.5,-0.36"
+    - "-0.5,-0.36"
   - type: Fixtures
     fixtures:
       fix1:
@@ -58,6 +65,8 @@
   parent: AshfallBaseBarricade
   abstract: true
   components:
+  - type: Occluder
+    enabled: false
   - type: Sprite
     drawdepth: SmallObjects
   - type: Barricade
@@ -77,17 +86,19 @@
         - TableLayer
         - BulletImpassable
 
-# Full tile barricades
 - type: entity
   id: AshfallBarricadeWooden
-  name: ashfall-barricade-wooden
-  description: ashfall-barricade-wooden-desc
+  name: wooden barricade
+  description: A sturdy barricade made of wooden planks. Shields from stray gunfire.
   parent: AshfallBaseBarricade
   placement:
     mode: SnapgridCenter
   components:
   - type: Sprite
     state: barricade_wooden
+  - type: Construction
+    graph: AshfallBarricadeWoodenGraph
+    node: barricade
   - type: Tag
     tags:
     - Wooden
@@ -120,14 +131,17 @@
 
 - type: entity
   id: AshfallBarricadeSteel
-  name: ashfall-barricade-steel
-  description: ashfall-barricade-steel-desc
+  name: steel barricade
+  description: A heavy barricade made of steel sheets. Great cover during a firefight.
   parent: AshfallBaseBarricade
   placement:
     mode: SnapgridCenter
   components:
   - type: Sprite
     state: barricade_steel
+  - type: Construction
+    graph: AshfallBarricadeSteelGraph
+    node: barricade
   - type: Damageable
     damageModifierSet: StructuralMetallic
   - type: ComplexRepairable
@@ -149,14 +163,17 @@
 
 - type: entity
   id: AshfallBarricadePlasteel
-  name: ashfall-barricade-plasteel
-  description: ashfall-barricade-plasteel-desc
+  name: plasteel barricade
+  description: An extremely resilient barricade made of plasteel. Capable of withstanding heavy fire.
   parent: AshfallBaseBarricade
   placement:
     mode: SnapgridCenter
   components:
   - type: Sprite
     state: barricade_plasteel
+  - type: Construction
+    graph: AshfallBarricadePlasteelGraph
+    node: barricade
   - type: Damageable
     damageModifierSet: StructuralMetallic
   - type: ComplexRepairable
@@ -182,14 +199,17 @@
 # Directional barricades
 - type: entity
   id: AshfallBarricadeWoodenDirectional
-  name: ashfall-barricade-wooden-directional
-  description: ashfall-barricade-wooden-directional-desc
+  name: directional wooden barricade
+  description: A reinforced wooden barricade for frontal cover.
   parent: AshfallBaseBarricadeDirectional
   placement:
     mode: SnapgridCenter
   components:
   - type: Sprite
     state: barricade_wooden_directional
+  - type: Construction
+    graph: AshfallBarricadeWoodenGraph
+    node: barricadeDirectional
   - type: Tag
     tags:
     - Wooden
@@ -222,14 +242,17 @@
 
 - type: entity
   id: AshfallBarricadeSteelDirectional
-  name: ashfall-barricade-steel-directional
-  description: ashfall-barricade-steel-directional-desc
+  name: directional steel barricade
+  description: A steel frontal barricade ideal for corridor defense.
   parent: AshfallBaseBarricadeDirectional
   placement:
     mode: SnapgridCenter
   components:
   - type: Sprite
     state: barricade_steel_directional
+  - type: Construction
+    graph: AshfallBarricadeSteelGraph
+    node: barricadeDirectional
   - type: Damageable
     damageModifierSet: StructuralMetallic
   - type: ComplexRepairable
@@ -251,14 +274,17 @@
 
 - type: entity
   id: AshfallBarricadePlasteelDirectional
-  name: ashfall-barricade-plasteel-directional
-  description: ashfall-barricade-plasteel-directional-desc
+  name: directional plasteel barricade
+  description: A high-strength plasteel directional cover.
   parent: AshfallBaseBarricadeDirectional
   placement:
     mode: SnapgridCenter
   components:
   - type: Sprite
     state: barricade_plasteel_directional
+  - type: Construction
+    graph: AshfallBarricadePlasteelGraph
+    node: barricadeDirectional
   - type: Damageable
     damageModifierSet: StructuralMetallic
   - type: ComplexRepairable
@@ -284,14 +310,17 @@
 # Floor low barricades
 - type: entity
   id: AshfallBarricadeWoodenFloor
-  name: ashfall-barricade-wooden-floor
-  description: ashfall-barricade-wooden-floor-desc
+  name: wooden floor barricade
+  description: A low wooden embankment providing partial cover.
   parent: AshfallBaseBarricadeFloor
   placement:
     mode: SnapgridCenter
   components:
   - type: Sprite
     state: barricade_wooden_floor
+  - type: Construction
+    graph: AshfallBarricadeWoodenGraph
+    node: barricadeFloor
   - type: Tag
     tags:
     - Wooden
@@ -302,6 +331,9 @@
         Heat: 2
   - type: Damageable
     damageModifierSet: Wood
+  - type: ComplexRepairable
+    material: WoodPlank
+    materialRepairTreshold: 15
   - type: Destructible
     thresholds:
     - trigger:
@@ -313,16 +345,22 @@
 
 - type: entity
   id: AshfallBarricadeSteelFloor
-  name: ashfall-barricade-steel-floor
-  description: ashfall-barricade-steel-floor-desc
+  name: steel floor barricade
+  description: A low steel barricade providing partial cover from incoming fire.
   parent: AshfallBaseBarricadeFloor
   placement:
     mode: SnapgridCenter
   components:
   - type: Sprite
     state: barricade_steel_floor
+  - type: Construction
+    graph: AshfallBarricadeSteelGraph
+    node: barricadeFloor
   - type: Damageable
     damageModifierSet: StructuralMetallic
+  - type: ComplexRepairable
+    material: Steel
+    materialRepairTreshold: 30
   - type: Destructible
     thresholds:
     - trigger:
@@ -334,16 +372,22 @@
 
 - type: entity
   id: AshfallBarricadePlasteelFloor
-  name: ashfall-barricade-plasteel-floor
-  description: ashfall-barricade-plasteel-floor-desc
+  name: plasteel floor barricade
+  description: A low plasteel barricade providing resilient partial cover.
   parent: AshfallBaseBarricadeFloor
   placement:
     mode: SnapgridCenter
   components:
   - type: Sprite
     state: barricade_plasteel_floor
+  - type: Construction
+    graph: AshfallBarricadePlasteelGraph
+    node: barricadeFloor
   - type: Damageable
     damageModifierSet: StructuralMetallic
+  - type: ComplexRepairable
+    material: Plasteel
+    materialRepairTreshold: 50
   - type: Destructible
     thresholds:
     - trigger:
@@ -356,8 +400,8 @@
 # Tactical deployable barrier enhanced with barricade & complex repair
 - type: entity
   id: AshfallDeployableBarrier
-  name: ashfall-deployable-barrier
-  description: ashfall-deployable-barrier-desc
+  name: tactical deployable barrier
+  description: A deployable fortified cover providing instant protection when expanded.
   parent: DeployableBarrier
   components:
   - type: Barricade

@@ -1,8 +1,8 @@
 - type: entity
-  name: ashfall-lockpick
+  name: lockpick
   parent: BaseItem
   id: AshfallLockpick
-  description: ashfall-lockpick-desc
+  description: A set of thin tension wrenches and picks for bypassing mechanical and electronic locks.
   components:
   - type: Sprite
     sprite: Ashfall/Objects/Tools/lockpick.rsi

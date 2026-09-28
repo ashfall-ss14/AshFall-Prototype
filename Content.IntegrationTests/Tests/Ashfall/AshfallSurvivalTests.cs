@@ -4,6 +4,7 @@ using Content.Shared.Ashfall.Barricade;
 using Content.Shared.Ashfall.ComplexRepairable;
 using Content.Shared.Ashfall.LockPick;
 using Content.Shared.Ashfall.LockPick.Components;
+using Content.Shared.Construction.Prototypes;
 using Content.Shared.Damage;
 using Content.Shared.Damage.Components;
 using Content.Shared.Damage.Prototypes;
@@ -19,6 +20,7 @@ namespace Content.IntegrationTests.Tests.Ashfall;
 public sealed class AshfallSurvivalTests : GameTest
 {
     private static readonly ProtoId<DamageTypePrototype> BluntDamage = "Blunt";
+    private static readonly ProtoId<ConstructionGraphPrototype> SteelGraphId = "AshfallBarricadeSteelGraph";
 
     [Test]
     public async Task TestLockpickUnlocksTarget()
@@ -118,6 +120,73 @@ public sealed class AshfallSurvivalTests : GameTest
             server.System<DamageableSystem>().TryChangeDamage(entity, secondHit, ignoreResistances: true);
             Assert.That(complex.LeftToInsert, Is.EqualTo(2));
             Assert.That(complex.AccumulatedDamage, Is.EqualTo(FixedPoint2.Zero));
+
+            entMan.DeleteEntity(entity);
+        });
+
+        await pair.CleanReturnAsync();
+    }
+
+    [Test]
+    public async Task TestBarricadeConstructionComponent()
+    {
+        await using var pair = await PoolManager.GetServerClient();
+        var server = pair.Server;
+
+        await server.WaitPost(() =>
+        {
+            var entMan = server.EntMan;
+
+            var entity = entMan.SpawnEntity("AshfallBarricadeWooden", Robust.Shared.Map.MapCoordinates.Nullspace);
+            var construction = entMan.GetComponent<Content.Server.Construction.Components.ConstructionComponent>(entity);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(construction.Graph, Is.EqualTo("AshfallBarricadeWoodenGraph"));
+                Assert.That(construction.Node, Is.EqualTo("barricade"));
+            });
+
+            var dirEntity = entMan.SpawnEntity("AshfallBarricadeWoodenDirectional", Robust.Shared.Map.MapCoordinates.Nullspace);
+            var dirConstruction = entMan.GetComponent<Content.Server.Construction.Components.ConstructionComponent>(dirEntity);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(dirConstruction.Graph, Is.EqualTo("AshfallBarricadeWoodenGraph"));
+                Assert.That(dirConstruction.Node, Is.EqualTo("barricadeDirectional"));
+            });
+
+            entMan.DeleteEntity(entity);
+            entMan.DeleteEntity(dirEntity);
+        });
+
+        await pair.CleanReturnAsync();
+    }
+
+    [Test]
+    public async Task TestSteelBarricadeTwoStageUpgrade()
+    {
+        await using var pair = await PoolManager.GetServerClient();
+        var server = pair.Server;
+
+        await server.WaitPost(() =>
+        {
+            var entMan = server.EntMan;
+            var protoMan = server.ResolveDependency<IPrototypeManager>();
+
+            var entity = entMan.SpawnEntity("AshfallBarricadeSteelDirectional", Robust.Shared.Map.MapCoordinates.Nullspace);
+            var construction = entMan.GetComponent<Content.Server.Construction.Components.ConstructionComponent>(entity);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(construction.Graph, Is.EqualTo("AshfallBarricadeSteelGraph"));
+                Assert.That(construction.Node, Is.EqualTo("barricadeDirectional"));
+            });
+
+            var graph = protoMan.Index(SteelGraphId);
+            Assert.That(graph.Nodes.ContainsKey("barricadeDirectional"), Is.True);
+            var dirNode = graph.Nodes["barricadeDirectional"];
+            var edgeToBarricade = dirNode.GetEdge("barricade");
+            Assert.That(edgeToBarricade, Is.Not.Null);
 
             entMan.DeleteEntity(entity);
         });
