@@ -33,6 +33,33 @@
   species: Human
   culture: Mashriqi
 
+- type: ashfallLifepathOption
+  id: LifepathOriginGraveyard
+  step: 1
+  title: ashfall-lifepath-step1-graveyard-title
+  description: ashfall-lifepath-step1-graveyard-desc
+  indicatorColor: "#5A6578"
+  species: Human
+  culture: Mashriqi
+
+- type: ashfallLifepathOption
+  id: LifepathOriginSubsector
+  step: 1
+  title: ashfall-lifepath-step1-subsector-title
+  description: ashfall-lifepath-step1-subsector-desc
+  indicatorColor: "#78654A"
+  species: Moth
+  culture: LuamFlutter
+
+- type: ashfallLifepathOption
+  id: LifepathOriginMining
+  step: 1
+  title: ashfall-lifepath-step1-mining-title
+  description: ashfall-lifepath-step1-mining-desc
+  indicatorColor: "#6B5848"
+  species: Reptilian
+  culture: UnathiClan
+
 # ==============================================================================
 # Step 2: Youth & Career Vector («С детства во мне видели...»)
 # ==============================================================================
@@ -170,82 +197,77 @@
   stressWeaknessLoc: ashfall-lifepath-step3-diplomat-weakness
 
 # ==============================================================================
-# Step 4: Personal Luggage & Hook («Что зашито у вас в подкладке перед криосном?»)
-# Every item feeds its hookFragment into the dossier's hook section.
+# Step 4: Core Archetype («Кем ты себя считаешь?»)
 # ==============================================================================
 
 - type: ashfallLifepathOption
-  id: LifepathLuggageDogtag
+  id: LifepathArchetypeBalance
   step: 4
-  title: ashfall-lifepath-step4-dogtag-title
-  description: ashfall-lifepath-step4-dogtag-desc
-  indicatorColor: "#A65838"
+  title: ashfall-lifepath-step4-balance-title
+  description: ashfall-lifepath-step4-balance-desc
+  indicatorColor: "#7D6B58"
   hookFragment: AshfallPersonalHook1
-  quirkDescription: ashfall-lifepath-step4-dogtag-quirk
-  accessoryId: ClothingNeckBronzeheartMedal
+  quirkDescription: ashfall-lifepath-step4-balance-quirk
 
 - type: ashfallLifepathOption
-  id: LifepathLuggageEncryptedChip
+  id: LifepathArchetypeDecay
   step: 4
-  title: ashfall-lifepath-step4-chip-title
-  description: ashfall-lifepath-step4-chip-desc
-  indicatorColor: "#42727A"
+  title: ashfall-lifepath-step4-decay-title
+  description: ashfall-lifepath-step4-decay-desc
+  indicatorColor: "#52575C"
   hookFragment: AshfallPersonalHook2
-  quirkDescription: ashfall-lifepath-step4-chip-quirk
-  accessoryId: ClothingHandsGlovesColorBlack
+  quirkDescription: ashfall-lifepath-step4-decay-quirk
 
 - type: ashfallLifepathOption
-  id: LifepathLuggageBrassKey
+  id: LifepathArchetypeIndifference
   step: 4
-  title: ashfall-lifepath-step4-key-title
-  description: ashfall-lifepath-step4-key-desc
-  indicatorColor: "#A6753C"
+  title: ashfall-lifepath-step4-indifference-title
+  description: ashfall-lifepath-step4-indifference-desc
+  indicatorColor: "#4A5A66"
   hookFragment: AshfallPersonalHook3
-  quirkDescription: ashfall-lifepath-step4-key-quirk
-  accessoryId: ClothingEyesEyepatch
+  quirkDescription: ashfall-lifepath-step4-indifference-quirk
 
 - type: ashfallLifepathOption
-  id: LifepathLuggageCigarettes
+  id: LifepathArchetypeStubborn
   step: 4
-  title: ashfall-lifepath-step4-cigs-title
-  description: ashfall-lifepath-step4-cigs-desc
-  indicatorColor: "#6B7075"
+  title: ashfall-lifepath-step4-stubborn-title
+  description: ashfall-lifepath-step4-stubborn-desc
+  indicatorColor: "#8C4A3A"
   hookFragment: AshfallPersonalHook4
-  quirkDescription: ashfall-lifepath-step4-cigs-quirk
-  accessoryId: ClothingMaskCigarette
+  quirkDescription: ashfall-lifepath-step4-stubborn-quirk
 
 - type: ashfallLifepathOption
-  id: LifepathLuggageFlask
+  id: LifepathArchetypePredator
   step: 4
-  title: ashfall-lifepath-step4-flask-title
-  description: ashfall-lifepath-step4-flask-desc
-  indicatorColor: "#5E6E4F"
+  title: ashfall-lifepath-step4-predator-title
+  description: ashfall-lifepath-step4-predator-desc
+  indicatorColor: "#913838"
   hookFragment: AshfallPersonalHook5
-  quirkDescription: ashfall-lifepath-step4-flask-quirk
+  quirkDescription: ashfall-lifepath-step4-predator-quirk
 
 - type: ashfallLifepathOption
-  id: LifepathLuggageNameList
+  id: LifepathArchetypeIdealist
   step: 4
-  title: ashfall-lifepath-step4-namelist-title
-  description: ashfall-lifepath-step4-namelist-desc
-  indicatorColor: "#436E7D"
+  title: ashfall-lifepath-step4-idealist-title
+  description: ashfall-lifepath-step4-idealist-desc
+  indicatorColor: "#4B7552"
   hookFragment: AshfallPersonalHook6
-  quirkDescription: ashfall-lifepath-step4-namelist-quirk
+  quirkDescription: ashfall-lifepath-step4-idealist-quirk
 
 - type: ashfallLifepathOption
-  id: LifepathLuggageLetter
+  id: LifepathArchetypeGhost
   step: 4
-  title: ashfall-lifepath-step4-letter-title
-  description: ashfall-lifepath-step4-letter-desc
-  indicatorColor: "#8F7238"
+  title: ashfall-lifepath-step4-ghost-title
+  description: ashfall-lifepath-step4-ghost-desc
+  indicatorColor: "#615D70"
   hookFragment: AshfallPersonalHook7
-  quirkDescription: ashfall-lifepath-step4-letter-quirk
+  quirkDescription: ashfall-lifepath-step4-ghost-quirk
 
 - type: ashfallLifepathOption
-  id: LifepathLuggageDeadStationCard
+  id: LifepathArchetypeFatalist
   step: 4
-  title: ashfall-lifepath-step4-card-title
-  description: ashfall-lifepath-step4-card-desc
-  indicatorColor: "#6B4978"
+  title: ashfall-lifepath-step4-fatalist-title
+  description: ashfall-lifepath-step4-fatalist-desc
+  indicatorColor: "#856A3E"
   hookFragment: AshfallPersonalHook8
-  quirkDescription: ashfall-lifepath-step4-card-quirk
+  quirkDescription: ashfall-lifepath-step4-fatalist-quirk

@@ -1,50 +1,62 @@
-// Dark organic fluid blob / domain warping backdrop for Ashfall Lifepath.
-// Smooth, meditative ink and ash masses drifting in the deep void.
-// No static grain, no scanlines, pure soft organic depth.
+// Retro pixelated deep space backdrop for Ashfall Lifepath.
+// Low-res chunky pixel grid, drifting cold grey-ash blobs, faint star dust.
+
+highp float hash21(highp vec2 p) {
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p.x * p.y);
+}
 
 void fragment() {
-    highp vec2 uv = FRAGCOORD.xy * SCREEN_PIXEL_SIZE.xy;
+    // 1. Chunky retro pixelation grid
+    highp float pixelBlock = 4.0;
+    highp vec2 pixelGrid = floor(FRAGCOORD.xy / pixelBlock);
+    highp vec2 fragCoord = pixelGrid * pixelBlock;
+    highp vec2 uv = fragCoord * SCREEN_PIXEL_SIZE.xy;
+
     highp float aspect = SCREEN_PIXEL_SIZE.y / SCREEN_PIXEL_SIZE.x;
-    highp vec2 p = (uv - vec2(0.5)) * vec2(1.0, 1.0 / aspect) * 2.2;
+    highp vec2 p = (uv - vec2(0.5)) * vec2(1.0, 1.0 / aspect) * 2.0;
 
-    highp float t = TIME * 0.25;
+    highp float t = TIME * 0.18;
 
-    // Layer 1: Slow primary domain warp
+    // 2. Slow organic domain warp
     highp vec2 q = vec2(
-        sin(p.y * 1.2 + t * 0.4) + cos(p.x * 0.9 - t * 0.3),
-        cos(p.x * 1.1 - t * 0.35) + sin(p.y * 1.3 + t * 0.45)
+        sin(p.y * 1.1 + t * 0.3) + cos(p.x * 0.8 - t * 0.2),
+        cos(p.x * 1.0 - t * 0.25) + sin(p.y * 1.2 + t * 0.35)
     );
 
-    // Layer 2: Secondary internal ripple
     highp vec2 r = vec2(
-        sin(p.x * 1.5 + q.x * 0.8 + t * 0.2),
-        cos(p.y * 1.4 + q.y * 0.8 - t * 0.25)
+        sin(p.x * 1.3 + q.x * 0.7 + t * 0.15),
+        cos(p.y * 1.2 + q.y * 0.7 - t * 0.2)
     );
 
-    highp float dist = length(p - r * 0.45);
-    highp float blob = sin(dist * 2.8 - t * 0.5) * 0.5 + 0.5;
-    blob *= (1.0 - smoothstep(0.2, 2.2, dist));
+    highp float dist = length(p - r * 0.4);
+    highp float blob = sin(dist * 2.6 - t * 0.4) * 0.5 + 0.5;
+    blob *= (1.0 - smoothstep(0.2, 2.0, dist));
 
-    // Secondary blob cluster offset
-    highp vec2 p2 = p + vec2(sin(t * 0.3) * 0.6, cos(t * 0.25) * 0.5);
+    highp vec2 p2 = p + vec2(sin(t * 0.25) * 0.5, cos(t * 0.2) * 0.4);
     highp float dist2 = length(p2);
-    highp float blob2 = (1.0 - smoothstep(0.0, 1.5, dist2)) * (sin(p2.x * 2.0 - t * 0.4) * 0.5 + 0.5);
+    highp float blob2 = (1.0 - smoothstep(0.0, 1.4, dist2)) * (sin(p2.x * 1.8 - t * 0.3) * 0.5 + 0.5);
 
     highp float totalBlob = clamp(blob * 0.65 + blob2 * 0.35, 0.0, 1.0);
 
-    // Colors: Deep tar void (#0B0C0E) -> Dark ink swell (#13161A) -> Smoldering ash warmth (#1E1714)
-    highp vec3 colVoid  = vec3(0.043, 0.047, 0.052);
-    highp vec3 colBlob  = vec3(0.075, 0.086, 0.098);
-    highp vec3 colEmber = vec3(0.125, 0.095, 0.075);
+    // 3. Deep space black with subtle grey-ash masses
+    highp vec3 colVoid = vec3(0.015, 0.017, 0.020);
+    highp vec3 colGrey = vec3(0.065, 0.072, 0.082);
+    highp vec3 colAsh  = vec3(0.095, 0.100, 0.110);
 
-    highp vec3 color = mix(colVoid, colBlob, smoothstep(0.15, 0.85, totalBlob));
-    color += colEmber * smoothstep(0.45, 0.95, totalBlob) * 0.5;
+    highp vec3 color = mix(colVoid, colGrey, smoothstep(0.2, 0.8, totalBlob));
+    color = mix(color, colAsh, smoothstep(0.5, 0.95, totalBlob) * 0.6);
 
-    // Deep organic vignette framing the screen
-    highp vec2 v = uv * (1.0 - uv);
-    highp float vignette = clamp(v.x * v.y * 16.0, 0.0, 1.0);
-    vignette = smoothstep(0.0, 0.65, vignette);
-    color *= mix(0.4, 1.0, vignette);
+    // 4. Subtle pixel star dust in the cold void
+    highp float rnd = hash21(pixelGrid);
+    if (rnd > 0.9972) {
+        highp float twinkle = sin(t * 2.0 + rnd * 6.28) * 0.3 + 0.7;
+        color += vec3(0.18, 0.20, 0.24) * twinkle;
+    }
+
+    // 5. Retro 5-bit color step (32 levels) for pixel art banding
+    color = floor(color * 36.0) / 36.0;
 
     COLOR = vec4(color, 1.0);
 }

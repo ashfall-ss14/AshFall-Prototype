@@ -21,31 +21,34 @@
 
         <!-- Body: Left Column has Character Identity + Portrait + Chronicle; Right Column has Narrative Options -->
         <BoxContainer Orientation="Horizontal" SeparationOverride="40" HorizontalExpand="True" VerticalExpand="True">
-            <!-- Left Column: Character Card & Chronicle -->
-            <BoxContainer Orientation="Vertical" MinWidth="340" MaxWidth="380" SeparationOverride="12" VerticalExpand="True">
+            <!-- Left Column: Character Card & Chronicle (Large bust portrait on top, compact identity below) -->
+            <BoxContainer Orientation="Vertical" MinWidth="360" MaxWidth="400" SeparationOverride="12" VerticalExpand="True">
                 <PanelContainer Name="CharacterCard" HorizontalExpand="True">
                     <PanelContainer.PanelOverride>
-                        <graphics:StyleBoxFlat BackgroundColor="#111316E6" BorderColor="#24282E" BorderThickness="1" />
+                        <graphics:StyleBoxFlat BackgroundColor="#0F1114EE" BorderColor="#22262E" BorderThickness="1" />
                     </PanelContainer.PanelOverride>
-                    <BoxContainer Orientation="Vertical" Margin="14" SeparationOverride="12" HorizontalExpand="True">
-                        <!-- Portrait Area -->
-                        <PanelContainer Name="SpriteFrame" MinHeight="260" HorizontalExpand="True">
+                    <BoxContainer Orientation="Vertical" Margin="12" SeparationOverride="10" HorizontalExpand="True">
+                        <!-- Portrait Area (Bust-up prominent framing) -->
+                        <PanelContainer Name="SpriteFrame" MinHeight="360" HorizontalExpand="True">
                             <PanelContainer.PanelOverride>
-                                <graphics:StyleBoxFlat BackgroundColor="#0A0B0D" BorderColor="#1A1C20" BorderThickness="1" />
+                                <graphics:StyleBoxFlat BackgroundColor="#07080A" BorderColor="#1A1D24" BorderThickness="1" />
                             </PanelContainer.PanelOverride>
-                            <BoxContainer Orientation="Vertical" Margin="8" HorizontalExpand="True">
-                                <ashfall:ProfileFullBodySpriteView Name="PreviewSprite" HorizontalExpand="True" MinHeight="244" />
+                            <BoxContainer Orientation="Vertical" Margin="4" HorizontalExpand="True">
+                                <ashfall:ProfilePortraitSpriteView Name="PreviewSprite" HorizontalExpand="True" MinHeight="352" />
                             </BoxContainer>
                         </PanelContainer>
 
-                        <!-- Identity Plate (Name, Culture, Reroll) -->
+                        <!-- Identity Plate (Name, Sex, Culture, Reroll) -->
                         <BoxContainer Name="IdentityBlock" Orientation="Vertical" SeparationOverride="6" HorizontalExpand="True">
                             <BoxContainer Orientation="Horizontal" SeparationOverride="8" HorizontalExpand="True">
                                 <Label Name="CharacterNameLabel" StyleClasses="AshfallCandidateName" HorizontalExpand="True" VAlign="Center" ClipText="True" />
                                 <Button Name="RerollNameButton" Text="{Loc 'ashfall-lifepath-reroll-name'}" StyleClasses="AshfallUtilityAction" MinHeight="26" Visible="False" />
                             </BoxContainer>
-                            <BoxContainer Orientation="Horizontal" SeparationOverride="8" HorizontalExpand="True">
-                                <Label Name="CharacterBioLabel" StyleClasses="AshfallDossierLabel" VAlign="Center" HorizontalExpand="True" />
+                            <BoxContainer Orientation="Horizontal" SeparationOverride="6" HorizontalExpand="True">
+                                <Button Name="MaleSexButton" Text="{Loc 'ashfall-lifepath-sex-male'}" StyleClasses="AshfallUtilityAction" MinHeight="24" MinWidth="32" Visible="False" />
+                                <Button Name="FemaleSexButton" Text="{Loc 'ashfall-lifepath-sex-female'}" StyleClasses="AshfallUtilityAction" MinHeight="24" MinWidth="32" Visible="False" />
+                                <Control MinWidth="4" />
+                                <Label Name="CharacterBioLabel" StyleClasses="AshfallDossierLabel" VAlign="Center" HorizontalExpand="True" ClipText="True" />
                                 <Label Name="CharacterJobTag" StyleClasses="AshfallDossierLabel" VAlign="Center" />
                             </BoxContainer>
                         </BoxContainer>
@@ -53,7 +56,7 @@
                         <!-- Divider -->
                         <PanelContainer SetSize="0 1" HorizontalExpand="True">
                             <PanelContainer.PanelOverride>
-                                <graphics:StyleBoxFlat BackgroundColor="#22252A" />
+                                <graphics:StyleBoxFlat BackgroundColor="#1E2228" />
                             </PanelContainer.PanelOverride>
                         </PanelContainer>
 

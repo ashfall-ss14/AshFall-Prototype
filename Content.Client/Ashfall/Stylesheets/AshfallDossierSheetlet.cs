@@ -29,82 +29,81 @@ public sealed class AshfallDossierSheetlet : Sheetlet<AshfallStylesheet>
 
     public override StyleRule[] GetRules(AshfallStylesheet sheet, object config)
     {
-        var serifDisplay = ResCache.GetFont("/Fonts/Ashfall/PTSerif-Bold.ttf", 22);
-        var serifCandidate = ResCache.GetFont("/Fonts/Ashfall/PTSerif-Bold.ttf", 17);
-        var serifName = ResCache.GetFont("/Fonts/Ashfall/PTSerif-Bold.ttf", 15);
-        var serifTitle = ResCache.GetFont("/Fonts/Ashfall/PTSerif-Bold.ttf", 15);
-        var serifBody = ResCache.GetFont("/Fonts/Ashfall/PTSerif-Regular.ttf", 13);
-        var serifItalic = ResCache.GetFont("/Fonts/Ashfall/PTSerif-Italic.ttf", 12);
-        var monoSmall = ResCache.GetFont("/Fonts/RobotoMono/RobotoMono-Regular.ttf", 10);
-        var monoChip = ResCache.GetFont("/Fonts/RobotoMono/RobotoMono-Bold.ttf", 10);
+        var pixelDisplay = ResCache.GetFont("/Fonts/Cozette/CozetteVectorBold.ttf", 16);
+        var pixelCandidate = ResCache.GetFont("/Fonts/Cozette/CozetteVectorBold.ttf", 14);
+        var pixelSubtle = ResCache.GetFont("/Fonts/Cozette/CozetteVector.ttf", 12);
+        var pixelTitle = ResCache.GetFont("/Fonts/Cozette/CozetteVectorBold.ttf", 13);
+        var pixelBody = ResCache.GetFont("/Fonts/Cozette/CozetteVector.ttf", 12);
+        var pixelItalic = ResCache.GetFont("/Fonts/Cozette/CozetteVectorItalic.ttf", 12);
+        var pixelSmall = ResCache.GetFont("/Fonts/Cozette/CozetteVector.ttf", 11);
 
-        // Lifepath option rows: tactile dark paper cards with warm amber border glow on hover
+        // Lifepath option rows: tactile dark pixel cards with amber glow on hover
         var optionNormal = new StyleBoxFlat
         {
-            BackgroundColor = Color.FromHex("#10121400"),
+            BackgroundColor = Color.FromHex("#0B0D10D0"),
             BorderThickness = new Thickness(1),
-            BorderColor = Color.Transparent,
+            BorderColor = Color.FromHex("#1B1F26"),
         };
-        optionNormal.SetContentMarginOverride(StyleBox.Margin.Horizontal, 18);
-        optionNormal.SetContentMarginOverride(StyleBox.Margin.Vertical, 12);
+        optionNormal.SetContentMarginOverride(StyleBox.Margin.Horizontal, 14);
+        optionNormal.SetContentMarginOverride(StyleBox.Margin.Vertical, 8);
 
         var optionHover = new StyleBoxFlat
         {
-            BackgroundColor = Color.FromHex("#16181BEE"),
+            BackgroundColor = Color.FromHex("#13171FEE"),
             BorderThickness = new Thickness(1),
-            BorderColor = Color.FromHex("#3A3125"),
+            BorderColor = Color.FromHex("#5E4B32"),
         };
-        optionHover.SetContentMarginOverride(StyleBox.Margin.Horizontal, 18);
-        optionHover.SetContentMarginOverride(StyleBox.Margin.Vertical, 12);
+        optionHover.SetContentMarginOverride(StyleBox.Margin.Horizontal, 14);
+        optionHover.SetContentMarginOverride(StyleBox.Margin.Vertical, 8);
 
         var optionPressed = new StyleBoxFlat
         {
-            BackgroundColor = Color.FromHex("#121416EE"),
+            BackgroundColor = Color.FromHex("#0F1217EE"),
             BorderThickness = new Thickness(1),
-            BorderColor = Color.FromHex("#5E452E"),
+            BorderColor = Color.FromHex("#8C6B3E"),
         };
-        optionPressed.SetContentMarginOverride(StyleBox.Margin.Horizontal, 18);
-        optionPressed.SetContentMarginOverride(StyleBox.Margin.Vertical, 12);
+        optionPressed.SetContentMarginOverride(StyleBox.Margin.Horizontal, 14);
+        optionPressed.SetContentMarginOverride(StyleBox.Margin.Vertical, 8);
 
         return new StyleRule[]
         {
-            // Prompt question: prominent, bone-white.
+            // Prompt question: prominent retro header.
             E<Label>().Class(DisplayClass)
-                .Prop(Label.StylePropertyFont, serifDisplay)
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#EDE9DE")),
+                .Prop(Label.StylePropertyFont, pixelDisplay)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#E6E2D8")),
             // Candidate name on identity plate.
             E<Label>().Class(CandidateNameClass)
-                .Prop(Label.StylePropertyFont, serifCandidate)
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#EDE9DE")),
-            // Quiet serif for sub-names and ghost states.
+                .Prop(Label.StylePropertyFont, pixelCandidate)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#E6E2D8")),
+            // Quiet pixel text for sub-names and ghost states.
             E<Label>().Class(DisplaySubtleClass)
-                .Prop(Label.StylePropertyFont, serifName)
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#6A707A")),
-            // Serif body voice for introspective descriptions and records.
+                .Prop(Label.StylePropertyFont, pixelSubtle)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#6B7380")),
+            // Pixel body voice for introspective descriptions and records.
             E<Label>().Class(SerifClass)
-                .Prop(Label.StylePropertyFont, serifBody)
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#9E9A8E")),
-            // Quoted flavor lines (luggage hooks, weaknesses).
+                .Prop(Label.StylePropertyFont, pixelBody)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#9B968B")),
+            // Quoted flavor lines.
             E<Label>().Class(SerifItalicClass)
-                .Prop(Label.StylePropertyFont, serifItalic)
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#8C877D")),
-            // Small mono service labels.
+                .Prop(Label.StylePropertyFont, pixelItalic)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#88837A")),
+            // Small pixel service labels.
             E<Label>().Class(LabelClass)
-                .Prop(Label.StylePropertyFont, monoSmall)
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#707570")),
+                .Prop(Label.StylePropertyFont, pixelSmall)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#666D77")),
             // Ledger markers (chronicle of choices).
             E<Label>().Class(LedgerStepClass)
-                .Prop(Label.StylePropertyFont, monoSmall)
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#B87333")),
+                .Prop(Label.StylePropertyFont, pixelSmall)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#C87D38")),
             E<Label>().Class(LedgerValueClass)
-                .Prop(Label.StylePropertyFont, serifBody)
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#D5CFBF")),
+                .Prop(Label.StylePropertyFont, pixelBody)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#D6D0C2")),
             E<Label>().Class(ChipClass)
-                .Prop(Label.StylePropertyFont, monoChip),
-            // Option voices: the character's thoughts, serif, warm bone.
+                .Prop(Label.StylePropertyFont, pixelSmall),
+            // Option titles: sharp amber/bone pixel font.
             E<Label>().Class(OptionTitleClass)
-                .Prop(Label.StylePropertyFont, serifTitle)
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#D5CFBF")),
+                .Prop(Label.StylePropertyFont, pixelTitle)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#DCD7CA")),
 
             ButtonRule(OptionCardClass).PseudoNormal()
                 .Prop(ContainerButton.StylePropertyStyleBox, optionNormal),
@@ -114,7 +113,7 @@ public sealed class AshfallDossierSheetlet : Sheetlet<AshfallStylesheet>
                 .Prop(ContainerButton.StylePropertyStyleBox, optionPressed),
             ButtonRule(OptionCardClass).PseudoHovered()
                 .ParentOf(E<Label>().Class(OptionTitleClass))
-                .Prop(Label.StylePropertyFontColor, Color.FromHex("#E59838")),
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#E69C3C")),
         };
     }
 

@@ -44,11 +44,13 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
     private BoxContainer ProgressRail => this.FindControl<BoxContainer>("ProgressRail");
     private Label StepCounterLabel => this.FindControl<Label>("StepCounterLabel");
     private PanelContainer SpriteFrame => this.FindControl<PanelContainer>("SpriteFrame");
-    private ProfileFullBodySpriteView PreviewSprite => this.FindControl<ProfileFullBodySpriteView>("PreviewSprite");
+    private ProfilePortraitSpriteView PreviewSprite => this.FindControl<ProfilePortraitSpriteView>("PreviewSprite");
 
     private Label CharacterNameLabel => this.FindControl<Label>("CharacterNameLabel");
     private Label CharacterBioLabel => this.FindControl<Label>("CharacterBioLabel");
     private Label CharacterJobTag => this.FindControl<Label>("CharacterJobTag");
+    private Button MaleSexButton => this.FindControl<Button>("MaleSexButton");
+    private Button FemaleSexButton => this.FindControl<Button>("FemaleSexButton");
     private BoxContainer ChronicleContainer => this.FindControl<BoxContainer>("ChronicleContainer");
 
     private Label PromptQuestionLabel => this.FindControl<Label>("PromptQuestionLabel");
@@ -69,6 +71,10 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
 
     private HumanoidCharacterProfile? _currentProfile;
     private string _candidateName = string.Empty;
+    private Sex _selectedSex = Sex.Male;
+    private AshfallCulturePrototype? _currentCulture;
+    private AshfallLifepathOptionPrototype? _step1Option;
+    private AshfallLifepathOptionPrototype? _step2Option;
 
     private readonly List<ProtoId<JobPrototype>> _departmentJobs = new();
 
@@ -109,9 +115,15 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
 
         BackButton.OnPressed += _ => BackToLobby?.Invoke();
         RerollNameButton.OnPressed += _ => RerollName();
+        MaleSexButton.OnPressed += _ => SetSex(Sex.Male);
+        FemaleSexButton.OnPressed += _ => SetSex(Sex.Female);
         ExperienceOption.OnItemSelected += OnExperienceChanged;
         JobOption.OnItemSelected += OnJobSelected;
         ConfirmCandidateButton.OnPressed += _ => ConfirmCandidate();
+
+        PreviewSprite.PortraitFraction = 0.45f;
+        PreviewSprite.PortraitScale = 1.35f;
+        PreviewSprite.VerticalOffset = -15f;
 
         BuildProgressRail();
     }
@@ -123,8 +135,15 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         _currentStep = 1;
         _currentProfile = null;
         _candidateName = string.Empty;
+        _step1Option = null;
+        _step2Option = null;
+        _currentCulture = null;
+        _selectedSex = _random.Prob(0.5f) ? Sex.Male : Sex.Female;
 
-        CharacterNameLabel.Text = "—";
+        MaleSexButton.Visible = false;
+        FemaleSexButton.Visible = false;
+
+        CharacterNameLabel.Text = string.Empty;
         CharacterBioLabel.Text = Loc.GetString("ashfall-lifepath-default-candidate-name");
         CharacterJobTag.Text = string.Empty;
         RerollNameButton.Visible = false;
@@ -202,8 +221,7 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         _random.Shuffle(options);
 
         // Larger pools than the offered set: reruns rarely share a full sheet.
-        if (step > 1)
-            options = options.Take(4).ToList();
+        options = options.Take(4).ToList();
 
         for (var i = 0; i < options.Count; i++)
         {
@@ -475,9 +493,31 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         }
     }
 
-    private void UpdateSpriteStep1(AshfallLifepathOptionPrototype opt)
+    private void SetSex(Sex sex)
     {
-        var speciesId = opt.Species ?? "Human";
+        if (_selectedSex == sex)
+            return;
+
+        _selectedSex = sex;
+        UpdateSexButtons();
+        if (_step1Option != null)
+        {
+            RegenerateCandidateIdentity();
+        }
+    }
+
+    private void UpdateSexButtons()
+    {
+        MaleSexButton.Modulate = _selectedSex == Sex.Male ? Color.FromHex("#E69C3C") : Color.FromHex("#707882");
+        FemaleSexButton.Modulate = _selectedSex == Sex.Female ? Color.FromHex("#E69C3C") : Color.FromHex("#707882");
+    }
+
+    private void RegenerateCandidateIdentity()
+    {
+        if (_step1Option == null)
+            return;
+
+        var speciesId = _step1Option.Species ?? "Human";
         var species = _prototypes.Index(speciesId);
 
         CharacterGenConstraintsPrototype constraints;
@@ -489,12 +529,7 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
             constraints = _prototypes.Index(fallbackId);
         }
 
-        AshfallCulturePrototype? culture = null;
-        if (opt.Culture is { } cId && _prototypes.TryIndex(cId, out var cult))
-            culture = cult;
-
-        var sex = _random.Pick(species.Sexes);
-        var gender = sex switch
+        var gender = _selectedSex switch
         {
             Sex.Female => Gender.Female,
             Sex.Male => Gender.Male,
@@ -502,29 +537,47 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         };
 
         var age = 30;
-        var (appearance, _) = _characterGenerator.GenerateAppearance(constraints, species, sex, age, _random, culture);
-        var name = culture != null
-            ? _random.Pick(_prototypes.Index<DatasetPrototype>(gender == Gender.Female ? culture.FirstNamesFemale : culture.FirstNamesMale).Values) + " " +
-              _random.Pick(_prototypes.Index<DatasetPrototype>(culture.LastNames).Values)
+        var (appearance, _) = _characterGenerator.GenerateAppearance(constraints, species, _selectedSex, age, _random, _currentCulture);
+        var name = _currentCulture != null
+            ? _random.Pick(_prototypes.Index<DatasetPrototype>(gender == Gender.Female ? _currentCulture.FirstNamesFemale : _currentCulture.FirstNamesMale).Values) + " " +
+              _random.Pick(_prototypes.Index<DatasetPrototype>(_currentCulture.LastNames).Values)
             : Loc.GetString("ashfall-lifepath-default-candidate-name");
 
-        _currentProfile = _characterGenerator.BuildProfile(name, species, sex, gender, age, appearance, _random);
+        _currentProfile = _characterGenerator.BuildProfile(name, species, _selectedSex, gender, age, appearance, _random);
         _candidateName = name;
         CharacterNameLabel.Text = _candidateName;
 
         var speciesName = _prototypes.TryIndex<SpeciesPrototype>(_currentProfile.Species, out var sp)
             ? Loc.GetString(sp.Name)
             : string.Empty;
-        var cultureName = culture != null ? Loc.GetString(culture.Label) : string.Empty;
+        var cultureName = _currentCulture != null ? Loc.GetString(_currentCulture.Label) : string.Empty;
         CharacterBioLabel.Text = string.IsNullOrEmpty(cultureName) ? speciesName : $"{speciesName} • {cultureName}";
-        RerollNameButton.Visible = true;
 
-        PreviewSprite.LoadPreview(_currentProfile, null, showClothes: false);
+        if (_step2Option != null && _step2Option.PreviewJob is { } jobId && _prototypes.TryIndex(jobId, out JobPrototype? job))
+            PreviewSprite.LoadPreview(_currentProfile, job, showClothes: true);
+        else
+            PreviewSprite.LoadPreview(_currentProfile, null, showClothes: false);
+    }
+
+    private void UpdateSpriteStep1(AshfallLifepathOptionPrototype opt)
+    {
+        _step1Option = opt;
+        if (opt.Culture is { } cId && _prototypes.TryIndex(cId, out var cult))
+            _currentCulture = cult;
+        else
+            _currentCulture = null;
+
+        MaleSexButton.Visible = true;
+        FemaleSexButton.Visible = true;
+        UpdateSexButtons();
+        RegenerateCandidateIdentity();
+        RerollNameButton.Visible = true;
         SpriteFrame.Visible = true;
     }
 
     private void UpdateSpriteStep2(AshfallLifepathOptionPrototype opt)
     {
+        _step2Option = opt;
         if (_currentProfile == null)
             return;
 
@@ -709,22 +762,18 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
 
     private void RerollName()
     {
-        if (_currentProfile == null)
+        if (_currentProfile == null || _currentCulture == null)
             return;
 
-        if (_prototypes.TryIndex(_choices.Step1Origin, out var originOpt) &&
-            originOpt.Culture is { } cId &&
-            _prototypes.TryIndex(cId, out AshfallCulturePrototype? culture))
-        {
-            var firstDataset = _prototypes.Index<DatasetPrototype>(
-                _currentProfile.Gender == Gender.Female ? culture.FirstNamesFemale : culture.FirstNamesMale);
-            var lastDataset = _prototypes.Index<DatasetPrototype>(culture.LastNames);
+        var firstDataset = _prototypes.Index<DatasetPrototype>(
+            _currentProfile.Gender == Gender.Female ? _currentCulture.FirstNamesFemale : _currentCulture.FirstNamesMale);
+        var lastDataset = _prototypes.Index<DatasetPrototype>(_currentCulture.LastNames);
 
-            var first = _random.Pick(firstDataset.Values);
-            var last = _random.Pick(lastDataset.Values);
-            _candidateName = $"{first} {last}";
-            CharacterNameLabel.Text = _candidateName;
-        }
+        var first = _random.Pick(firstDataset.Values);
+        var last = _random.Pick(lastDataset.Values);
+        _candidateName = $"{first} {last}";
+        CharacterNameLabel.Text = _candidateName;
+        _currentProfile = _currentProfile.WithName(_candidateName);
     }
 
     private void ConfirmCandidate()
