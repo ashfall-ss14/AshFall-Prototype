@@ -25,6 +25,16 @@ public sealed class MsgAshfallRequestPool : NetMessage
     }
 }
 
+[Serializable, NetSerializable]
+public enum AshfallSlotStatus : byte
+{
+    Empty = 0,
+    Ready = 1,
+    OnShift = 2,
+    Evacuated = 3,
+    Dead = 4,
+}
+
 /// <summary>
 ///     One occupied priority slot. The candidate DTO is carried in full so pinned people and
 ///     their chosen job survive pool rerolls on the client without regeneration.
@@ -35,6 +45,7 @@ public sealed class AshfallPinnedSlot
     public int SlotIndex { get; set; }
     public AshfallCharacterCandidate Candidate { get; set; } = new();
     public string JobId { get; set; } = string.Empty;
+    public AshfallSlotStatus Status { get; set; } = AshfallSlotStatus.Ready;
 }
 
 /// <summary>
@@ -217,5 +228,73 @@ public sealed class MsgAshfallMovePrioritySlot : NetMessage
     {
         buffer.Write(SlotIndex);
         buffer.Write(TargetSlotIndex);
+    }
+}
+
+/// <summary>
+///     Client submits their Guided Lifepath choices to generate a candidate into a specific slot.
+/// </summary>
+public sealed class MsgAshfallLifepathSubmit : NetMessage
+{
+    public override MsgGroups MsgGroup => MsgGroups.Core;
+
+    public Lifepath.AshfallLifepathChoices Choices { get; set; } = new();
+
+    public override void ReadFromBuffer(NetIncomingMessage buffer, IRobustSerializer serializer)
+    {
+        var length = buffer.ReadVariableInt32();
+        var bytes = buffer.ReadBytes(length);
+        using var stream = new MemoryStream(bytes);
+        serializer.DeserializeDirect(stream, out Lifepath.AshfallLifepathChoices choices);
+        Choices = choices;
+    }
+
+    public override void WriteToBuffer(NetOutgoingMessage buffer, IRobustSerializer serializer)
+    {
+        using var stream = new MemoryStream();
+        serializer.SerializeDirect(stream, Choices);
+        var bytes = stream.ToArray();
+        buffer.WriteVariableInt32(bytes.Length);
+        buffer.Write(bytes);
+    }
+}
+
+/// <summary>
+///     Client selects which of the slots is active to enter the shift with.
+/// </summary>
+public sealed class MsgAshfallSelectSlot : NetMessage
+{
+    public override MsgGroups MsgGroup => MsgGroups.Core;
+
+    public int SlotIndex { get; set; }
+
+    public override void ReadFromBuffer(NetIncomingMessage buffer, IRobustSerializer serializer)
+    {
+        SlotIndex = buffer.ReadInt32();
+    }
+
+    public override void WriteToBuffer(NetOutgoingMessage buffer, IRobustSerializer serializer)
+    {
+        buffer.Write(SlotIndex);
+    }
+}
+
+/// <summary>
+///     Client requests to purge/reset an occupied slot (subject to anti-reroll rules on server).
+/// </summary>
+public sealed class MsgAshfallResetSlot : NetMessage
+{
+    public override MsgGroups MsgGroup => MsgGroups.Core;
+
+    public int SlotIndex { get; set; }
+
+    public override void ReadFromBuffer(NetIncomingMessage buffer, IRobustSerializer serializer)
+    {
+        SlotIndex = buffer.ReadInt32();
+    }
+
+    public override void WriteToBuffer(NetOutgoingMessage buffer, IRobustSerializer serializer)
+    {
+        buffer.Write(SlotIndex);
     }
 }

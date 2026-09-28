@@ -1,0 +1,156 @@
+# Guided Lifepath options in Disco Elysium style.
+
+# ==============================================================================
+# Step 1: Biological Origin & Species («Где вы сделали свой первый вдох?»)
+# ==============================================================================
+
+- type: ashfallLifepathOption
+  id: LifepathOriginKassik
+  step: 1
+  title: ashfall-lifepath-step1-kassik-title
+  description: ashfall-lifepath-step1-kassik-desc
+  indicatorColor: "#C2633C"
+  species: Reptilian
+  culture: UnathiClan
+
+- type: ashfallLifepathOption
+  id: LifepathOriginKirwani
+  step: 1
+  title: ashfall-lifepath-step1-kirwani-title
+  description: ashfall-lifepath-step1-kirwani-desc
+  indicatorColor: "#42A5B8"
+  species: Moth
+  culture: LuamFlutter
+
+- type: ashfallLifepathOption
+  id: LifepathOriginNewDamascus
+  step: 1
+  title: ashfall-lifepath-step1-damascus-title
+  description: ashfall-lifepath-step1-damascus-desc
+  indicatorColor: "#7D838A"
+  species: Human
+  culture: Mashriqi
+
+# ==============================================================================
+# Step 2: Youth & Career Vector («С детства во мне видели...»)
+# ==============================================================================
+
+- type: ashfallLifepathOption
+  id: LifepathVectorEngineering
+  step: 2
+  title: ashfall-lifepath-step2-engi-title
+  description: ashfall-lifepath-step2-engi-desc
+  indicatorColor: "#D48944"
+  domain: Engineering
+  previewJob: StationEngineer
+
+- type: ashfallLifepathOption
+  id: LifepathVectorMedical
+  step: 2
+  title: ashfall-lifepath-step2-med-title
+  description: ashfall-lifepath-step2-med-desc
+  indicatorColor: "#3B82A6"
+  domain: Medical
+  previewJob: MedicalDoctor
+
+- type: ashfallLifepathOption
+  id: LifepathVectorSecurity
+  step: 2
+  title: ashfall-lifepath-step2-sec-title
+  description: ashfall-lifepath-step2-sec-desc
+  indicatorColor: "#B83C3C"
+  domain: Security
+  previewJob: SecurityOfficer
+
+- type: ashfallLifepathOption
+  id: LifepathVectorService
+  step: 2
+  title: ashfall-lifepath-step2-serv-title
+  description: ashfall-lifepath-step2-serv-desc
+  indicatorColor: "#3FA85B"
+  domain: Service
+  previewJob: Janitor
+
+# ==============================================================================
+# Step 3: Inner Flaw («В критический момент моё слабое место — это...»)
+# ==============================================================================
+
+- type: ashfallLifepathOption
+  id: LifepathFlawPedant
+  step: 3
+  title: ashfall-lifepath-step3-pedant-title
+  description: ashfall-lifepath-step3-pedant-desc
+  indicatorColor: "#8A9099"
+  psychotype: AshfallPsychotypePedant
+  stressWeaknessLoc: ashfall-lifepath-step3-pedant-weakness
+
+- type: ashfallLifepathOption
+  id: LifepathFlawDaredevil
+  step: 3
+  title: ashfall-lifepath-step3-daredevil-title
+  description: ashfall-lifepath-step3-daredevil-desc
+  indicatorColor: "#D97724"
+  psychotype: AshfallPsychotypeDaredevil
+  stressWeaknessLoc: ashfall-lifepath-step3-daredevil-weakness
+
+- type: ashfallLifepathOption
+  id: LifepathFlawParanoid
+  step: 3
+  title: ashfall-lifepath-step3-paranoid-title
+  description: ashfall-lifepath-step3-paranoid-desc
+  indicatorColor: "#8353A8"
+  psychotype: AshfallPsychotypeParanoid
+  stressWeaknessLoc: ashfall-lifepath-step3-paranoid-weakness
+
+- type: ashfallLifepathOption
+  id: LifepathFlawBurnout
+  step: 3
+  title: ashfall-lifepath-step3-burnout-title
+  description: ashfall-lifepath-step3-burnout-desc
+  indicatorColor: "#2B4C7E"
+  psychotype: AshfallPsychotypeBurnout
+  stressWeaknessLoc: ashfall-lifepath-step3-burnout-weakness
+
+# ==============================================================================
+# Step 4: Personal Luggage & Hook («Что зашито у вас в подкладке перед криосном?»)
+# ==============================================================================
+
+- type: ashfallLifepathOption
+  id: LifepathLuggageDogtag
+  step: 4
+  title: ashfall-lifepath-step4-dogtag-title
+  description: ashfall-lifepath-step4-dogtag-desc
+  indicatorColor: "#C2633C"
+  hookFragment: AshfallPersonalHook1
+  quirkDescription: ashfall-lifepath-step4-dogtag-quirk
+  accessoryId: ClothingNeckBronzeheartMedal
+
+- type: ashfallLifepathOption
+  id: LifepathLuggageEncryptedChip
+  step: 4
+  title: ashfall-lifepath-step4-chip-title
+  description: ashfall-lifepath-step4-chip-desc
+  indicatorColor: "#42A5B8"
+  hookFragment: AshfallPersonalHook2
+  quirkDescription: ashfall-lifepath-step4-chip-quirk
+  accessoryId: ClothingHandsGlovesColorBlack
+
+- type: ashfallLifepathOption
+  id: LifepathLuggageBrassKey
+  step: 4
+  title: ashfall-lifepath-step4-key-title
+  description: ashfall-lifepath-step4-key-desc
+  indicatorColor: "#D48944"
+  hookFragment: AshfallPersonalHook3
+  quirkDescription: ashfall-lifepath-step4-key-quirk
+  accessoryId: ClothingEyesEyepatch
+
+- type: ashfallLifepathOption
+  id: LifepathLuggageCigarettes
+  step: 4
+  title: ashfall-lifepath-step4-cigs-title
+  description: ashfall-lifepath-step4-cigs-desc
+  indicatorColor: "#7D838A"
+  hookFragment: AshfallPersonalHook4
+  quirkDescription: ashfall-lifepath-step4-cigs-quirk
+  accessoryId: ClothingMaskCigarette

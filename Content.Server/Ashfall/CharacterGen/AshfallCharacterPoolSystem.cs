@@ -1,12 +1,15 @@
 using Content.Shared.Ashfall.CharacterGen;
+using Content.Shared.Ashfall.CharacterGen.Lifepath;
 using Content.Shared.Preferences;
 using Robust.Shared.Configuration;
 using Robust.Shared.Network;
 using Robust.Shared.Player;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
+using Robust.Shared.Log;
 using Content.Shared.Humanoid;
 using Content.Shared.Humanoid.Markings;
+using Content.Shared.Mobs;
 using Content.Shared.Ashfall;
 using Content.Shared.Ashfall.CharacterGen.Prototypes;
 using Robust.Shared.Timing;
@@ -33,6 +36,7 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
     [Dependency] private IRobustRandom _random = default!;
     [Dependency] private IPlayerManager _playerManager = default!;
 
+    private ISawmill _sawmill = default!;
     private AshfallCharacterGenerator _generator = default!;
     private AshfallPersonGenerator _personGenerator = default!;
 
@@ -41,6 +45,7 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
     private readonly Dictionary<NetUserId, PlayerCandidatePool> _playerPools = new();
 
     public const int PrioritySlotCount = 5;
+    public const int CharacterSlotCount = 3;
 
     /// <summary>
     ///     One pinned Candidate + Job combination. The full candidate DTO is retained so the
@@ -51,6 +56,8 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
     {
         public AshfallCharacterCandidate Candidate { get; set; } = default!;
         public ProtoId<JobPrototype> Job { get; set; }
+        public AshfallSlotStatus Status { get; set; } = AshfallSlotStatus.Ready;
+        public EntityUid? SpawnedMob { get; set; }
     }
 
     internal sealed class PlayerCandidatePool
@@ -84,6 +91,7 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
     {
         base.Initialize();
 
+        _sawmill = Logger.GetSawmill("ashfall.pool");
         _generator = new AshfallCharacterGenerator(_protoManager, _markingManager, _namingSystem);
         _personGenerator = new AshfallPersonGenerator(_protoManager, _generator);
 
@@ -93,8 +101,14 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
         _netManager.RegisterNetMessage<MsgAshfallPinCandidate>(OnPinCandidate);
         _netManager.RegisterNetMessage<MsgAshfallClearPrioritySlot>(OnClearPrioritySlot);
         _netManager.RegisterNetMessage<MsgAshfallMovePrioritySlot>(OnMovePrioritySlot);
+        _netManager.RegisterNetMessage<MsgAshfallLifepathSubmit>(OnLifepathSubmit);
+        _netManager.RegisterNetMessage<MsgAshfallSelectSlot>(OnSelectSlot);
+        _netManager.RegisterNetMessage<MsgAshfallResetSlot>(OnResetSlot);
 
         SubscribeLocalEvent<RoundRestartCleanupEvent>(OnRoundRestart);
+        SubscribeLocalEvent<PlayerSpawnCompleteEvent>(OnPlayerSpawnComplete);
+        SubscribeLocalEvent<MobStateChangedEvent>(OnMobStateChanged);
+        SubscribeLocalEvent<RoundEndMessageEvent>(OnRoundEnd);
     }
 
     private void OnRoundRestart(RoundRestartCleanupEvent ev)
@@ -169,6 +183,120 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
         var player = msg.MsgChannel.UserId;
         MovePrioritySlot(player, msg.SlotIndex, msg.TargetSlotIndex);
         SendPoolResponse(msg.MsgChannel, GetOrCreatePool(player));
+    }
+
+    private void OnLifepathSubmit(MsgAshfallLifepathSubmit msg)
+    {
+        var player = msg.MsgChannel.UserId;
+        var pool = GetOrCreatePool(player);
+        var slotIdx = msg.Choices.TargetSlotIndex;
+
+        if (slotIdx < 0 || slotIdx >= CharacterSlotCount)
+            return;
+
+        var existingSlot = pool.PrioritySlots[slotIdx];
+        if (existingSlot != null && existingSlot.Status == AshfallSlotStatus.OnShift)
+        {
+            _sawmill.Warning($"Player {player} attempted to modify slot {slotIdx} while on shift!");
+            SendPoolResponse(msg.MsgChannel, pool);
+            return;
+        }
+
+        var (candidate, structure) = _personGenerator.GenerateFromLifepath(msg.Choices, _random);
+
+        var jobId = !string.IsNullOrEmpty(msg.Choices.SelectedJob.Id)
+            ? msg.Choices.SelectedJob.Id
+            : (candidate.CompatibleJobs.Count > 0 ? candidate.CompatibleJobs[0].Id : "Passenger");
+
+        if (!candidate.CompatibleJobs.Contains(jobId))
+            candidate.CompatibleJobs.Insert(0, jobId);
+
+        pool.PrioritySlots[slotIdx] = new PrioritySlot
+        {
+            Candidate = candidate,
+            Job = jobId,
+            Status = AshfallSlotStatus.Ready,
+        };
+
+        pool.ConfirmedPriorityIndex = slotIdx;
+        SendPoolResponse(msg.MsgChannel, pool);
+    }
+
+    private void OnSelectSlot(MsgAshfallSelectSlot msg)
+    {
+        var player = msg.MsgChannel.UserId;
+        var pool = GetOrCreatePool(player);
+        if (msg.SlotIndex >= 0 && msg.SlotIndex < CharacterSlotCount && pool.PrioritySlots[msg.SlotIndex] != null)
+        {
+            pool.ConfirmedPriorityIndex = msg.SlotIndex;
+        }
+        SendPoolResponse(msg.MsgChannel, pool);
+    }
+
+    private void OnResetSlot(MsgAshfallResetSlot msg)
+    {
+        var player = msg.MsgChannel.UserId;
+        var pool = GetOrCreatePool(player);
+        if (msg.SlotIndex >= 0 && msg.SlotIndex < CharacterSlotCount)
+        {
+            var slot = pool.PrioritySlots[msg.SlotIndex];
+            if (slot != null && slot.Status == AshfallSlotStatus.OnShift)
+            {
+                _sawmill.Warning($"Player {player} attempted to reset slot {msg.SlotIndex} while on shift!");
+                SendPoolResponse(msg.MsgChannel, pool);
+                return;
+            }
+
+            pool.PrioritySlots[msg.SlotIndex] = null;
+            UpdateConfirmedIndex(pool);
+        }
+        SendPoolResponse(msg.MsgChannel, pool);
+    }
+
+    private void OnPlayerSpawnComplete(PlayerSpawnCompleteEvent ev)
+    {
+        if (ev.Player.UserId is { } userId && _playerPools.TryGetValue(userId, out var pool) &&
+            pool.TryGetConfirmedSlot(out var slot))
+        {
+            slot.Status = AshfallSlotStatus.OnShift;
+            slot.SpawnedMob = ev.Mob;
+        }
+    }
+
+    private void OnMobStateChanged(MobStateChangedEvent ev)
+    {
+        if (ev.NewMobState != MobState.Dead)
+            return;
+
+        foreach (var pool in _playerPools.Values)
+        {
+            for (var i = 0; i < pool.PrioritySlots.Length; i++)
+            {
+                var slot = pool.PrioritySlots[i];
+                if (slot != null && slot.SpawnedMob == ev.Target)
+                {
+                    slot.Status = AshfallSlotStatus.Dead;
+                    slot.SpawnedMob = null;
+                    break;
+                }
+            }
+        }
+    }
+
+    private void OnRoundEnd(RoundEndMessageEvent ev)
+    {
+        foreach (var pool in _playerPools.Values)
+        {
+            for (var i = 0; i < pool.PrioritySlots.Length; i++)
+            {
+                var slot = pool.PrioritySlots[i];
+                if (slot != null && slot.Status == AshfallSlotStatus.OnShift)
+                {
+                    slot.Status = AshfallSlotStatus.Evacuated;
+                    slot.SpawnedMob = null;
+                }
+            }
+        }
     }
 
     internal bool TryPin(NetUserId player, int slotIndex, Guid candidateId, string jobId, int poolRevision)
@@ -404,6 +532,7 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
                 SlotIndex = i,
                 Candidate = slot.Candidate,
                 JobId = slot.Job,
+                Status = slot.Status,
             });
         }
 

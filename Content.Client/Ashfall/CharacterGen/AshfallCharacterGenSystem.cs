@@ -1,4 +1,5 @@
 using Content.Shared.Ashfall.CharacterGen;
+using Content.Shared.Ashfall.CharacterGen.Lifepath;
 using Content.Shared.Roles;
 using Robust.Shared.Network;
 using Robust.Shared.Prototypes;
@@ -10,7 +11,7 @@ namespace Content.Client.Ashfall.CharacterGen;
 ///     One occupied priority slot as known to the client. The candidate DTO comes in full, so
 ///     pinned people keep their data, appearance and chosen job across pool rerolls.
 /// </summary>
-public sealed record AshfallClientPinnedSlot(int SlotIndex, Guid CandidateId, AshfallCharacterCandidate Candidate, ProtoId<JobPrototype> Job);
+public sealed record AshfallClientPinnedSlot(int SlotIndex, Guid CandidateId, AshfallCharacterCandidate Candidate, ProtoId<JobPrototype> Job, AshfallSlotStatus Status = AshfallSlotStatus.Ready);
 
 /// <summary>
 ///     Client-side system communicating with the server for candidate pool requests and selection.
@@ -62,7 +63,7 @@ public sealed partial class AshfallCharacterGenSystem : EntitySystem
         RemainingRefreshes = msg.RemainingRefreshes;
         ConfirmedSlotIndex = msg.ConfirmedSlotIndex;
         PinnedSlots = msg.PinnedSlots
-            .Select(s => new AshfallClientPinnedSlot(s.SlotIndex, s.Candidate.CandidateId, s.Candidate, new ProtoId<JobPrototype>(s.JobId)))
+            .Select(s => new AshfallClientPinnedSlot(s.SlotIndex, s.Candidate.CandidateId, s.Candidate, new ProtoId<JobPrototype>(s.JobId), s.Status))
             .ToList();
 
         PoolUpdated?.Invoke();
@@ -160,6 +161,30 @@ public sealed partial class AshfallCharacterGenSystem : EntitySystem
     {
         return PinnedSlots.FirstOrDefault(s => s.CandidateId == candidateId);
     }
+
+    public void SubmitLifepath(AshfallLifepathChoices choices)
+    {
+        if (!_netManager.IsConnected)
+            return;
+
+        _netManager.ClientSendMessage(new MsgAshfallLifepathSubmit { Choices = choices });
+    }
+
+    public void SelectSlot(int slotIndex)
+    {
+        if (!_netManager.IsConnected)
+            return;
+
+        _netManager.ClientSendMessage(new MsgAshfallSelectSlot { SlotIndex = slotIndex });
+    }
+
+    public void ResetSlot(int slotIndex)
+    {
+        if (!_netManager.IsConnected)
+            return;
+
+        _netManager.ClientSendMessage(new MsgAshfallResetSlot { SlotIndex = slotIndex });
+    }
 }
 
 /// <summary>
@@ -168,4 +193,5 @@ public sealed partial class AshfallCharacterGenSystem : EntitySystem
 public static class AshfallCharacterPoolConstants
 {
     public const int PrioritySlotCount = 5;
+    public const int CharacterSlotCount = 3;
 }

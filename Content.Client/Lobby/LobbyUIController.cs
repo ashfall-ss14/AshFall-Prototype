@@ -36,7 +36,8 @@ public sealed partial class LobbyUIController : UIController, IOnStateEntered<Lo
     private HumanoidProfileEditor? _profileEditor;
     public static event Action<HumanoidProfileEditor>? OnProfileEditorCreated;
     private CharacterSetupGuiSavePanel? _savePanel;
-    private Ashfall.CharacterGen.UI.AshfallPersonalFilesScreen? _personalFilesScreen;
+    private Ashfall.CharacterGen.UI.Lifepath.AshfallLobbySlotsScreen? _lobbySlotsScreen;
+    private Ashfall.CharacterGen.UI.Lifepath.AshfallLifepathScreen? _lifepathScreen;
 
     /// <summary>
     /// This is the characher preview panel in the chat. This should only update if their character updates.
@@ -156,8 +157,10 @@ public sealed partial class LobbyUIController : UIController, IOnStateEntered<Lo
             ashfallGen.PoolUpdated -= RefreshLobbyPreview;
         }
 
-        _personalFilesScreen?.Dispose();
-        _personalFilesScreen = null;
+        _lobbySlotsScreen?.Dispose();
+        _lobbySlotsScreen = null;
+        _lifepathScreen?.Dispose();
+        _lifepathScreen = null;
         _profileEditor?.Dispose();
         _characterSetup?.Dispose();
 
@@ -170,16 +173,59 @@ public sealed partial class LobbyUIController : UIController, IOnStateEntered<Lo
         if (_stateManager.CurrentState is not LobbyState lobby || lobby.Lobby == null)
             return;
 
-        if (_personalFilesScreen == null)
+        if (_lobbySlotsScreen == null)
         {
-            _personalFilesScreen = new Ashfall.CharacterGen.UI.AshfallPersonalFilesScreen();
-            _personalFilesScreen.BackToLobby += ClosePersonalFilesScreen;
-            lobby.Lobby.AddChild(_personalFilesScreen);
-            Robust.Client.UserInterface.Controls.LayoutContainer.SetAnchorAndMarginPreset(_personalFilesScreen, Robust.Client.UserInterface.Controls.LayoutContainer.LayoutPreset.Wide);
+            _lobbySlotsScreen = new Ashfall.CharacterGen.UI.Lifepath.AshfallLobbySlotsScreen();
+            _lobbySlotsScreen.BackToLobby += ClosePersonalFilesScreen;
+            _lobbySlotsScreen.StartLifepathRequested += OpenLifepathScreen;
+            lobby.Lobby.AddChild(_lobbySlotsScreen);
+            Robust.Client.UserInterface.Controls.LayoutContainer.SetAnchorAndMarginPreset(_lobbySlotsScreen, Robust.Client.UserInterface.Controls.LayoutContainer.LayoutPreset.Wide);
         }
 
         lobby.Lobby.MainContainer.Visible = false;
-        _personalFilesScreen.Visible = true;
+        _lobbySlotsScreen.Visible = true;
+    }
+
+    public void OpenLifepathScreen(int slotIndex)
+    {
+        if (_stateManager.CurrentState is not LobbyState lobby || lobby.Lobby == null)
+            return;
+
+        if (_lifepathScreen == null)
+        {
+            _lifepathScreen = new Ashfall.CharacterGen.UI.Lifepath.AshfallLifepathScreen();
+            _lifepathScreen.BackToLobby += CloseLifepathScreen;
+            _lifepathScreen.Finished += () =>
+            {
+                CloseLifepathScreen();
+                RefreshLobbyPreview();
+            };
+            lobby.Lobby.AddChild(_lifepathScreen);
+            Robust.Client.UserInterface.Controls.LayoutContainer.SetAnchorAndMarginPreset(_lifepathScreen, Robust.Client.UserInterface.Controls.LayoutContainer.LayoutPreset.Wide);
+        }
+
+        if (_lobbySlotsScreen != null)
+            _lobbySlotsScreen.Visible = false;
+
+        _lifepathScreen.Start(slotIndex);
+        _lifepathScreen.Visible = true;
+    }
+
+    public void CloseLifepathScreen()
+    {
+        if (_lifepathScreen != null)
+        {
+            _lifepathScreen.Visible = false;
+        }
+
+        if (_lobbySlotsScreen != null)
+        {
+            _lobbySlotsScreen.Visible = true;
+        }
+        else
+        {
+            OpenPersonalFilesScreen();
+        }
     }
 
     public void ClosePersonalFilesScreen()
@@ -187,16 +233,24 @@ public sealed partial class LobbyUIController : UIController, IOnStateEntered<Lo
         if (_stateManager.CurrentState is not LobbyState lobby || lobby.Lobby == null)
             return;
 
-        if (_personalFilesScreen != null)
+        if (_lifepathScreen != null)
         {
-            _personalFilesScreen.Visible = false;
-            if (_personalFilesScreen.Parent != null)
-                _personalFilesScreen.Parent.RemoveChild(_personalFilesScreen);
+            _lifepathScreen.Visible = false;
+            if (_lifepathScreen.Parent != null)
+                _lifepathScreen.Parent.RemoveChild(_lifepathScreen);
 
-            // Removing from the tree alone leaves the object (and its preview entities)
-            // alive; dispose it so closed screens can never react to pool updates.
-            _personalFilesScreen.Dispose();
-            _personalFilesScreen = null;
+            _lifepathScreen.Dispose();
+            _lifepathScreen = null;
+        }
+
+        if (_lobbySlotsScreen != null)
+        {
+            _lobbySlotsScreen.Visible = false;
+            if (_lobbySlotsScreen.Parent != null)
+                _lobbySlotsScreen.Parent.RemoveChild(_lobbySlotsScreen);
+
+            _lobbySlotsScreen.Dispose();
+            _lobbySlotsScreen = null;
         }
 
         lobby.Lobby.MainContainer.Visible = true;

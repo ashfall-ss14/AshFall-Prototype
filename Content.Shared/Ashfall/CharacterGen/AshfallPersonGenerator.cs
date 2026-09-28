@@ -1,6 +1,8 @@
 using Content.Shared.Ashfall.CharacterGen.Prototypes;
+using Content.Shared.Ashfall.CharacterGen.Lifepath;
 using Content.Shared.Dataset;
 using Content.Shared.Humanoid;
+using Content.Shared.Humanoid.Prototypes;
 using Content.Shared.Preferences;
 using Content.Shared.Roles;
 using Robust.Shared.Enums;
@@ -30,6 +32,10 @@ public sealed class AshfallPersonGenerator
     /// </summary>
     private static readonly HashSet<string> RetrainingExcludedFamilies = new() { "Command", "Media" };
     private const int AgeEducationStart = 17;
+
+    private static readonly ProtoId<CharacterGenConstraintsPrototype> DefaultHumanConstraints = "HumanDefaultConstraints";
+    private static readonly ProtoId<SpeciesPrototype> DefaultSpeciesHuman = "Human";
+    private static readonly ProtoId<AshfallCulturePrototype> DefaultCultureMashriqi = "Mashriqi";
 
     // Career event generation is reserved for the next phase of the rework; the pipeline layer
     // already exists and content can be enabled by flipping this flag once events are authored.
@@ -72,6 +78,153 @@ public sealed class AshfallPersonGenerator
             $"Ashfall candidate generation failed {MaxGenerationAttempts} times, falling back to a conservative structure. Last reason: {lastError?.Message}");
         return GenerateConservativeCandidate(constraints, random, targetDomain);
     }
+
+    /// <summary>
+    ///     Generates a coherent candidate strictly constrained by player's Guided Lifepath choices.
+    /// </summary>
+    public (AshfallCharacterCandidate Candidate, AshfallPersonStructure Structure) GenerateFromLifepath(
+        AshfallLifepathChoices choices,
+        IRobustRandom random)
+    {
+        _prototypes.TryIndex(choices.Step1Origin, out var step1);
+        ProtoId<SpeciesPrototype> speciesId = step1?.Species ?? DefaultSpeciesHuman;
+        var species = _prototypes.Index(speciesId);
+
+        ProtoId<AshfallCulturePrototype> cultureId = step1?.Culture ?? DefaultCultureMashriqi;
+        var culture = _prototypes.Index(cultureId);
+
+        CharacterGenConstraintsPrototype constraints;
+        if (_prototypes.TryIndex<CharacterGenConstraintsPrototype>($"{species.ID}DefaultConstraints", out var foundConstraints))
+        {
+            constraints = foundConstraints;
+        }
+        else
+        {
+            constraints = _prototypes.EnumeratePrototypes<CharacterGenConstraintsPrototype>()
+                .FirstOrDefault(c => c.Species == species.ID) ?? _prototypes.Index(DefaultHumanConstraints);
+        }
+
+        var age = choices.ExperienceTier switch
+        {
+            0 => random.Next(19, 25),
+            2 => random.Next(44, 60),
+            _ => random.Next(27, 40),
+        };
+
+        var sex = random.Pick(species.Sexes);
+        var gender = sex switch
+        {
+            Sex.Female => Gender.Female,
+            Sex.Male => Gender.Male,
+            _ => Gender.Epicene
+        };
+
+        var name = !string.IsNullOrWhiteSpace(choices.CustomName)
+            ? choices.CustomName
+            : GenerateName(culture, gender, random);
+
+        var (appearance, morphology) = _characterGenerator.GenerateAppearance(constraints, species, sex, age, random, culture);
+        var profile = _characterGenerator.BuildProfile(name, species, sex, gender, age, appearance, random);
+
+        var person = new AshfallPersonStructure
+        {
+            SpeciesId = species.ID,
+            Age = age,
+            Culture = culture.ID,
+        };
+        person.StructureTags.Add($"species-{species.ID.ToLowerInvariant()}");
+
+        var origin = PickOrigin(person.StructureTags, random);
+        person.Origin = origin.ID;
+        person.StructureTags.UnionWith(origin.ProvidedTags);
+        person.Birthplace = GenerateBirthplace(culture, origin, random);
+
+        _prototypes.TryIndex(choices.Step2Vector, out var step2);
+        var domain = step2?.Domain ?? "Engineering";
+
+        var education = PickEducation(age, person.StructureTags, domain, random);
+        person.Education = education.ID;
+        var educationYears = random.Next(education.YearsMin, education.YearsMax + 1);
+        person.AvailableCareerYears = Math.Max(0, age - (AgeEducationStart + educationYears));
+        person.StructureTags.Add($"domain-{education.Domain}");
+        person.StructureTags.UnionWith(education.ProvidedTags);
+
+        foreach (var (competency, experience) in education.BaseExperience)
+        {
+            person.AddExperience(competency, experience, AshfallProvenanceSource.Education, education.ID);
+        }
+
+        GenerateCareer(person, education, domain, random);
+
+        if (EnableCareerEvents)
+            GenerateCareerEvents(person, random);
+
+        PickCertifications(person, random);
+
+        person.LeadershipHistory = person.Career.Any(s => s.Leadership);
+        if (person.LeadershipHistory)
+            person.StructureTags.Add("leadership");
+
+        if (person.Competencies.Values.Any(c => c.Level >= AshfallCareerLevel.Senior))
+            person.StructureTags.Add("senior-career");
+
+        ComputeCurrentIdentity(person, education);
+        person.PrimaryDomain = domain;
+
+        if (person.Age < 28)
+            person.StructureTags.Add("age-young");
+        else if (person.Age >= 50)
+            person.StructureTags.Add("age-elder");
+
+        _prototypes.TryIndex(choices.Step3Flaw, out var step3);
+        if (step3?.Psychotype is { } ptId && _prototypes.TryIndex(ptId, out var indexedPt))
+        {
+            person.Psychotype = indexedPt.ID;
+            var ptTag = string.IsNullOrEmpty(indexedPt.Tag)
+                ? $"psychotype-{indexedPt.ID.ToLowerInvariant()}"
+                : indexedPt.Tag;
+            person.StructureTags.Add(ptTag);
+        }
+        else
+        {
+            var psychotype = PickPsychotype(person.StructureTags, random);
+            if (psychotype != null)
+            {
+                person.Psychotype = psychotype.ID;
+                var ptTag = string.IsNullOrEmpty(psychotype.Tag)
+                    ? $"psychotype-{psychotype.ID.ToLowerInvariant()}"
+                    : psychotype.Tag;
+                person.StructureTags.Add(ptTag);
+            }
+        }
+
+        var eligible = AshfallJobScorer.ScoreEligibleJobs(person, _prototypes);
+        if (!string.IsNullOrEmpty(choices.SelectedJob.Id) && !eligible.Contains(choices.SelectedJob))
+        {
+            eligible.Insert(0, choices.SelectedJob);
+        }
+        else if (!string.IsNullOrEmpty(choices.SelectedJob.Id) && eligible.Contains(choices.SelectedJob))
+        {
+            eligible.Remove(choices.SelectedJob);
+            eligible.Insert(0, choices.SelectedJob);
+        }
+
+        var candidate = AssembleCandidate(profile, person, sex, morphology, random, eligible);
+
+        _prototypes.TryIndex(choices.Step4Luggage, out var step4);
+        if (step4?.HookFragment is { } hookId && _prototypes.TryIndex(hookId, out var hookFrag))
+        {
+            var hookSection = candidate.Dossier.Sections.FirstOrDefault(s => s.Kind == "hook");
+            if (hookSection != null)
+            {
+                hookSection.Lines.Clear();
+                hookSection.Lines.Add(Loc.GetString(hookFrag.Text, ("sex", sex == Sex.Female ? "female" : "male")));
+            }
+        }
+
+        return (candidate, person);
+    }
+
 
     private (AshfallCharacterCandidate, AshfallPersonStructure) GenerateValidatedCandidate(
         CharacterGenConstraintsPrototype constraints,

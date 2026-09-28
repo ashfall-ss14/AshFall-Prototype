@@ -1,0 +1,31 @@
+<PanelContainer xmlns="https://spacestation14.io"
+                xmlns:graphics="clr-namespace:Robust.Client.Graphics;assembly=Robust.Client"
+                xmlns:lifepath="clr-namespace:Content.Client.Ashfall.CharacterGen.UI.Lifepath"
+                HorizontalExpand="True" VerticalExpand="True">
+    <PanelContainer.PanelOverride>
+        <graphics:StyleBoxFlat BackgroundColor="#0A0B0C" />
+    </PanelContainer.PanelOverride>
+
+    <BoxContainer Orientation="Vertical" Margin="24" SeparationOverride="16" HorizontalExpand="True" VerticalExpand="True">
+        <!-- Top Navigation Bar -->
+        <BoxContainer Orientation="Horizontal" HorizontalExpand="True" MinHeight="36">
+            <Button Name="BackButton" Text="{Loc 'ashfall-lifepath-back-button'}" StyleClasses="AshfallNavigationAction" MinWidth="130" />
+            <Control HorizontalExpand="True" />
+            <Label Text="{Loc 'ashfall-lobby-slots-title'}" StyleClasses="AshfallTerminalHeader" VAlign="Center" />
+            <Control HorizontalExpand="True" />
+            <Control MinWidth="130" />
+        </BoxContainer>
+
+        <Label Text="{Loc 'ashfall-lobby-slots-subtitle'}" StyleClasses="AshfallStatus" HorizontalAlignment="Center"
+               FontColorOverride="#757C85" Margin="0 -8 0 8" />
+
+        <!-- 3 Character Slots Container -->
+        <BoxContainer Name="SlotsContainer" Orientation="Horizontal"
+                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                      SeparationOverride="28" HorizontalExpand="True" VerticalExpand="True">
+            <lifepath:AshfallLobbySlotCard Name="Slot0" />
+            <lifepath:AshfallLobbySlotCard Name="Slot1" />
+            <lifepath:AshfallLobbySlotCard Name="Slot2" />
+        </BoxContainer>
+    </BoxContainer>
+</PanelContainer>
