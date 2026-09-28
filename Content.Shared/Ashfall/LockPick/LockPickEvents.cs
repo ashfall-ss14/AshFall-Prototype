@@ -9,4 +9,4 @@ public sealed partial class LockPickDoAfterEvent : SimpleDoAfterEvent
 }
 
 [ByRefEvent]
-public readonly record struct LockPickSuccessEvent(EntityUid User);
+public record struct LockPickSuccessEvent(EntityUid User, bool Success = false);

@@ -7,12 +7,14 @@ using Content.Shared.Interaction;
 using Content.Shared.Popups;
 using Content.Shared.Stacks;
 using Content.Shared.Tools.Systems;
+using Robust.Shared.Prototypes;
 using Robust.Shared.Serialization;
 
 namespace Content.Shared.Ashfall.ComplexRepairable;
 
 public sealed partial class ComplexRepairableSystem : EntitySystem
 {
+    [Dependency] private readonly IPrototypeManager _protoManager = default!;
     [Dependency] private SharedToolSystem _toolSystem = default!;
     [Dependency] private DamageableSystem _damageableSystem = default!;
     [Dependency] private SharedPopupSystem _popup = default!;
@@ -34,8 +36,14 @@ public sealed partial class ComplexRepairableSystem : EntitySystem
 
         if (damageTaken > 0 && ent.Comp.MaterialRepairTreshold > 0)
         {
-            ent.Comp.LeftToInsert += (damageTaken / ent.Comp.MaterialRepairTreshold).Int();
-            Dirty(ent);
+            ent.Comp.AccumulatedDamage += damageTaken;
+            var needed = (ent.Comp.AccumulatedDamage / ent.Comp.MaterialRepairTreshold).Int();
+            if (needed > 0)
+            {
+                ent.Comp.LeftToInsert += needed;
+                ent.Comp.AccumulatedDamage -= needed * ent.Comp.MaterialRepairTreshold;
+                Dirty(ent);
+            }
         }
     }
 
@@ -56,6 +64,13 @@ public sealed partial class ComplexRepairableSystem : EntitySystem
         {
             _damageableSystem.SetAllDamage(ent.Owner, 0);
             _adminLogger.Add(LogType.Healed, $"{ToPrettyString(args.User):user} repaired {ToPrettyString(ent.Owner):target} to full integrity");
+        }
+
+        if (_damageableSystem.GetTotalDamage(ent.Owner) == 0)
+        {
+            ent.Comp.LeftToInsert = 0;
+            ent.Comp.AccumulatedDamage = FixedPoint2.Zero;
+            Dirty(ent);
         }
 
         var msg = Loc.GetString("ashfall-complex-repairable-success", ("target", ent.Owner));
@@ -79,25 +94,31 @@ public sealed partial class ComplexRepairableSystem : EntitySystem
             if (TryComp<StackComponent>(args.Used, out var stackComp) && stackComp.StackTypeId == ent.Comp.Material)
             {
                 int toBeUsed = Math.Min(stackComp.Count, ent.Comp.LeftToInsert);
-                _stack.TryUse((args.Used, stackComp), toBeUsed);
+                if (toBeUsed > 0 && _stack.TryUse((args.Used, stackComp), toBeUsed))
+                {
+                    ent.Comp.LeftToInsert -= toBeUsed;
+                    Dirty(ent);
 
-                ent.Comp.LeftToInsert -= toBeUsed;
-                Dirty(ent);
+                    var msg = Loc.GetString("ashfall-complex-repairable-material-success",
+                        ("target", ent.Owner),
+                        ("left", ent.Comp.LeftToInsert));
+                    _popup.PopupEntity(msg, ent.Owner, args.User);
 
-                var msg = Loc.GetString("ashfall-complex-repairable-material-success",
-                    ("target", ent.Owner),
-                    ("left", ent.Comp.LeftToInsert));
-                _popup.PopupEntity(msg, ent.Owner, args.User);
-
-                args.Handled = true;
-                return;
+                    args.Handled = true;
+                    return;
+                }
             }
+
+            var materialName = _protoManager.TryIndex(ent.Comp.Material, out var stackProto)
+                ? Loc.GetString(stackProto.Name)
+                : ent.Comp.Material.Id;
 
             var needMsg = Loc.GetString("ashfall-complex-repairable-material-needed",
                 ("target", ent.Owner),
                 ("left", ent.Comp.LeftToInsert),
-                ("material", ent.Comp.Material.Id));
+                ("material", materialName));
             _popup.PopupEntity(needMsg, ent.Owner, args.User);
+            args.Handled = true;
             return;
         }
 

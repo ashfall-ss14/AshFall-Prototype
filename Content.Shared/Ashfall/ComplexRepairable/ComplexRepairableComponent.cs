@@ -38,6 +38,12 @@ public sealed partial class ComplexRepairableComponent : Component
     public int LeftToInsert;
 
     /// <summary>
+    /// Damage accumulated towards the next required material sheet.
+    /// </summary>
+    [DataField, AutoNetworkedField]
+    public FixedPoint2 AccumulatedDamage;
+
+    /// <summary>
     /// For every this much damage taken, one piece of material must be inserted.
     /// </summary>
     [DataField("materialRepairTreshold"), AutoNetworkedField]

@@ -13,11 +13,14 @@
     fixtures:
       fix1:
         shape:
-          !type:PhysShapeAabb {}
+          !type:PhysShapeAabb
+          bounds: "-0.45,-0.45,0.45,0.45"
+        density: 55
         mask:
-        - FullTileMask
+        - TableMask
         layer:
-        - WallLayer
+        - TableLayer
+  - type: Climbable
   - type: Barricade
     minHitChance: 0.0
     maxHitChance: 0.75
@@ -44,9 +47,9 @@
           !type:PhysShapeAabb
           bounds: "-0.5,-0.5,0.5,-0.36"
         mask:
-        - FullTileMask
+        - TableMask
         layer:
-        - WallLayer
+        - TableLayer
 
 - type: entity
   id: AshfallBaseBarricadeFloor
@@ -67,9 +70,9 @@
           !type:PhysShapeAabb
           bounds: "-0.5,-0.5,0.5,-0.2"
         mask:
-        - FullTileMask
+        - TableMask
         layer:
-        - WallLayer
+        - TableLayer
 
 # Full tile barricades
 - type: entity

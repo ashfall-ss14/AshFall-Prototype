@@ -46,6 +46,7 @@ public sealed class AshfallSurvivalTests : GameTest
             entMan.EventBus.RaiseLocalEvent(target, ref ev);
 
             Assert.That(lockComp.Locked, Is.False);
+            Assert.That(ev.Success, Is.True);
 
             entMan.DeleteEntity(target);
         });
@@ -102,12 +103,21 @@ public sealed class AshfallSurvivalTests : GameTest
 
             Assert.That(complex.LeftToInsert, Is.EqualTo(0));
 
-            // Deal 100 brute damage ignoring resistances (below 120 destruction threshold)
-            var damageSpec = new DamageSpecifier(protoMan.Index(BluntDamage), FixedPoint2.New(100));
-            server.System<DamageableSystem>().TryChangeDamage(entity, damageSpec, ignoreResistances: true);
+            // Deal small hits to verify accumulation (30 damage + 30 damage)
+            var smallHit = new DamageSpecifier(protoMan.Index(BluntDamage), FixedPoint2.New(30));
+            server.System<DamageableSystem>().TryChangeDamage(entity, smallHit, ignoreResistances: true);
+            Assert.That(complex.LeftToInsert, Is.EqualTo(0));
+            Assert.That(complex.AccumulatedDamage, Is.EqualTo(FixedPoint2.New(30)));
 
-            // 100 / 50 = 2 materials needed
+            server.System<DamageableSystem>().TryChangeDamage(entity, smallHit, ignoreResistances: true);
+            Assert.That(complex.LeftToInsert, Is.EqualTo(1));
+            Assert.That(complex.AccumulatedDamage, Is.EqualTo(FixedPoint2.New(10)));
+
+            // Deal another 40 damage: 10 + 40 = 50 -> 1 more needed, 0 remainder
+            var secondHit = new DamageSpecifier(protoMan.Index(BluntDamage), FixedPoint2.New(40));
+            server.System<DamageableSystem>().TryChangeDamage(entity, secondHit, ignoreResistances: true);
             Assert.That(complex.LeftToInsert, Is.EqualTo(2));
+            Assert.That(complex.AccumulatedDamage, Is.EqualTo(FixedPoint2.Zero));
 
             entMan.DeleteEntity(entity);
         });

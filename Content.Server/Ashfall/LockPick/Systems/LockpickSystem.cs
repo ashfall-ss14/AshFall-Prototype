@@ -38,6 +38,9 @@ public sealed partial class LockpickSystem : EntitySystem
         if (!TryComp<TargetLockPickComponent>(target, out var targetLockPick))
             return;
 
+        if (TryComp<DoorComponent>(target, out var door) && door.State == DoorState.Welded)
+            return;
+
         args.Handled = true;
 
         var duration = targetLockPick.Time * ent.Comp.SpeedModifier;
@@ -75,7 +78,14 @@ public sealed partial class LockpickSystem : EntitySystem
         var ev = new LockPickSuccessEvent(args.User);
         RaiseLocalEvent(target, ref ev);
 
-        _popup.PopupEntity(Loc.GetString("ashfall-lockpick-success"), args.User, args.User, PopupType.Medium);
+        if (ev.Success)
+        {
+            _popup.PopupEntity(Loc.GetString("ashfall-lockpick-success"), args.User, args.User, PopupType.Medium);
+        }
+        else
+        {
+            _popup.PopupEntity(Loc.GetString("ashfall-lockpick-failed"), args.User, args.User, PopupType.SmallCaution);
+        }
     }
 
     private void OnLockPickSuccess(Entity<TargetLockPickComponent> target, ref LockPickSuccessEvent args)
@@ -86,17 +96,23 @@ public sealed partial class LockpickSystem : EntitySystem
         if (TryComp<LockComponent>(uid, out var lockComp) && lockComp.Locked)
         {
             _lock.Unlock(uid, args.User, lockComp);
+            args.Success = true;
         }
 
         // Handle door bolts and opening
         if (TryComp<DoorBoltComponent>(uid, out var boltComp) && boltComp.BoltsDown)
         {
             _door.SetBoltsDown((uid, boltComp), false, args.User);
+            args.Success = true;
         }
 
         if (TryComp<DoorComponent>(uid, out var doorComp))
         {
-            _door.TryOpen(uid, doorComp, args.User);
+            // Bypass access checks when opening picked door
+            if (_door.TryOpen(uid, doorComp, user: null))
+            {
+                args.Success = true;
+            }
         }
     }
 }
