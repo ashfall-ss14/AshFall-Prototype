@@ -533,19 +533,21 @@ public sealed partial class SolidFuelSystem : EntitySystem
 
         _sources.Clear();
         var sources = EntityQueryEnumerator<IgnitionSourceComponent>();
-        while (sources.MoveNext(out var uid, out _))
-            _sources.Add(uid);
-
-        var cigarettes = EntityQueryEnumerator<SmokableComponent>();
-        while (cigarettes.MoveNext(out var uid, out _))
-            _sources.Add(uid);
-
-        var fires = EntityQueryEnumerator<FlammableComponent>();
-        while (fires.MoveNext(out var uid, out var fire))
+        while (sources.MoveNext(out var uid, out var ignition))
         {
-            if (fire.OnFire)
+            if (ignition.Ignited)
                 _sources.Add(uid);
         }
+
+        var cigarettes = EntityQueryEnumerator<SmokableComponent>();
+        while (cigarettes.MoveNext(out var uid, out var smoke))
+        {
+            if (smoke.State == SmokableState.Lit)
+                _sources.Add(uid);
+        }
+
+        foreach (var uid in _flammable.ActiveFires)
+            _sources.Add(uid);
 
         foreach (var source in _sources)
             HeatNearby(source);

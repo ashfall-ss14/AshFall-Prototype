@@ -102,7 +102,8 @@ public sealed partial class FireVisualizerSystem : VisualizerSystem<FireVisualsC
             component.CurrentDisplacement = fireDisplacement;
         }
 
-        component.LightEntity ??= Spawn(null, new EntityCoordinates(uid, default));
+        if (component.LightEntity == null || Deleted(component.LightEntity.Value))
+            component.LightEntity = Spawn(null, new EntityCoordinates(uid, default));
         var light = EnsureComp<PointLightComponent>(component.LightEntity.Value);
 
         _lights.SetColor(component.LightEntity.Value, component.LightColor, light);

@@ -31,6 +31,8 @@ public sealed partial class FlammableParticleSystem : EntitySystem
 
     private readonly Dictionary<EntityUid, FireState> _active = new();
 
+    public IReadOnlyCollection<EntityUid> ActiveBurningEntities => _active.Keys;
+
     public override void Initialize()
     {
         base.Initialize();

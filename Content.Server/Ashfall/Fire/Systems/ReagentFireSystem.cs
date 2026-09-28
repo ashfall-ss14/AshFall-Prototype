@@ -24,6 +24,8 @@ using Content.Shared.Interaction;
 using Content.Shared.Inventory;
 using Content.Shared.Mobs.Components;
 using Content.Shared.Popups;
+using Content.Shared.StepTrigger.Components;
+using Content.Shared.StepTrigger.Systems;
 using Robust.Server.GameObjects;
 using Robust.Shared.Audio;
 using Robust.Shared.Audio.Systems;
@@ -58,6 +60,8 @@ public sealed partial class ReagentFireSystem : EntitySystem
     [Dependency] private SharedContainerSystem _containers = default!;
     [Dependency] private SharedPopupSystem _popups = default!;
     [Dependency] private SmokeSystem _smoke = default!;
+    [Dependency] private FlammableSystem _flammable = default!;
+    [Dependency] private StepTriggerSystem _stepTrigger = default!;
 
     private readonly HashSet<EntityUid> _nearbySmoke = new();
     private static readonly EntProtoId FireSteamPrototype = "AshfallFireSteam";
@@ -96,6 +100,8 @@ public sealed partial class ReagentFireSystem : EntitySystem
     {
         base.Initialize();
 
+        UpdatesBefore.Add(typeof(FlammableSystem));
+
         Subs.CVar(_cfg, AshfallFireCVars.PuddleFireDamageMultiplier, value => _puddleDamageMultiplier = value, true);
         Subs.CVar(_cfg, AshfallFireCVars.FireProtectionEffectiveness, value => _fireProtectionEffectiveness = value, true);
         Subs.CVar(_cfg, AshfallFireCVars.VolumeScalingEnabled, value => _volumeScalingEnabled = value, true);
@@ -107,6 +113,8 @@ public sealed partial class ReagentFireSystem : EntitySystem
         SubscribeLocalEvent<ReagentPuddleFireComponent, ComponentStartup>(OnFireStartup);
         SubscribeLocalEvent<ReagentPuddleFireComponent, ComponentShutdown>(OnFireShutdown);
         SubscribeLocalEvent<ReagentPuddleFireComponent, ExtinguishEvent>(OnPuddleExtinguish);
+        SubscribeLocalEvent<ReagentPuddleFireComponent, StepTriggeredOnEvent>(OnStepTriggeredOn);
+        SubscribeLocalEvent<ReagentPuddleFireComponent, StepTriggeredOffEvent>(OnStepTriggeredOff);
         SubscribeLocalEvent<PuddleComponent, ExtinguishEvent>(OnPuddleCompExtinguish);
         SubscribeLocalEvent<PuddleComponent, InteractUsingEvent>(OnPuddleInteractUsing);
         SubscribeLocalEvent<PuddleComponent, TileFireEvent>(OnPuddleTileFire);
@@ -115,6 +123,56 @@ public sealed partial class ReagentFireSystem : EntitySystem
     private void OnPuddleExtinguish(Entity<ReagentPuddleFireComponent> ent, ref ExtinguishEvent args)
     {
         Extinguish(ent.Owner);
+    }
+
+    private void OnStepTriggeredOn(Entity<ReagentPuddleFireComponent> ent, ref StepTriggeredOnEvent args)
+    {
+        if (!ent.Comp.OnFire)
+            return;
+
+        BurnEntity(ent.Owner, args.Tripper, ent.Comp);
+    }
+
+    private void OnStepTriggeredOff(Entity<ReagentPuddleFireComponent> ent, ref StepTriggeredOffEvent args)
+    {
+        if (!ent.Comp.OnFire)
+            return;
+
+        BurnEntity(ent.Owner, args.Tripper, ent.Comp);
+    }
+
+    private void BurnEntity(EntityUid puddleUid, EntityUid victim, ReagentPuddleFireComponent fireComp)
+    {
+        if (TerminatingOrDeleted(victim))
+            return;
+
+        var effectiveFlammability = GetEffectiveFlammability(fireComp);
+
+        if (_damageableQuery.HasComp(victim))
+        {
+            var damageAmount = FixedPoint2.New(4f * effectiveFlammability * _puddleDamageMultiplier);
+            var damage = new DamageSpecifier();
+            damage.DamageDict.Add(HeatDamage, damageAmount);
+
+            var ignoreResistances = !_mobStateQuery.HasComp(victim);
+            var appliedDamage = damage;
+            if (!ignoreResistances)
+            {
+                var reduction = Math.Clamp(GetFireProtectionReduction(victim) * _fireProtectionEffectiveness, 0f, 1f);
+                appliedDamage = damage * (1f - reduction);
+            }
+
+            _damageable.TryChangeDamage(victim, appliedDamage, ignoreResistances: ignoreResistances);
+        }
+
+        if (TryComp<FlammableComponent>(victim, out var flammable))
+        {
+            _flammable.AdjustFireStacks(victim, 1.5f * effectiveFlammability, flammable);
+            _flammable.Ignite(victim, puddleUid, flammable);
+        }
+
+        var fireEvent = new TileFireEvent(Atmospherics.T0C + (100f * effectiveFlammability), 50f * effectiveFlammability);
+        RaiseLocalEvent(victim, ref fireEvent);
     }
 
     private void OnPuddleCompExtinguish(Entity<PuddleComponent> ent, ref ExtinguishEvent args)
@@ -361,6 +419,10 @@ public sealed partial class ReagentFireSystem : EntitySystem
             fireComp.FireEffectEntity = fireEnt;
         }
 
+        var stepTrigger = EnsureComp<StepTriggerComponent>(uid);
+        _stepTrigger.SetRequiredTriggerSpeed(uid, 0f, stepTrigger);
+        _stepTrigger.SetIntersectRatio(uid, 0.1f, stepTrigger);
+
         if (fireComp.FireEffectEntity is { } fireEffect)
         {
             _appearance.SetData(fireEffect, ReagentPuddleFireVisuals.FireState, fireComp.FireState);
@@ -455,10 +517,9 @@ public sealed partial class ReagentFireSystem : EntitySystem
             }
         }
 
-        var flamQuery = EntityQueryEnumerator<FlammableComponent, TransformComponent>();
-        while (flamQuery.MoveNext(out var uid, out var flammable, out var xform))
+        foreach (var uid in _flammable.ActiveFires)
         {
-            if (!flammable.OnFire || _containers.IsEntityOrParentInContainer(uid))
+            if (!_xformQuery.TryComp(uid, out var xform) || _containers.IsEntityOrParentInContainer(uid))
                 continue;
 
             _puddles.Clear();
@@ -663,11 +724,11 @@ public sealed partial class ReagentFireSystem : EntitySystem
 
         var damageAmount = FixedPoint2.New(2f * effectiveFlammability * _puddleDamageMultiplier);
         var totalDamage = new DamageSpecifier();
-        totalDamage.DamageDict.Add(StructuralDamage, damageAmount);
         totalDamage.DamageDict.Add(HeatDamage, damageAmount);
 
         var fireVolume = 50f * effectiveFlammability;
-        var fireEvent = new TileFireEvent(tileMix?.Temperature ?? (Atmospherics.T0C + (50f * effectiveFlammability)), fireVolume);
+        var fireTemp = tileMix?.Temperature ?? (Atmospherics.T0C + (100f * effectiveFlammability));
+        var fireEvent = new TileFireEvent(fireTemp, fireVolume);
 
         foreach (var ent in _standingEntities)
         {
@@ -690,12 +751,23 @@ public sealed partial class ReagentFireSystem : EntitySystem
                     var reduction = Math.Clamp(GetFireProtectionReduction(ent) * _fireProtectionEffectiveness, 0f, 1f);
                     appliedDamage = totalDamage * (1f - reduction);
                 }
+                else
+                {
+                    appliedDamage = new DamageSpecifier(totalDamage);
+                    appliedDamage.DamageDict.Add(StructuralDamage, damageAmount);
+                }
 
                 _damageable.TryChangeDamage(ent, appliedDamage, ignoreResistances: ignoreResistances);
             }
 
             if (TerminatingOrDeleted(ent))
                 continue;
+
+            if (TryComp<FlammableComponent>(ent, out var flammable))
+            {
+                _flammable.AdjustFireStacks(ent, 1f * effectiveFlammability, flammable);
+                _flammable.Ignite(ent, uid, flammable);
+            }
 
             RaiseLocalEvent(ent, ref fireEvent);
         }

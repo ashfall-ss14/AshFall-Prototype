@@ -59,6 +59,9 @@ namespace Content.Server.Atmos.EntitySystems
         private static readonly TimeSpan UpdateTime = TimeSpan.FromSeconds(1);
 
         private readonly Dictionary<Entity<FlammableComponent>, float> _fireEvents = new();
+        private readonly HashSet<EntityUid> _activeFires = new();
+
+        public IReadOnlySet<EntityUid> ActiveFires => _activeFires;
 
         private const int FirestackEnergy = 37500; // joules release when on fire
 
@@ -67,6 +70,7 @@ namespace Content.Server.Atmos.EntitySystems
             UpdatesAfter.Add(typeof(AtmosphereSystem));
 
             SubscribeLocalEvent<FlammableComponent, MapInitEvent>(OnMapInit);
+            SubscribeLocalEvent<FlammableComponent, ComponentShutdown>(OnShutdown);
             SubscribeLocalEvent<FlammableComponent, InteractUsingEvent>(OnInteractUsing);
             SubscribeLocalEvent<FlammableComponent, StartCollideEvent>(OnCollide);
             SubscribeLocalEvent<FlammableComponent, IsHotEvent>(OnIsHot);
@@ -135,9 +139,17 @@ namespace Content.Server.Atmos.EntitySystems
                 RemCompDeferred<IgniteOnCollideComponent>(uid);
         }
 
+        private void OnShutdown(EntityUid uid, FlammableComponent component, ComponentShutdown args)
+        {
+            _activeFires.Remove(uid);
+        }
+
         private void OnMapInit(EntityUid uid, FlammableComponent component, MapInitEvent args)
         {
             component.NextUpdate = _timing.CurTime + UpdateTime;
+
+            if (component.OnFire)
+                _activeFires.Add(uid);
 
             // Sets up a fixture for flammable collisions.
             // TODO: Should this be generalized into a general non-hard 'effects' fixture or something? I can't think of other use cases for it.
@@ -270,7 +282,7 @@ namespace Content.Server.Atmos.EntitySystems
 
         public void UpdateAppearance(EntityUid uid, FlammableComponent? flammable = null, AppearanceComponent? appearance = null)
         {
-            if (!Resolve(uid, ref flammable, ref appearance))
+            if (!Resolve(uid, ref flammable, ref appearance, false))
                 return;
 
             _appearance.SetData(uid, FireVisuals.OnFire, flammable.OnFire, appearance);
@@ -310,6 +322,11 @@ namespace Content.Server.Atmos.EntitySystems
             else
             {
                 flammable.OnFire |= ignite;
+                if (flammable.OnFire)
+                    _activeFires.Add(uid);
+                else
+                    _activeFires.Remove(uid);
+
                 UpdateAppearance(uid, flammable);
             }
         }
@@ -346,6 +363,7 @@ namespace Content.Server.Atmos.EntitySystems
             _adminLogger.Add(LogType.Flammable, $"{ToPrettyString(ent):entity} stopped being on fire damage");
             ent.Comp.OnFire = false;
             ent.Comp.FireStacks = 0;
+            _activeFires.Remove(ent.Owner);
 
             _ignitionSourceSystem.SetIgnited(ent.Owner, false);
 
@@ -377,6 +395,7 @@ namespace Content.Server.Atmos.EntitySystems
                 else
                     _adminLogger.Add(LogType.Flammable, $"{ToPrettyString(uid):target} set on fire by {ToPrettyString(ignitionSource):actor}");
                 flammable.OnFire = true;
+                _activeFires.Add(uid);
 
                 var extinguished = new IgnitedEvent();
                 RaiseLocalEvent(uid, ref extinguished);
@@ -454,6 +473,7 @@ namespace Content.Server.Atmos.EntitySystems
                 flammable.NextUpdate += UpdateTime;
 
                 // Check if we finished resisting.
+                var wasResisting = flammable.Resisting;
                 if (curTime > flammable.ResistCompleteTime)
                     flammable.ResistCompleteTime = null;
 
@@ -496,7 +516,7 @@ namespace Content.Server.Atmos.EntitySystems
 
                     _damageableSystem.TryChangeDamage(uid, flammable.Damage * flammable.FireStacks * ev.Multiplier, interruptsDoAfters: false);
 
-                    AdjustFireStacks(uid, flammable.FirestackFade * (flammable.Resisting ? 15f : 1f), flammable, flammable.OnFire);
+                    AdjustFireStacks(uid, flammable.FirestackFade * (wasResisting ? 15f : 1f), flammable, flammable.OnFire);
                 }
                 else
                 {

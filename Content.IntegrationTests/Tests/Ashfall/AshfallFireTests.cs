@@ -77,4 +77,36 @@ public sealed class AshfallFireTests : GameTest
 
         await pair.CleanReturnAsync();
     }
+
+    [Test]
+    public async Task TestFlammableActiveFiresTracking()
+    {
+        await using var pair = await PoolManager.GetServerClient();
+        var server = pair.Server;
+
+        await server.WaitPost(() =>
+        {
+            var entMan = server.EntMan;
+            var flammableSys = server.System<Content.Server.Atmos.EntitySystems.FlammableSystem>();
+
+            var entity = entMan.SpawnEntity(null, Robust.Shared.Map.MapCoordinates.Nullspace);
+            entMan.AddComponent<AppearanceComponent>(entity);
+            var comp = entMan.AddComponent<Content.Shared.Atmos.Components.FlammableComponent>(entity);
+            comp.FireStacks = 5f;
+
+            Assert.That(flammableSys.ActiveFires.Contains(entity), Is.False);
+
+            flammableSys.Ignite(entity, entity, comp);
+            Assert.That(flammableSys.ActiveFires.Contains(entity), Is.True);
+            Assert.That(comp.OnFire, Is.True);
+
+            flammableSys.TryExtinguish((entity, comp));
+            Assert.That(flammableSys.ActiveFires.Contains(entity), Is.False);
+            Assert.That(comp.OnFire, Is.False);
+
+            entMan.DeleteEntity(entity);
+        });
+
+        await pair.CleanReturnAsync();
+    }
 }

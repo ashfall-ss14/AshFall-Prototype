@@ -243,8 +243,7 @@ public sealed partial class SmokeSystem : EntitySystem
         if (!Resolve(smokeUid, ref component))
             return;
 
-        if (!_solutionContainerSystem.ResolveSolution(smokeUid, SmokeComponent.SolutionName, ref component.Solution, out var solution) ||
-            solution.Contents.Count == 0)
+        if (!_solutionContainerSystem.ResolveSolution(smokeUid, SmokeComponent.SolutionName, ref component.Solution, out var solution))
         {
             return;
         }
@@ -258,13 +257,21 @@ public sealed partial class SmokeSystem : EntitySystem
         if (!Resolve(smokeUid, ref component))
             return;
 
+        var blockIngestion = _internals.AreInternalsWorking(entity);
+
+        if (!blockIngestion && !_mobState.IsDead(entity) && _random.Prob(0.35f))
+        {
+            _chat.TryEmoteWithChat(entity, "Cough", ignoreActionBlocker: true);
+        }
+
+        if (solution.Contents.Count == 0)
+            return;
+
         if (!TryComp<BloodstreamComponent>(entity, out var bloodstream))
             return;
 
         if (!_solutionContainerSystem.ResolveSolution(entity, bloodstream.BloodSolutionName, ref bloodstream.BloodSolution, out var bloodSolution) || bloodSolution.AvailableVolume <= 0)
             return;
-
-        var blockIngestion = _internals.AreInternalsWorking(entity);
 
         var cloneSolution = solution.Clone();
         var availableTransfer = FixedPoint2.Min(cloneSolution.Volume, component.TransferRate);
@@ -283,11 +290,6 @@ public sealed partial class SmokeSystem : EntitySystem
 
         if (blockIngestion)
             return;
-
-        if (!_mobState.IsDead(entity) && _random.Prob(0.35f))
-        {
-            _chat.TryEmoteWithChat(entity, "Cough", ignoreActionBlocker: true);
-        }
 
         if (_blood.TryAddToBloodstream((entity, bloodstream), transferSolution))
         {

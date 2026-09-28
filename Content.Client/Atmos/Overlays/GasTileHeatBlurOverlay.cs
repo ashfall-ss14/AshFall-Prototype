@@ -100,15 +100,6 @@ public sealed partial class GasTileHeatBlurOverlay : Overlay
                 name: nameof(GasTileHeatBlurOverlaySystem));
         }
 
-        if (res.HeatBlurTarget?.Texture.Size != target.Size)
-        {
-            res.HeatBlurTarget?.Dispose();
-            res.HeatBlurTarget = _clyde.CreateRenderTarget(
-                target.Size,
-                new RenderTargetFormatParameters(RenderTargetColorFormat.Rgba8Srgb),
-                name: $"{nameof(GasTileHeatBlurOverlaySystem)}-blur");
-        }
-
         var overlayQuery = _entManager.GetEntityQuery<GasTileOverlayComponent>();
 
         args.WorldHandle.UseShader(_proto.Index(UnshadedShader).Instance());
@@ -137,19 +128,6 @@ public sealed partial class GasTileHeatBlurOverlay : Overlay
                     var gridEntToWorld = _xformSys.GetWorldMatrix(grid.Owner);
                     var gridEntToViewportLocal = gridEntToWorld * worldToViewportLocal;
 
-                    if (!Matrix3x2.Invert(gridEntToViewportLocal, out var viewportLocalToGridEnt))
-                        continue;
-
-                    var uvToUi = Matrix3Helpers.CreateScale(res.HeatTarget.Size.X, -res.HeatTarget.Size.Y);
-                    var uvToGridEnt = uvToUi * viewportLocalToGridEnt;
-
-                    // Because we want the actual distortion to be calculated based on the grid coordinates*, we need
-                    // to pass a matrix transformation to go from the viewport coordinates to grid coordinates.
-                    //   * (why? because otherwise the effect would shimmer like crazy as you moved around, think
-                    //      moving a piece of warped glass above a picture instead of placing the warped glass on the
-                    //      paper and moving them together)
-                    _shader.SetParameter("grid_ent_from_viewport_local", uvToGridEnt);
-
                     // Draw commands (like DrawRect) will be using grid coordinates from here
                     worldHandle.SetTransform(gridEntToViewportLocal);
 
@@ -166,6 +144,10 @@ public sealed partial class GasTileHeatBlurOverlay : Overlay
                     // for each tile and its gas --->
                     foreach (var chunk in comp.Chunks.Values)
                     {
+                        var chunkBox = Box2i.FromDimensions(chunk.Origin, new Vector2i(8, 8));
+                        if (!localBounds.Intersects(chunkBox))
+                            continue;
+
                         var enumerator = new GasChunkEnumerator(chunk);
 
                         while (enumerator.MoveNext(out var tileGas))
@@ -196,22 +178,34 @@ public sealed partial class GasTileHeatBlurOverlay : Overlay
                 // Draw heat distortion for all burning entities and puddles in world space
                 worldHandle.SetTransform(worldToViewportLocal);
 
-                var flamQuery = _entManager.EntityQueryEnumerator<FlammableComponent, TransformComponent>();
-                while (flamQuery.MoveNext(out var uid, out var flammable, out var xform))
+                if (_entManager.TrySystem<Content.Client.Ashfall.Particles.Visuals.FlammableParticleSystem>(out var particleSystem))
                 {
-                    if (!flammable.OnFire || xform.MapID != mapId)
-                        continue;
+                    var xformQuery = _entManager.GetEntityQuery<TransformComponent>();
+                    var appearanceQuery = _entManager.GetEntityQuery<AppearanceComponent>();
+                    var appearanceSys = _entManager.System<Robust.Client.GameObjects.AppearanceSystem>();
 
-                    var worldPos = _xformSys.GetWorldPosition(xform);
-                    if (!worldBounds.Contains(worldPos))
-                        continue;
+                    foreach (var burningUid in particleSystem.ActiveBurningEntities)
+                    {
+                        if (!xformQuery.TryComp(burningUid, out var xform) || xform.MapID != mapId)
+                            continue;
 
-                    anyDistortion = true;
-                    var strength = Math.Clamp(flammable.FireStacks / 4f, 0.4f, 1.0f);
-                    worldHandle.DrawTextureRect(
-                        _heatGradientTexture,
-                        Box2.CenteredAround(worldPos, new Vector2(2.2f, 2.2f)),
-                        new Color(strength, 0f, 0f));
+                        var worldPos = _xformSys.GetWorldPosition(xform);
+                        if (!worldBounds.Contains(worldPos))
+                            continue;
+
+                        anyDistortion = true;
+                        var stacks = 1f;
+                        if (appearanceQuery.TryComp(burningUid, out var appearance))
+                        {
+                            appearanceSys.TryGetData(burningUid, FireVisuals.FireStacks, out stacks, appearance);
+                        }
+
+                        var strength = Math.Clamp(stacks / 4f, 0.4f, 1.0f);
+                        worldHandle.DrawTextureRect(
+                            _heatGradientTexture,
+                            Box2.CenteredAround(worldPos, new Vector2(2.2f, 2.2f)),
+                            new Color(strength, 0f, 0f));
+                    }
                 }
 
                 var puddleQuery = _entManager.EntityQueryEnumerator<ReagentPuddleFireEffectComponent, TransformComponent>();
@@ -249,7 +243,7 @@ public sealed partial class GasTileHeatBlurOverlay : Overlay
     {
         var res = _resources.GetForViewport(args.Viewport, static _ => new CachedResources());
 
-        if (ScreenTexture is null || res.HeatTarget is null || res.HeatBlurTarget is null)
+        if (ScreenTexture is null || res.HeatTarget is null)
             return;
 
         _shader.SetParameter("SCREEN_TEXTURE", ScreenTexture);
@@ -292,12 +286,10 @@ public sealed partial class GasTileHeatBlurOverlay : Overlay
     internal sealed class CachedResources : IDisposable
     {
         public IRenderTexture? HeatTarget;
-        public IRenderTexture? HeatBlurTarget;
 
         public void Dispose()
         {
             HeatTarget?.Dispose();
-            HeatBlurTarget?.Dispose();
         }
     }
 }
