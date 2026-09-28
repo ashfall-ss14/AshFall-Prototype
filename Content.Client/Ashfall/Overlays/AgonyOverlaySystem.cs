@@ -13,10 +13,10 @@ namespace Content.Client.Ashfall.Overlays;
 
 public sealed partial class AgonyOverlaySystem : EntitySystem
 {
-    [Dependency] private readonly IOverlayManager _overlayManager = default!;
-    [Dependency] private readonly IPlayerManager _player = default!;
-    [Dependency] private readonly IRobustRandom _random = default!;
-    [Dependency] private readonly CameraRecoilSystem _recoil = default!;
+    [Dependency] private IOverlayManager _overlayManager = default!;
+    [Dependency] private IPlayerManager _player = default!;
+    [Dependency] private IRobustRandom _random = default!;
+    [Dependency] private CameraRecoilSystem _recoil = default!;
 
     private AgonyOverlay _overlay = default!;
     private float _lastPainLevel;
