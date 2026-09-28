@@ -1,4 +1,6 @@
 # Guided Lifepath options in Disco Elysium style.
+# Pools are larger than the offered set: the client shuffles each step and
+# offers a random subset, so two candidates rarely share a full sheet.
 
 # ==============================================================================
 # Step 1: Biological Origin & Species («Где вы сделали свой первый вдох?»)
@@ -9,7 +11,7 @@
   step: 1
   title: ashfall-lifepath-step1-kassik-title
   description: ashfall-lifepath-step1-kassik-desc
-  indicatorColor: "#C2633C"
+  indicatorColor: "#B55A38"
   species: Reptilian
   culture: UnathiClan
 
@@ -18,7 +20,7 @@
   step: 1
   title: ashfall-lifepath-step1-kirwani-title
   description: ashfall-lifepath-step1-kirwani-desc
-  indicatorColor: "#42A5B8"
+  indicatorColor: "#4A828A"
   species: Moth
   culture: LuamFlutter
 
@@ -27,7 +29,7 @@
   step: 1
   title: ashfall-lifepath-step1-damascus-title
   description: ashfall-lifepath-step1-damascus-desc
-  indicatorColor: "#7D838A"
+  indicatorColor: "#6A727A"
   species: Human
   culture: Mashriqi
 
@@ -40,16 +42,25 @@
   step: 2
   title: ashfall-lifepath-step2-engi-title
   description: ashfall-lifepath-step2-engi-desc
-  indicatorColor: "#D48944"
+  indicatorColor: "#B87333"
   domain: Engineering
   previewJob: StationEngineer
+
+- type: ashfallLifepathOption
+  id: LifepathVectorAtmos
+  step: 2
+  title: ashfall-lifepath-step2-atmos-title
+  description: ashfall-lifepath-step2-atmos-desc
+  indicatorColor: "#8C6E4E"
+  domain: Engineering
+  previewJob: AtmosphericTechnician
 
 - type: ashfallLifepathOption
   id: LifepathVectorMedical
   step: 2
   title: ashfall-lifepath-step2-med-title
   description: ashfall-lifepath-step2-med-desc
-  indicatorColor: "#3B82A6"
+  indicatorColor: "#3B6E7D"
   domain: Medical
   previewJob: MedicalDoctor
 
@@ -58,7 +69,7 @@
   step: 2
   title: ashfall-lifepath-step2-sec-title
   description: ashfall-lifepath-step2-sec-desc
-  indicatorColor: "#B83C3C"
+  indicatorColor: "#8E3636"
   domain: Security
   previewJob: SecurityOfficer
 
@@ -67,12 +78,23 @@
   step: 2
   title: ashfall-lifepath-step2-serv-title
   description: ashfall-lifepath-step2-serv-desc
-  indicatorColor: "#3FA85B"
+  indicatorColor: "#4B6B52"
   domain: Service
   previewJob: Janitor
 
+- type: ashfallLifepathOption
+  id: LifepathVectorCook
+  step: 2
+  title: ashfall-lifepath-step2-cook-title
+  description: ashfall-lifepath-step2-cook-desc
+  indicatorColor: "#7D623C"
+  domain: Service
+  previewJob: Chef
+
 # ==============================================================================
-# Step 3: Inner Flaw («В критический момент моё слабое место — это...»)
+# Step 3: Inner Flaw («Что отказывает первым в критический момент?»)
+# Every flaw is wired to a psychotype; the generator biases demeanor,
+# stress responses and quirks from it. All eight psychotypes covered.
 # ==============================================================================
 
 - type: ashfallLifepathOption
@@ -80,7 +102,7 @@
   step: 3
   title: ashfall-lifepath-step3-pedant-title
   description: ashfall-lifepath-step3-pedant-desc
-  indicatorColor: "#8A9099"
+  indicatorColor: "#727780"
   psychotype: AshfallPsychotypePedant
   stressWeaknessLoc: ashfall-lifepath-step3-pedant-weakness
 
@@ -89,7 +111,7 @@
   step: 3
   title: ashfall-lifepath-step3-daredevil-title
   description: ashfall-lifepath-step3-daredevil-desc
-  indicatorColor: "#D97724"
+  indicatorColor: "#A85B24"
   psychotype: AshfallPsychotypeDaredevil
   stressWeaknessLoc: ashfall-lifepath-step3-daredevil-weakness
 
@@ -98,7 +120,7 @@
   step: 3
   title: ashfall-lifepath-step3-paranoid-title
   description: ashfall-lifepath-step3-paranoid-desc
-  indicatorColor: "#8353A8"
+  indicatorColor: "#684873"
   psychotype: AshfallPsychotypeParanoid
   stressWeaknessLoc: ashfall-lifepath-step3-paranoid-weakness
 
@@ -107,12 +129,49 @@
   step: 3
   title: ashfall-lifepath-step3-burnout-title
   description: ashfall-lifepath-step3-burnout-desc
-  indicatorColor: "#2B4C7E"
+  indicatorColor: "#304357"
   psychotype: AshfallPsychotypeBurnout
   stressWeaknessLoc: ashfall-lifepath-step3-burnout-weakness
 
+- type: ashfallLifepathOption
+  id: LifepathFlawStoic
+  step: 3
+  title: ashfall-lifepath-step3-stoic-title
+  description: ashfall-lifepath-step3-stoic-desc
+  indicatorColor: "#50756F"
+  psychotype: AshfallPsychotypeStoic
+  stressWeaknessLoc: ashfall-lifepath-step3-stoic-weakness
+
+- type: ashfallLifepathOption
+  id: LifepathFlawPragmatist
+  step: 3
+  title: ashfall-lifepath-step3-pragmatist-title
+  description: ashfall-lifepath-step3-pragmatist-desc
+  indicatorColor: "#8A6D35"
+  psychotype: AshfallPsychotypePragmatist
+  stressWeaknessLoc: ashfall-lifepath-step3-pragmatist-weakness
+
+- type: ashfallLifepathOption
+  id: LifepathFlawIdealist
+  step: 3
+  title: ashfall-lifepath-step3-idealist-title
+  description: ashfall-lifepath-step3-idealist-desc
+  indicatorColor: "#647D4C"
+  psychotype: AshfallPsychotypeIdealist
+  stressWeaknessLoc: ashfall-lifepath-step3-idealist-weakness
+
+- type: ashfallLifepathOption
+  id: LifepathFlawDiplomat
+  step: 3
+  title: ashfall-lifepath-step3-diplomat-title
+  description: ashfall-lifepath-step3-diplomat-desc
+  indicatorColor: "#3F7587"
+  psychotype: AshfallPsychotypeDiplomat
+  stressWeaknessLoc: ashfall-lifepath-step3-diplomat-weakness
+
 # ==============================================================================
 # Step 4: Personal Luggage & Hook («Что зашито у вас в подкладке перед криосном?»)
+# Every item feeds its hookFragment into the dossier's hook section.
 # ==============================================================================
 
 - type: ashfallLifepathOption
@@ -120,7 +179,7 @@
   step: 4
   title: ashfall-lifepath-step4-dogtag-title
   description: ashfall-lifepath-step4-dogtag-desc
-  indicatorColor: "#C2633C"
+  indicatorColor: "#A65838"
   hookFragment: AshfallPersonalHook1
   quirkDescription: ashfall-lifepath-step4-dogtag-quirk
   accessoryId: ClothingNeckBronzeheartMedal
@@ -130,7 +189,7 @@
   step: 4
   title: ashfall-lifepath-step4-chip-title
   description: ashfall-lifepath-step4-chip-desc
-  indicatorColor: "#42A5B8"
+  indicatorColor: "#42727A"
   hookFragment: AshfallPersonalHook2
   quirkDescription: ashfall-lifepath-step4-chip-quirk
   accessoryId: ClothingHandsGlovesColorBlack
@@ -140,7 +199,7 @@
   step: 4
   title: ashfall-lifepath-step4-key-title
   description: ashfall-lifepath-step4-key-desc
-  indicatorColor: "#D48944"
+  indicatorColor: "#A6753C"
   hookFragment: AshfallPersonalHook3
   quirkDescription: ashfall-lifepath-step4-key-quirk
   accessoryId: ClothingEyesEyepatch
@@ -150,7 +209,43 @@
   step: 4
   title: ashfall-lifepath-step4-cigs-title
   description: ashfall-lifepath-step4-cigs-desc
-  indicatorColor: "#7D838A"
+  indicatorColor: "#6B7075"
   hookFragment: AshfallPersonalHook4
   quirkDescription: ashfall-lifepath-step4-cigs-quirk
   accessoryId: ClothingMaskCigarette
+
+- type: ashfallLifepathOption
+  id: LifepathLuggageFlask
+  step: 4
+  title: ashfall-lifepath-step4-flask-title
+  description: ashfall-lifepath-step4-flask-desc
+  indicatorColor: "#5E6E4F"
+  hookFragment: AshfallPersonalHook5
+  quirkDescription: ashfall-lifepath-step4-flask-quirk
+
+- type: ashfallLifepathOption
+  id: LifepathLuggageNameList
+  step: 4
+  title: ashfall-lifepath-step4-namelist-title
+  description: ashfall-lifepath-step4-namelist-desc
+  indicatorColor: "#436E7D"
+  hookFragment: AshfallPersonalHook6
+  quirkDescription: ashfall-lifepath-step4-namelist-quirk
+
+- type: ashfallLifepathOption
+  id: LifepathLuggageLetter
+  step: 4
+  title: ashfall-lifepath-step4-letter-title
+  description: ashfall-lifepath-step4-letter-desc
+  indicatorColor: "#8F7238"
+  hookFragment: AshfallPersonalHook7
+  quirkDescription: ashfall-lifepath-step4-letter-quirk
+
+- type: ashfallLifepathOption
+  id: LifepathLuggageDeadStationCard
+  step: 4
+  title: ashfall-lifepath-step4-card-title
+  description: ashfall-lifepath-step4-card-desc
+  indicatorColor: "#6B4978"
+  hookFragment: AshfallPersonalHook8
+  quirkDescription: ashfall-lifepath-step4-card-quirk

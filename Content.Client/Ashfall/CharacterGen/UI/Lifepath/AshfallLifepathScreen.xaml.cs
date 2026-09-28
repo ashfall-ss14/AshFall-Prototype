@@ -1,6 +1,8 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Content.Client.Message;
+using Ashfall.Client.Stylesheets;
 using Content.Shared.Ashfall.CharacterGen;
 using Content.Shared.Ashfall.CharacterGen.Lifepath;
 using Content.Shared.Ashfall.CharacterGen.Prototypes;
@@ -18,6 +20,7 @@ using Robust.Client.UserInterface.XAML;
 using Robust.Shared.Maths;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
+using Robust.Shared.Timing;
 
 namespace Content.Client.Ashfall.CharacterGen.UI.Lifepath;
 
@@ -27,32 +30,37 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
     [Dependency] private IPrototypeManager _prototypes = default!;
     [Dependency] private IRobustRandom _random = default!;
 
+    private const int TotalSteps = 5;
+    private const float StaggerDelay = 0.07f;
+    private const float StaggerDuration = 0.22f;
+    private const float CollapsedAlpha = 0.35f;
+    private const float RevealDuration = 0.25f;
+
     private readonly AshfallCharacterGenSystem _genSystem;
     private readonly AshfallCharacterGenerator _characterGenerator;
     private readonly AshfallPersonGenerator _personGenerator;
 
     private Button BackButton => this.FindControl<Button>("BackButton");
-    private Label StepIndicatorLabel => this.FindControl<Label>("StepIndicatorLabel");
+    private BoxContainer ProgressRail => this.FindControl<BoxContainer>("ProgressRail");
+    private Label StepCounterLabel => this.FindControl<Label>("StepCounterLabel");
+    private PanelContainer SpriteFrame => this.FindControl<PanelContainer>("SpriteFrame");
     private ProfileFullBodySpriteView PreviewSprite => this.FindControl<ProfileFullBodySpriteView>("PreviewSprite");
-    private Label LiveSpeciesLabel => this.FindControl<Label>("LiveSpeciesLabel");
-    private Label LiveVectorLabel => this.FindControl<Label>("LiveVectorLabel");
-    private Label LiveFlawLabel => this.FindControl<Label>("LiveFlawLabel");
-    private Label LiveLuggageLabel => this.FindControl<Label>("LiveLuggageLabel");
 
-    private Label PromptHeaderLabel => this.FindControl<Label>("PromptHeaderLabel");
+    private Label CharacterNameLabel => this.FindControl<Label>("CharacterNameLabel");
+    private Label CharacterBioLabel => this.FindControl<Label>("CharacterBioLabel");
+    private Label CharacterJobTag => this.FindControl<Label>("CharacterJobTag");
+    private BoxContainer ChronicleContainer => this.FindControl<BoxContainer>("ChronicleContainer");
+
     private Label PromptQuestionLabel => this.FindControl<Label>("PromptQuestionLabel");
 
-    private ScrollContainer OptionsScroll => this.FindControl<ScrollContainer>("OptionsScroll");
+    private BoxContainer ContentColumn => this.FindControl<BoxContainer>("ContentColumn");
     private BoxContainer OptionsContainer => this.FindControl<BoxContainer>("OptionsContainer");
 
-    private BoxContainer FinalSummaryContainer => this.FindControl<BoxContainer>("FinalSummaryContainer");
-    private Label SummaryTitle => this.FindControl<Label>("SummaryTitle");
-    private LineEdit NameInput => this.FindControl<LineEdit>("NameInput");
+    private BoxContainer DossierContainer => this.FindControl<BoxContainer>("DossierContainer");
+    private BoxContainer DossierSections => this.FindControl<BoxContainer>("DossierSections");
     private Button RerollNameButton => this.FindControl<Button>("RerollNameButton");
     private OptionButton ExperienceOption => this.FindControl<OptionButton>("ExperienceOption");
     private OptionButton JobOption => this.FindControl<OptionButton>("JobOption");
-    private Label SummaryFlawLabel => this.FindControl<Label>("SummaryFlawLabel");
-    private Label SummaryLuggageLabel => this.FindControl<Label>("SummaryLuggageLabel");
     private Button ConfirmCandidateButton => this.FindControl<Button>("ConfirmCandidateButton");
 
     private int _targetSlot;
@@ -60,8 +68,29 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
     private AshfallLifepathChoices _choices = new();
 
     private HumanoidCharacterProfile? _currentProfile;
+    private string _candidateName = string.Empty;
 
     private readonly List<ProtoId<JobPrototype>> _departmentJobs = new();
+
+    private readonly PanelContainer[] _railSegments = new PanelContainer[TotalSteps];
+
+    private float _staggerTime;
+    private readonly List<(Control Card, float Delay)> _staggerCards = new();
+
+    private float _contentFadeTime;
+    private bool _contentFading;
+
+    // Accordion state: only titles are visible at first; one click opens the row
+    // (description drops in, the rest dim), a second click confirms the choice.
+    private sealed record OptionRow(ContainerButton Button, Label Title, Label Desc, PanelContainer Bar);
+
+    private readonly List<OptionRow> _optionRows = new();
+    private int _expandedRow = -1;
+    private float _revealTime;
+    private readonly List<(Control Control, float Delay)> _revealing = new();
+
+    // Slow mystic sway: the portrait drifts, the role bars breathe out of phase.
+    private float _swayTime;
 
     public event Action? BackToLobby;
     public event Action? Finished;
@@ -83,6 +112,8 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         ExperienceOption.OnItemSelected += OnExperienceChanged;
         JobOption.OnItemSelected += OnJobSelected;
         ConfirmCandidateButton.OnPressed += _ => ConfirmCandidate();
+
+        BuildProgressRail();
     }
 
     public void Start(int slotIndex)
@@ -91,129 +122,120 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         _choices = new AshfallLifepathChoices { TargetSlotIndex = slotIndex };
         _currentStep = 1;
         _currentProfile = null;
+        _candidateName = string.Empty;
 
-        LiveSpeciesLabel.Text = string.Empty;
-        LiveVectorLabel.Text = string.Empty;
-        LiveFlawLabel.Text = string.Empty;
-        LiveLuggageLabel.Text = string.Empty;
+        CharacterNameLabel.Text = "—";
+        CharacterBioLabel.Text = Loc.GetString("ashfall-lifepath-default-candidate-name");
+        CharacterJobTag.Text = string.Empty;
+        RerollNameButton.Visible = false;
+        ChronicleContainer.RemoveAllChildren();
 
+        SpriteFrame.Visible = false;
         PreviewSprite.ClearPreview();
         LoadStep(1);
+    }
+
+    private void BuildProgressRail()
+    {
+        for (var i = 0; i < TotalSteps; i++)
+        {
+            var segment = new PanelContainer { SetSize = new Vector2(26, 3) };
+            segment.PanelOverride = new StyleBoxFlat { BackgroundColor = Color.FromHex("#232528") };
+            ProgressRail.AddChild(segment);
+            _railSegments[i] = segment;
+        }
+    }
+
+    private void UpdateProgressRail()
+    {
+        for (var i = 0; i < TotalSteps; i++)
+        {
+            var color = i + 1 < _currentStep
+                ? Color.FromHex("#8A5C33")
+                : i + 1 == _currentStep
+                    ? AshfallStylesheet.PrimaryAmber
+                    : Color.FromHex("#232528");
+            ((StyleBoxFlat) _railSegments[i].PanelOverride!).BackgroundColor = color;
+        }
+
+        StepCounterLabel.Text = Loc.GetString("ashfall-lifepath-step-counter", ("step", _currentStep), ("total", TotalSteps));
     }
 
     private void LoadStep(int step)
     {
         _currentStep = step;
+        UpdateProgressRail();
 
-        switch (step)
-        {
-            case 1:
-                StepIndicatorLabel.Text = Loc.GetString("ashfall-lifepath-header-step1");
-                PromptHeaderLabel.Text = Loc.GetString("ashfall-lifepath-header-step1");
-                PromptQuestionLabel.Text = Loc.GetString("ashfall-lifepath-prompt-step1");
-                break;
-            case 2:
-                StepIndicatorLabel.Text = Loc.GetString("ashfall-lifepath-header-step2");
-                PromptHeaderLabel.Text = Loc.GetString("ashfall-lifepath-header-step2");
-                PromptQuestionLabel.Text = Loc.GetString("ashfall-lifepath-prompt-step2");
-                break;
-            case 3:
-                StepIndicatorLabel.Text = Loc.GetString("ashfall-lifepath-header-step3");
-                PromptHeaderLabel.Text = Loc.GetString("ashfall-lifepath-header-step3");
-                PromptQuestionLabel.Text = Loc.GetString("ashfall-lifepath-prompt-step3");
-                break;
-            case 4:
-                StepIndicatorLabel.Text = Loc.GetString("ashfall-lifepath-header-step4");
-                PromptHeaderLabel.Text = Loc.GetString("ashfall-lifepath-header-step4");
-                PromptQuestionLabel.Text = Loc.GetString("ashfall-lifepath-prompt-step4");
-                break;
-            case 5:
-                StepIndicatorLabel.Text = Loc.GetString("ashfall-lifepath-header-step5");
-                PromptHeaderLabel.Text = Loc.GetString("ashfall-lifepath-header-step5");
-                PromptQuestionLabel.Text = Loc.GetString("ashfall-lifepath-prompt-step5");
-                break;
-        }
+        PromptQuestionLabel.Text = Loc.GetString($"ashfall-lifepath-prompt-step{step}");
 
         if (step <= 4)
         {
-            OptionsScroll.Visible = true;
-            FinalSummaryContainer.Visible = false;
+            OptionsContainer.Visible = true;
+            DossierContainer.Visible = false;
             PopulateOptions(step);
         }
         else
         {
-            OptionsScroll.Visible = false;
-            FinalSummaryContainer.Visible = true;
-            PopulateFinalSummary();
+            OptionsContainer.Visible = false;
+            DossierContainer.Visible = true;
+            PopulateDossier();
         }
+
+        // Page-level fade on every step change, like a site navigating between sections.
+        _contentFadeTime = 0f;
+        ContentColumn.Modulate = Color.FromHex("#FFFFFF00");
+        _contentFading = true;
     }
 
     private void PopulateOptions(int step)
     {
         OptionsContainer.RemoveAllChildren();
+        _optionRows.Clear();
+        _staggerCards.Clear();
+        _staggerTime = 0f;
+        _expandedRow = -1;
+        _revealing.Clear();
 
         var options = _prototypes.EnumeratePrototypes<AshfallLifepathOptionPrototype>()
             .Where(o => o.Step == step)
             .ToList();
+        _random.Shuffle(options);
 
-        foreach (var opt in options)
+        // Larger pools than the offered set: reruns rarely share a full sheet.
+        if (step > 1)
+            options = options.Take(4).ToList();
+
+        for (var i = 0; i < options.Count; i++)
         {
-            var card = CreateOptionCard(opt);
-            OptionsContainer.AddChild(card);
+            var row = CreateOptionRow(i + 1, options[i]);
+            row.Button.Modulate = Color.FromHex("#FFFFFF00");
+            _staggerCards.Add((row.Button, i * StaggerDelay));
+            _optionRows.Add(row);
+            OptionsContainer.AddChild(row.Button);
         }
     }
 
-    private Control CreateOptionCard(AshfallLifepathOptionPrototype opt)
+    private OptionRow CreateOptionRow(int index, AshfallLifepathOptionPrototype opt)
     {
-        var panel = new PanelContainer
+        var button = new ContainerButton
         {
+            StyleClasses = { ContainerButton.StyleClassButton, AshfallDossierSheetlet.OptionCardClass },
             HorizontalExpand = true,
-            MinHeight = 68,
-        };
-
-        var idleBorder = Color.FromHex("#2C2E33");
-        var hoverBorder = opt.IndicatorColor;
-
-        var boxStyle = new StyleBoxFlat
-        {
-            BackgroundColor = Color.FromHex("#151618"),
-            BorderColor = idleBorder,
-            BorderThickness = new Thickness(1),
-        };
-        panel.PanelOverride = boxStyle;
-
-        var button = new Button
-        {
-            StyleClasses = { "ButtonOpenBoth" },
-            HorizontalExpand = true,
-            VerticalExpand = true,
-        };
-
-        button.OnPressed += _ => SelectOption(opt);
-        button.OnMouseEntered += _ =>
-        {
-            boxStyle.BorderColor = hoverBorder;
-            boxStyle.BackgroundColor = Color.FromHex("#201E1B");
-        };
-        button.OnMouseExited += _ =>
-        {
-            boxStyle.BorderColor = idleBorder;
-            boxStyle.BackgroundColor = Color.FromHex("#151618");
         };
 
         var row = new BoxContainer
         {
             Orientation = BoxContainer.LayoutOrientation.Horizontal,
-            Margin = new Thickness(10, 8),
-            SeparationOverride = 12,
+            SeparationOverride = 16,
             HorizontalExpand = true,
         };
 
-        // Left color indicator bar
+        // Role-colored vertical accent bar
         var bar = new PanelContainer
         {
-            SetSize = new Vector2(5, 50),
-            VerticalAlignment = VAlignment.Center,
+            SetSize = new Vector2(3, 24),
+            VerticalAlignment = VAlignment.Top,
+            Margin = new Thickness(0, 3, 0, 0),
             PanelOverride = new StyleBoxFlat { BackgroundColor = opt.IndicatorColor },
         };
         row.AddChild(bar);
@@ -221,31 +243,70 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         var col = new BoxContainer
         {
             Orientation = BoxContainer.LayoutOrientation.Vertical,
-            SeparationOverride = 4,
+            SeparationOverride = 6,
             HorizontalExpand = true,
         };
 
         var titleLabel = new Label
         {
             Text = Loc.GetString(opt.Title),
-            FontColorOverride = Color.FromHex("#E6E8E6"),
-            StyleClasses = { "FancyWindowTitle" },
+            StyleClasses = { AshfallDossierSheetlet.OptionTitleClass },
         };
         col.AddChild(titleLabel);
 
+        // Hidden until the row is opened; then it drops in like a memory fragment.
         var descLabel = new Label
         {
             Text = Loc.GetString(opt.Description),
-            FontColorOverride = Color.FromHex("#878C87"),
-            ClipText = true,
+            StyleClasses = { AshfallDossierSheetlet.SerifClass },
+            Visible = false,
+            Margin = new Thickness(0, 2, 0, 0),
         };
         col.AddChild(descLabel);
 
         row.AddChild(col);
         button.AddChild(row);
-        panel.AddChild(button);
 
-        return panel;
+        var captured = opt;
+        button.OnPressed += _ => OnRowPressed(index - 1, captured);
+
+        return new OptionRow(button, titleLabel, descLabel, bar);
+    }
+
+    private void OnRowPressed(int index, AshfallLifepathOptionPrototype opt)
+    {
+        if (_expandedRow != index)
+        {
+            ExpandRow(index);
+            return;
+        }
+
+        // Second press on the open row confirms the choice.
+        SelectOption(opt);
+    }
+
+    private void ExpandRow(int index)
+    {
+        _expandedRow = index;
+        _revealTime = 0f;
+        _revealing.Clear();
+
+        for (var i = 0; i < _optionRows.Count; i++)
+        {
+            var row = _optionRows[i];
+            var expanded = i == index;
+
+            if (expanded && !row.Desc.Visible)
+            {
+                row.Desc.Visible = true;
+                row.Desc.Modulate = Color.FromHex("#FFFFFF00");
+                _revealing.Add((row.Desc, 0f));
+            }
+            else if (!expanded)
+            {
+                row.Desc.Visible = false;
+            }
+        }
     }
 
     private void SelectOption(AshfallLifepathOptionPrototype opt)
@@ -254,29 +315,163 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         {
             case 1:
                 _choices.Step1Origin = opt.ID;
-                LiveSpeciesLabel.Text = Loc.GetString(opt.Title);
                 UpdateSpriteStep1(opt);
+                AddChronicleEntry("ashfall-lifepath-ledger-origin", opt);
                 LoadStep(2);
                 break;
 
             case 2:
                 _choices.Step2Vector = opt.ID;
-                LiveVectorLabel.Text = Loc.GetString(opt.Title);
                 UpdateSpriteStep2(opt);
+                AddChronicleEntry("ashfall-lifepath-ledger-vector", opt);
                 LoadStep(3);
                 break;
 
             case 3:
                 _choices.Step3Flaw = opt.ID;
-                LiveFlawLabel.Text = Loc.GetString(opt.Title);
+                AddChronicleEntry("ashfall-lifepath-ledger-flaw", opt);
                 LoadStep(4);
                 break;
 
             case 4:
                 _choices.Step4Luggage = opt.ID;
-                LiveLuggageLabel.Text = Loc.GetString(opt.Title);
+                AddChronicleEntry("ashfall-lifepath-ledger-luggage", opt);
                 LoadStep(5);
                 break;
+        }
+    }
+
+    private void AddChronicleEntry(string stepKeyLoc, AshfallLifepathOptionPrototype opt)
+    {
+        var row = new BoxContainer
+        {
+            Orientation = BoxContainer.LayoutOrientation.Horizontal,
+            SeparationOverride = 10,
+            HorizontalExpand = true,
+        };
+
+        var bar = new PanelContainer
+        {
+            SetSize = new Vector2(3, 18),
+            VerticalAlignment = VAlignment.Center,
+            PanelOverride = new StyleBoxFlat { BackgroundColor = opt.IndicatorColor },
+        };
+        row.AddChild(bar);
+
+        var col = new BoxContainer
+        {
+            Orientation = BoxContainer.LayoutOrientation.Vertical,
+            SeparationOverride = 1,
+            HorizontalExpand = true,
+        };
+
+        var stepLabel = new Label
+        {
+            Text = Loc.GetString(stepKeyLoc),
+            StyleClasses = { AshfallDossierSheetlet.LedgerStepClass },
+        };
+        col.AddChild(stepLabel);
+
+        var titleLabel = new Label
+        {
+            Text = Loc.GetString(opt.Title),
+            StyleClasses = { AshfallDossierSheetlet.LedgerValueClass },
+            ClipText = true,
+        };
+        col.AddChild(titleLabel);
+
+        row.AddChild(col);
+        ChronicleContainer.AddChild(row);
+    }
+
+    protected override void FrameUpdate(FrameEventArgs args)
+    {
+        base.FrameUpdate(args);
+        _swayTime += args.DeltaSeconds;
+
+        if (_contentFading)
+        {
+            _contentFadeTime += args.DeltaSeconds;
+            var fade = Math.Clamp(_contentFadeTime / 0.3f, 0f, 1f);
+            var eased = 1f - MathF.Pow(1f - fade, 3);
+            ContentColumn.Modulate = new Color(1f, 1f, 1f, eased);
+            if (fade >= 1f)
+            {
+                ContentColumn.Modulate = Color.White;
+                _contentFading = false;
+            }
+        }
+
+        // Entry stagger for option rows.
+        var staggering = _staggerCards.Count > 0;
+        if (staggering)
+        {
+            _staggerTime += args.DeltaSeconds;
+
+            for (var i = _staggerCards.Count - 1; i >= 0; i--)
+            {
+                var (card, delay) = _staggerCards[i];
+                if (_staggerTime < delay)
+                    continue;
+
+                var progress = Math.Clamp((_staggerTime - delay) / StaggerDuration, 0f, 1f);
+                var easedCard = 1f - MathF.Pow(1f - progress, 3);
+                card.Modulate = new Color(1f, 1f, 1f, easedCard);
+
+                if (progress >= 1f)
+                {
+                    card.Modulate = Color.White;
+                    _staggerCards.RemoveAt(i);
+                }
+            }
+        }
+
+        // Dropdown reveal of the expanded description.
+        if (_revealing.Count > 0)
+        {
+            _revealTime += args.DeltaSeconds;
+
+            for (var i = _revealing.Count - 1; i >= 0; i--)
+            {
+                var (control, delay) = _revealing[i];
+                if (_revealTime < delay)
+                    continue;
+
+                var progress = Math.Clamp((_revealTime - delay) / RevealDuration, 0f, 1f);
+                var easedReveal = 1f - MathF.Pow(1f - progress, 3);
+                control.Modulate = new Color(1f, 1f, 1f, easedReveal);
+
+                if (progress >= 1f)
+                {
+                    control.Modulate = Color.White;
+                    _revealing.RemoveAt(i);
+                }
+            }
+        }
+
+        // Accordion dimming: unopened rows fade back so the open one owns the screen.
+        if (!staggering)
+        {
+            for (var i = 0; i < _optionRows.Count; i++)
+            {
+                var row = _optionRows[i];
+                var target = _expandedRow < 0 || _expandedRow == i ? 1f : CollapsedAlpha;
+                var alpha = MathHelper.Lerp(row.Button.Modulate.A, target, Math.Clamp(args.DeltaSeconds * 10f, 0f, 1f));
+                row.Button.Modulate = new Color(1f, 1f, 1f, alpha);
+            }
+        }
+
+        // Mystic sway: the portrait drifts on a slow sine, role bars breathe out of phase.
+        if (SpriteFrame.Visible)
+        {
+            var bob = MathF.Sin(_swayTime * 1.4f) * 2.5f;
+            PreviewSprite.Margin = new Thickness(12, 12 + bob, 12, 12);
+        }
+
+        for (var i = 0; i < _optionRows.Count; i++)
+        {
+            var breath = 0.72f + 0.28f * (0.5f + 0.5f * MathF.Sin(_swayTime * 1.8f + i * 1.1f));
+            _optionRows[i].Bar.Modulate = new Color(1f, 1f, 1f, breath);
         }
     }
 
@@ -311,10 +506,21 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         var name = culture != null
             ? _random.Pick(_prototypes.Index<DatasetPrototype>(gender == Gender.Female ? culture.FirstNamesFemale : culture.FirstNamesMale).Values) + " " +
               _random.Pick(_prototypes.Index<DatasetPrototype>(culture.LastNames).Values)
-            : "Кандидат";
+            : Loc.GetString("ashfall-lifepath-default-candidate-name");
 
         _currentProfile = _characterGenerator.BuildProfile(name, species, sex, gender, age, appearance, _random);
+        _candidateName = name;
+        CharacterNameLabel.Text = _candidateName;
+
+        var speciesName = _prototypes.TryIndex<SpeciesPrototype>(_currentProfile.Species, out var sp)
+            ? Loc.GetString(sp.Name)
+            : string.Empty;
+        var cultureName = culture != null ? Loc.GetString(culture.Label) : string.Empty;
+        CharacterBioLabel.Text = string.IsNullOrEmpty(cultureName) ? speciesName : $"{speciesName} • {cultureName}";
+        RerollNameButton.Visible = true;
+
         PreviewSprite.LoadPreview(_currentProfile, null, showClothes: false);
+        SpriteFrame.Visible = true;
     }
 
     private void UpdateSpriteStep2(AshfallLifepathOptionPrototype opt)
@@ -328,13 +534,16 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         }
     }
 
-    private void PopulateFinalSummary()
+    private void PopulateDossier()
     {
-        SummaryTitle.Text = Loc.GetString("ashfall-lifepath-summary-title", ("slot", _targetSlot + 1));
         ConfirmCandidateButton.Text = Loc.GetString("ashfall-lifepath-confirm-button", ("slot", _targetSlot + 1));
 
-        if (_currentProfile != null)
-            NameInput.Text = _currentProfile.Name;
+        // Lifepath sections: each chapter as a record with its own accent color.
+        DossierSections.RemoveAllChildren();
+        AddDossierSection("ashfall-lifepath-ledger-origin", _choices.Step1Origin, null);
+        AddDossierSection("ashfall-lifepath-ledger-vector", _choices.Step2Vector, null);
+        AddDossierSection("ashfall-lifepath-ledger-flaw", _choices.Step3Flaw, "ashfall-lifepath-flaw-weakness");
+        AddDossierSection("ashfall-lifepath-ledger-luggage", _choices.Step4Luggage, null);
 
         // Experience tiers
         ExperienceOption.Clear();
@@ -350,11 +559,6 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         _departmentJobs.Clear();
         JobOption.Clear();
 
-        var careerRoles = _prototypes.EnumeratePrototypes<AshfallCareerRolePrototype>()
-            .Where(r => r.Domain == domain)
-            .ToList();
-
-        // Also check actual playable jobs matching domain
         var allJobs = _prototypes.EnumeratePrototypes<JobPrototype>()
             .Where(j => j.SetPreference)
             .ToList();
@@ -379,22 +583,99 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         {
             JobOption.SelectId(0);
             _choices.SelectedJob = _departmentJobs[0];
-            if (_currentProfile != null && _prototypes.TryIndex(_choices.SelectedJob, out JobPrototype? selectedJobProto))
+        }
+
+        RefreshDossierIdentity();
+    }
+
+    private void AddDossierSection(string keyLoc, ProtoId<AshfallLifepathOptionPrototype> optionId, string? weaknessKeyLoc)
+    {
+        if (!_prototypes.TryIndex(optionId, out var opt))
+            return;
+
+        var row = new BoxContainer
+        {
+            Orientation = BoxContainer.LayoutOrientation.Horizontal,
+            SeparationOverride = 12,
+            HorizontalExpand = true,
+        };
+
+        var bar = new PanelContainer
+        {
+            SetSize = new Vector2(3, 40),
+            PanelOverride = new StyleBoxFlat { BackgroundColor = opt.IndicatorColor },
+        };
+        row.AddChild(bar);
+
+        var col = new BoxContainer
+        {
+            Orientation = BoxContainer.LayoutOrientation.Vertical,
+            SeparationOverride = 3,
+            HorizontalExpand = true,
+        };
+
+        var keyLabel = new Label
+        {
+            Text = Loc.GetString(keyLoc),
+            StyleClasses = { AshfallDossierSheetlet.LabelClass },
+        };
+        col.AddChild(keyLabel);
+
+        var titleLabel = new Label
+        {
+            Text = Loc.GetString(opt.Title),
+            StyleClasses = { AshfallDossierSheetlet.OptionTitleClass },
+        };
+        col.AddChild(titleLabel);
+
+        var descLabel = new Label
+        {
+            Text = Loc.GetString(opt.Description),
+            StyleClasses = { AshfallDossierSheetlet.SerifClass },
+        };
+        col.AddChild(descLabel);
+
+        // The chosen flaw surfaces its concrete weakness; the trait is visible in the dossier.
+        if (weaknessKeyLoc != null && opt.StressWeaknessLoc is { } weaknessLoc)
+        {
+            var weaknessLabel = new Label
             {
-                PreviewSprite.LoadPreview(_currentProfile, selectedJobProto, showClothes: true);
-            }
+                Text = $"{Loc.GetString(weaknessKeyLoc)}: {Loc.GetString(weaknessLoc)}",
+                StyleClasses = { AshfallDossierSheetlet.SerifItalicClass },
+                FontColorOverride = Color.FromHex("#7E837E"),
+                Margin = new Thickness(0, 2, 0, 0),
+            };
+            col.AddChild(weaknessLabel);
         }
 
-        // Flaw & luggage summary quotes
-        if (_prototypes.TryIndex(_choices.Step3Flaw, out var flawOpt))
-        {
-            SummaryFlawLabel.Text = $"{Loc.GetString("ashfall-lifepath-header-step3")}: {Loc.GetString(flawOpt.Title)} — {Loc.GetString(flawOpt.Description)}";
-        }
+        row.AddChild(col);
+        DossierSections.AddChild(row);
+    }
 
-        if (_prototypes.TryIndex(_choices.Step4Luggage, out var lugOpt))
+    private void RefreshDossierIdentity()
+    {
+        var jobName = string.Empty;
+        if (_choices.SelectedJob != default && _prototypes.TryIndex(_choices.SelectedJob, out var job))
+            jobName = Loc.GetString(job.Name);
+
+        CharacterJobTag.Text = jobName;
+        CharacterJobTag.Visible = !string.IsNullOrEmpty(jobName);
+        CharacterJobTag.FontColorOverride = GetDomainColor();
+    }
+
+    private Color GetDomainColor()
+    {
+        if (!_prototypes.TryIndex(_choices.Step2Vector, out var step2Opt))
+            return AshfallStylesheet.PrimaryAmber;
+
+        return step2Opt.Domain switch
         {
-            SummaryLuggageLabel.Text = $"{Loc.GetString("ashfall-lifepath-header-step4")}: {Loc.GetString(lugOpt.Title)} — {Loc.GetString(lugOpt.Description)}";
-        }
+            "Engineering" => Color.FromHex("#D48944"),
+            "Medical" => Color.FromHex("#3B82A6"),
+            "Security" => Color.FromHex("#B83C3C"),
+            "Service" => Color.FromHex("#3FA85B"),
+            _ => AshfallStylesheet.PrimaryAmber,
+        };
     }
 
     private static bool IsJobInDomain(JobPrototype job, string domain)
@@ -422,10 +703,7 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         if (args.Id >= 0 && args.Id < _departmentJobs.Count)
         {
             _choices.SelectedJob = _departmentJobs[args.Id];
-            if (_currentProfile != null && _prototypes.TryIndex(_choices.SelectedJob, out JobPrototype? jobProto))
-            {
-                PreviewSprite.LoadPreview(_currentProfile, jobProto, showClothes: true);
-            }
+            RefreshDossierIdentity();
         }
     }
 
@@ -444,13 +722,14 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
 
             var first = _random.Pick(firstDataset.Values);
             var last = _random.Pick(lastDataset.Values);
-            NameInput.Text = $"{first} {last}";
+            _candidateName = $"{first} {last}";
+            CharacterNameLabel.Text = _candidateName;
         }
     }
 
     private void ConfirmCandidate()
     {
-        _choices.CustomName = NameInput.Text;
+        _choices.CustomName = string.IsNullOrWhiteSpace(_candidateName) ? null : _candidateName;
         _choices.TargetSlotIndex = _targetSlot;
 
         _genSystem.SubmitLifepath(_choices);

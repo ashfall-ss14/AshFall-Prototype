@@ -5,6 +5,7 @@ using Robust.Client.UserInterface;
 using Robust.Client.UserInterface.Controls;
 using Robust.Shared.Maths;
 using Robust.Shared.Timing;
+using System;
 
 namespace Content.Client.Ashfall.CharacterGen.UI.Lifepath;
 
@@ -25,6 +26,8 @@ public sealed partial class AshfallLobbySlotsScreen : PanelContainer
     private bool _isZooming;
     private float _zoomProgress;
     private int _targetSlot;
+    private float _baseMinWidth;
+    private float _baseMinHeight;
 
     public event Action? BackToLobby;
     public event Action<int>? StartLifepathRequested;
@@ -36,6 +39,8 @@ public sealed partial class AshfallLobbySlotsScreen : PanelContainer
 
         _genSystem = _entMan.System<AshfallCharacterGenSystem>();
         _cards = new[] { Slot0, Slot1, Slot2 };
+        _baseMinWidth = _cards[0].MinWidth;
+        _baseMinHeight = _cards[0].MinHeight;
 
         BackButton.OnPressed += _ => BackToLobby?.Invoke();
 
@@ -93,35 +98,41 @@ public sealed partial class AshfallLobbySlotsScreen : PanelContainer
         if (!_isZooming)
             return;
 
-        _zoomProgress += args.DeltaSeconds * 3.5f;
+        _zoomProgress += args.DeltaSeconds * 2.8f;
 
-        // Smooth zoom effect: scale clicked slot while fading others
+        // Zoom-in transition: the clicked column grows while the others fade out,
+        // then the questionnaire opens.
         var factor = Math.Clamp(_zoomProgress, 0f, 1f);
-        var scale = 1f + factor * 0.15f;
+        var eased = 1f - MathF.Pow(1f - factor, 3);
 
         for (var i = 0; i < _cards.Length; i++)
         {
             if (i == _targetSlot)
             {
                 _cards[i].Modulate = Color.White;
+                _cards[i].MinWidth = _baseMinWidth + eased * 36f;
+                _cards[i].MinHeight = _baseMinHeight + eased * 48f;
             }
             else
             {
-                var fade = MathHelper.Lerp(1f, 0f, factor);
-                _cards[i].Modulate = new Color(1f, 1f, 1f, fade);
+                _cards[i].Modulate = new Color(1f, 1f, 1f, 1f - eased);
             }
         }
 
         if (_zoomProgress >= 1f)
         {
             _isZooming = false;
-            // Reset opacity for return
+            // Reset opacity and size for return
             for (var i = 0; i < _cards.Length; i++)
             {
                 _cards[i].Modulate = Color.White;
+                _cards[i].MinWidth = _baseMinWidth;
+                _cards[i].MinHeight = _baseMinHeight;
             }
 
-            StartLifepathRequested?.Invoke(_targetSlot);
+            // The screen swap mutates the UI tree; it must not run inside the frame-update walk.
+            var slot = _targetSlot;
+            Timer.Spawn(TimeSpan.Zero, () => StartLifepathRequested?.Invoke(slot));
         }
     }
 }

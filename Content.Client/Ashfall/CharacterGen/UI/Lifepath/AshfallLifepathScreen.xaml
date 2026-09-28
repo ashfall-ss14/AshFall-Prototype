@@ -3,99 +3,90 @@
                 xmlns:ashfall="clr-namespace:Content.Client.Ashfall.CharacterGen.UI"
                 HorizontalExpand="True" VerticalExpand="True">
     <PanelContainer.PanelOverride>
-        <graphics:StyleBoxFlat BackgroundColor="#0C0D0E" />
+        <graphics:StyleBoxFlat BackgroundColor="#0A0B0D" />
     </PanelContainer.PanelOverride>
 
-    <BoxContainer Orientation="Vertical" Margin="24" SeparationOverride="16" HorizontalExpand="True" VerticalExpand="True">
-        <!-- Top Bar: Navigation & Step Indicator -->
-        <BoxContainer Orientation="Horizontal" HorizontalExpand="True" MinHeight="36">
-            <Button Name="BackButton" Text="{Loc 'ashfall-lifepath-back-button'}" StyleClasses="AshfallNavigationAction" MinWidth="130" />
+    <ashfall:AshfallDossierBackground />
+
+    <BoxContainer Orientation="Vertical" Margin="32 24" SeparationOverride="12" HorizontalExpand="True" VerticalExpand="True">
+        <!-- Top Strip: centered back link, progress rail at the right edge -->
+        <BoxContainer Orientation="Horizontal" HorizontalExpand="True" MinHeight="30">
             <Control HorizontalExpand="True" />
-            <Label Name="StepIndicatorLabel" StyleClasses="AshfallTerminalHeader" VAlign="Center" FontColorOverride="#D48944" />
+            <Button Name="BackButton" Text="{Loc 'ashfall-lifepath-back-button'}" StyleClasses="AshfallInlineAction" />
             <Control HorizontalExpand="True" />
-            <Control MinWidth="130" />
+            <BoxContainer Name="ProgressRail" Orientation="Horizontal" SeparationOverride="6" VerticalAlignment="Center" />
+            <Control MinWidth="12" />
+            <Label Name="StepCounterLabel" StyleClasses="AshfallDossierLabel" VAlign="Center" />
         </BoxContainer>
 
-        <!-- Main Body: Two Columns -->
-        <BoxContainer Orientation="Horizontal" SeparationOverride="24" HorizontalExpand="True" VerticalExpand="True">
-            <!-- Left Column: Dynamic Real-time Sprite Preview & Summary -->
+        <!-- Body: Left Column has Character Identity + Portrait + Chronicle; Right Column has Narrative Options -->
+        <BoxContainer Orientation="Horizontal" SeparationOverride="40" HorizontalExpand="True" VerticalExpand="True">
+            <!-- Left Column: Character Card & Chronicle -->
             <BoxContainer Orientation="Vertical" MinWidth="340" MaxWidth="380" SeparationOverride="12" VerticalExpand="True">
-                <!-- Retro-styled Frame with Preview Dummy -->
-                <PanelContainer Name="SpriteFrame" MinHeight="380" HorizontalExpand="True" VerticalExpand="True">
+                <PanelContainer Name="CharacterCard" HorizontalExpand="True">
                     <PanelContainer.PanelOverride>
-                        <graphics:StyleBoxFlat BackgroundColor="#111315" BorderColor="#33373E" BorderThickness="2" />
+                        <graphics:StyleBoxFlat BackgroundColor="#111316E6" BorderColor="#24282E" BorderThickness="1" />
                     </PanelContainer.PanelOverride>
-                    <BoxContainer Orientation="Vertical" Margin="8" HorizontalExpand="True" VerticalExpand="True">
-                        <ashfall:ProfileFullBodySpriteView Name="PreviewSprite" HorizontalExpand="True" VerticalExpand="True" />
-                    </BoxContainer>
-                </PanelContainer>
+                    <BoxContainer Orientation="Vertical" Margin="14" SeparationOverride="12" HorizontalExpand="True">
+                        <!-- Portrait Area -->
+                        <PanelContainer Name="SpriteFrame" MinHeight="260" HorizontalExpand="True">
+                            <PanelContainer.PanelOverride>
+                                <graphics:StyleBoxFlat BackgroundColor="#0A0B0D" BorderColor="#1A1C20" BorderThickness="1" />
+                            </PanelContainer.PanelOverride>
+                            <BoxContainer Orientation="Vertical" Margin="8" HorizontalExpand="True">
+                                <ashfall:ProfileFullBodySpriteView Name="PreviewSprite" HorizontalExpand="True" MinHeight="244" />
+                            </BoxContainer>
+                        </PanelContainer>
 
-                <!-- Live Identity Badges -->
-                <PanelContainer Name="LiveStatsPanel" HorizontalExpand="True" MinHeight="90">
-                    <PanelContainer.PanelOverride>
-                        <graphics:StyleBoxFlat BackgroundColor="#141618" BorderColor="#282B30" BorderThickness="1" />
-                    </PanelContainer.PanelOverride>
-                    <BoxContainer Orientation="Vertical" Margin="10" SeparationOverride="4" HorizontalExpand="True">
-                        <Label Name="LiveSpeciesLabel" FontColorOverride="#A3A8A3" ClipText="True" />
-                        <Label Name="LiveVectorLabel" FontColorOverride="#D48944" ClipText="True" />
-                        <Label Name="LiveFlawLabel" FontColorOverride="#A87A65" ClipText="True" />
-                        <Label Name="LiveLuggageLabel" FontColorOverride="#8296A8" ClipText="True" />
+                        <!-- Identity Plate (Name, Culture, Reroll) -->
+                        <BoxContainer Name="IdentityBlock" Orientation="Vertical" SeparationOverride="6" HorizontalExpand="True">
+                            <BoxContainer Orientation="Horizontal" SeparationOverride="8" HorizontalExpand="True">
+                                <Label Name="CharacterNameLabel" StyleClasses="AshfallCandidateName" HorizontalExpand="True" VAlign="Center" ClipText="True" />
+                                <Button Name="RerollNameButton" Text="{Loc 'ashfall-lifepath-reroll-name'}" StyleClasses="AshfallUtilityAction" MinHeight="26" Visible="False" />
+                            </BoxContainer>
+                            <BoxContainer Orientation="Horizontal" SeparationOverride="8" HorizontalExpand="True">
+                                <Label Name="CharacterBioLabel" StyleClasses="AshfallDossierLabel" VAlign="Center" HorizontalExpand="True" />
+                                <Label Name="CharacterJobTag" StyleClasses="AshfallDossierLabel" VAlign="Center" />
+                            </BoxContainer>
+                        </BoxContainer>
+
+                        <!-- Divider -->
+                        <PanelContainer SetSize="0 1" HorizontalExpand="True">
+                            <PanelContainer.PanelOverride>
+                                <graphics:StyleBoxFlat BackgroundColor="#22252A" />
+                            </PanelContainer.PanelOverride>
+                        </PanelContainer>
+
+                        <!-- Chronicle / Ledger (Records chosen steps dynamically) -->
+                        <BoxContainer Name="ChronicleContainer" Orientation="Vertical" SeparationOverride="8" HorizontalExpand="True" />
                     </BoxContainer>
                 </PanelContainer>
             </BoxContainer>
 
-            <!-- Right Column: Narrative Questionnaire OR Final Summary -->
-            <BoxContainer Orientation="Vertical" HorizontalExpand="True" VerticalExpand="True" SeparationOverride="14">
-                <!-- Prompt Heading in Disco Elysium Style -->
-                <BoxContainer Orientation="Vertical" SeparationOverride="4">
-                    <Label Name="PromptHeaderLabel" StyleClasses="FancyWindowTitle" FontColorOverride="#D48944" />
-                    <Label Name="PromptQuestionLabel" StyleClasses="AshfallTerminalHeader" FontColorOverride="#E6E8E6" />
-                </BoxContainer>
+            <!-- Right Column: Narrative dialogue choices / Final dossier -->
+            <BoxContainer Orientation="Vertical" HorizontalExpand="True" VerticalExpand="True">
+                <Control Name="TopSpacer" VerticalExpand="True" />
+                <BoxContainer Name="ContentColumn" Orientation="Vertical" SeparationOverride="20" HorizontalExpand="True" MaxWidth="720">
+                    <Label Name="PromptQuestionLabel" StyleClasses="AshfallDossierDisplay" />
 
-                <!-- Narrative Options Container (Steps 1-4) -->
-                <ScrollContainer Name="OptionsScroll" HorizontalExpand="True" VerticalExpand="True" Visible="True">
-                    <BoxContainer Name="OptionsContainer" Orientation="Vertical" SeparationOverride="12" HorizontalExpand="True" />
-                </ScrollContainer>
+                    <!-- Steps 1-4: Narrative Choices -->
+                    <BoxContainer Name="OptionsContainer" Orientation="Vertical" SeparationOverride="6" HorizontalExpand="True" Margin="0 4 0 0" />
 
-                <!-- Final Confirmation View (Step 5) -->
-                <BoxContainer Name="FinalSummaryContainer" Orientation="Vertical" SeparationOverride="14" HorizontalExpand="True" VerticalExpand="True" Visible="False">
-                    <PanelContainer HorizontalExpand="True" VerticalExpand="True">
-                        <PanelContainer.PanelOverride>
-                            <graphics:StyleBoxFlat BackgroundColor="#141618" BorderColor="#33373E" BorderThickness="1" />
-                        </PanelContainer.PanelOverride>
-                        <BoxContainer Orientation="Vertical" Margin="18" SeparationOverride="12" HorizontalExpand="True">
-                            <Label Name="SummaryTitle" StyleClasses="AshfallTerminalHeader" FontColorOverride="#D48944" />
-
-                            <!-- Name Line -->
-                            <BoxContainer Orientation="Horizontal" SeparationOverride="10" HorizontalExpand="True">
-                                <Label Text="Имя:" FontColorOverride="#878C87" VAlign="Center" MinWidth="90" />
-                                <LineEdit Name="NameInput" HorizontalExpand="True" />
-                                <Button Name="RerollNameButton" Text="{Loc 'ashfall-lifepath-reroll-name'}" StyleClasses="AshfallUtilityAction" />
-                            </BoxContainer>
-
-                            <!-- Experience Tier Selection -->
-                            <BoxContainer Orientation="Horizontal" SeparationOverride="10" HorizontalExpand="True">
-                                <Label Text="Опыт:" FontColorOverride="#878C87" VAlign="Center" MinWidth="90" />
-                                <OptionButton Name="ExperienceOption" HorizontalExpand="True" />
-                            </BoxContainer>
-
-                            <!-- Department Job Selection (strictly same domain) -->
-                            <BoxContainer Orientation="Horizontal" SeparationOverride="10" HorizontalExpand="True">
-                                <Label Text="Должность:" FontColorOverride="#878C87" VAlign="Center" MinWidth="90" />
-                                <OptionButton Name="JobOption" HorizontalExpand="True" />
-                            </BoxContainer>
-
-                            <!-- Stress Flaw & Luggage Review -->
-                            <BoxContainer Orientation="Vertical" SeparationOverride="6" Margin="0 8 0 0">
-                                <Label Name="SummaryFlawLabel" FontColorOverride="#C7927D" />
-                                <Label Name="SummaryLuggageLabel" FontColorOverride="#8FB3C7" />
-                            </BoxContainer>
+                    <!-- Step 5: Final Dossier Decisions -->
+                    <BoxContainer Name="DossierContainer" Orientation="Vertical" SeparationOverride="14" HorizontalExpand="True" Visible="False">
+                        <BoxContainer Name="DossierSections" Orientation="Vertical" SeparationOverride="12" HorizontalExpand="True" />
+                        <BoxContainer Orientation="Horizontal" SeparationOverride="10" HorizontalExpand="True" Margin="0 6 0 0">
+                            <Label Text="{Loc 'ashfall-lifepath-field-experience'}" StyleClasses="AshfallDossierLabel" VAlign="Center" MinWidth="100" />
+                            <OptionButton Name="ExperienceOption" HorizontalExpand="True" />
                         </BoxContainer>
-                    </PanelContainer>
-
-                    <!-- Confirmation Button -->
-                    <Button Name="ConfirmCandidateButton" StyleClasses="AshfallNavigationAction" MinHeight="42" HorizontalExpand="True" />
+                        <BoxContainer Orientation="Horizontal" SeparationOverride="10" HorizontalExpand="True">
+                            <Label Text="{Loc 'ashfall-lifepath-field-job'}" StyleClasses="AshfallDossierLabel" VAlign="Center" MinWidth="100" />
+                            <OptionButton Name="JobOption" HorizontalExpand="True" />
+                        </BoxContainer>
+                        <Button Name="ConfirmCandidateButton" StyleClasses="AshfallPrimaryAction" MinHeight="44" HorizontalExpand="True" Margin="0 10 0 0" />
+                    </BoxContainer>
                 </BoxContainer>
+                <Control Name="BottomSpacer" VerticalExpand="True" />
             </BoxContainer>
         </BoxContainer>
     </BoxContainer>

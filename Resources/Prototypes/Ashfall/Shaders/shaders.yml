@@ -27,3 +27,8 @@
   id: AshfallSandevistanVision
   kind: source
   path: "/Textures/Ashfall/Shaders/sandevistan_vision.swsl"
+
+- type: shader
+  id: AshfallDossierBackground
+  kind: source
+  path: "/Textures/Ashfall/Shaders/dossier_bg.swsl"

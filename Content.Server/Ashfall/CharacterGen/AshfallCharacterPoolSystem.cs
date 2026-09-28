@@ -240,9 +240,11 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
         if (msg.SlotIndex >= 0 && msg.SlotIndex < CharacterSlotCount)
         {
             var slot = pool.PrioritySlots[msg.SlotIndex];
-            if (slot != null && slot.Status == AshfallSlotStatus.OnShift)
+            // A pinned candidate is only released by a played shift (evacuation) or death;
+            // otherwise players would reroll endlessly hunting for high-value roles.
+            if (slot != null && slot.Status is AshfallSlotStatus.OnShift or AshfallSlotStatus.Ready)
             {
-                _sawmill.Warning($"Player {player} attempted to reset slot {msg.SlotIndex} while on shift!");
+                _sawmill.Warning($"Player {player} attempted to reset pinned slot {msg.SlotIndex} (status: {slot.Status})!");
                 SendPoolResponse(msg.MsgChannel, pool);
                 return;
             }

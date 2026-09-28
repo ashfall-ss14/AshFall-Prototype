@@ -10,6 +10,7 @@ using Robust.Client.UserInterface.XAML;
 using Robust.Shared.Maths;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
+using Robust.Shared.Utility;
 
 namespace Content.Client.Ashfall.CharacterGen.UI.Lifepath;
 
@@ -18,7 +19,7 @@ public sealed partial class AshfallLobbySlotCard : PanelContainer
     [Dependency] private IPrototypeManager _prototypes = default!;
 
     private static readonly Color IdleBg = Color.FromHex("#151618");
-    private static readonly Color IdleBorder = Color.FromHex("#2C2E33");
+    private static readonly Color IdleBorder = Color.Transparent;
 
     private static readonly Color HoverBg = Color.FromHex("#221D17");
     private static readonly Color HoverBorder = Color.FromHex("#E5984C");
@@ -137,10 +138,10 @@ public sealed partial class AshfallLobbySlotCard : PanelContainer
             ((StyleBoxFlat)JobColorBar.PanelOverride!).BackgroundColor = depColor;
             JobLabel.FontColorOverride = depColor;
 
-            // Flaw / personality note from dossier
+            // Flaw / personality note from dossier; plain Label, so markup tags must be stripped
             var flawSection = slot.Candidate.Dossier.Sections.Find(s => s.Kind == "personality" || s.Kind == "hook");
             FlawLabel.Text = flawSection != null && flawSection.Lines.Count > 0
-                ? flawSection.Lines[0]
+                ? FormattedMessage.RemoveMarkupPermissive(flawSection.Lines[0])
                 : string.Empty;
 
             // Configure status & buttons
@@ -179,8 +180,9 @@ public sealed partial class AshfallLobbySlotCard : PanelContainer
                 default:
                     StatusBadgeLabel.Text = Loc.GetString("ashfall-lobby-slot-status-ready");
                     SetBadgeColor(Color.FromHex("#1E2D1F"), Color.FromHex("#355437"), Color.FromHex("#6DB372"));
-                    ResetButton.Disabled = false;
-                    ResetButton.ToolTip = string.Empty;
+                    // A created candidate is pinned: a new one only comes after a played shift or death.
+                    ResetButton.Disabled = true;
+                    ResetButton.ToolTip = Loc.GetString("ashfall-lobby-slot-reset-locked");
                     SelectButton.Text = isSelected
                         ? Loc.GetString("ashfall-lobby-slot-button-selected")
                         : Loc.GetString("ashfall-lobby-slot-button-select");
@@ -194,12 +196,8 @@ public sealed partial class AshfallLobbySlotCard : PanelContainer
 
     private void SetBadgeColor(Color bg, Color border, Color text)
     {
-        StatusBadgePanel.PanelOverride = new StyleBoxFlat
-        {
-            BackgroundColor = bg,
-            BorderColor = border,
-            BorderThickness = new Thickness(1),
-        };
+        // Minimal chips: colored mono text, no box, no outline.
+        StatusBadgePanel.PanelOverride = new StyleBoxFlat { BackgroundColor = Color.Transparent };
         StatusBadgeLabel.FontColorOverride = text;
     }
 
@@ -247,8 +245,8 @@ public sealed partial class AshfallLobbySlotCard : PanelContainer
         if (_hoverProgress > 0.02f)
         {
             var center = PixelSize / 2f;
-            var radius = Math.Max(PixelSize.X, PixelSize.Y) * 0.45f;
-            var glowColor = new Color(229, 152, 76, (byte)(28 * _hoverProgress));
+            var radius = Math.Max(PixelSize.X, PixelSize.Y) * 0.55f;
+            var glowColor = new Color(229, 152, 76, (byte)(38 * _hoverProgress));
             handle.DrawCircle(center, radius, glowColor);
         }
     }
