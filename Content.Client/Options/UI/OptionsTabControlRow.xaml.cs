@@ -58,9 +58,6 @@ public sealed partial class OptionsTabControlRow : Control
         RobustXamlLoader.Load(this);
         IoCManager.InjectDependencies(this);
 
-        ResetButton.StyleClasses.Add(StyleClass.ButtonOpenRight);
-        ApplyButton.StyleClasses.Add(StyleClass.ButtonOpenLeft);
-        ApplyButton.StyleClasses.Add(StyleClass.Positive);
         ApplyButton.OnPressed += ApplyButtonPressed;
         ResetButton.OnPressed += ResetButtonPressed;
         DefaultButton.OnPressed += DefaultButtonPressed;

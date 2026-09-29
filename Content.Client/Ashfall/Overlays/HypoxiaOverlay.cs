@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+using Content.Shared.Ashfall;
 using Robust.Client.Graphics;
 using Robust.Client.Player;
+using Robust.Shared.Configuration;
 using Robust.Shared.Enums;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
@@ -15,10 +17,11 @@ public sealed partial class HypoxiaOverlay : Overlay
     [Dependency] private IEntityManager _entityManager = default!;
     [Dependency] private IPlayerManager _playerManager = default!;
     [Dependency] private IPrototypeManager _prototypeManager = default!;
+    [Dependency] private IConfigurationManager _config = default!;
     [Dependency] private IGameTiming _timing = default!;
 
     public override OverlaySpace Space => OverlaySpace.WorldSpace;
-    public override bool RequestScreenTexture => true;
+    public override bool RequestScreenTexture => !_config.GetCVar(AshfallCCVars.AgonyOverlayEnabled) && HypoxiaIntensity > 0.001f;
 
     private readonly ShaderInstance _shader;
 
@@ -33,7 +36,8 @@ public sealed partial class HypoxiaOverlay : Overlay
 
     protected override bool BeforeDraw(in OverlayDrawArgs args)
     {
-        if (HypoxiaIntensity <= 0.001f)
+        // Handled by AgonyOverlay when cinematic damage shaders are active
+        if (_config.GetCVar(AshfallCCVars.AgonyOverlayEnabled) || HypoxiaIntensity <= 0.001f)
             return false;
 
         if (!_entityManager.TryGetComponent(_playerManager.LocalEntity, out EyeComponent? eyeComp))

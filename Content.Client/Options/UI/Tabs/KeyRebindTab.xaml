@@ -14,6 +14,8 @@
                 <Label Text="{Loc 'ui-options-binds-explanation'}" StyleClasses="LabelSubText" />
                 <Button Name="ResetAllButton"
                         Text="{Loc 'ui-options-binds-reset-all'}"
+                        StyleClasses="AshfallSecondaryAction"
+                        MinHeight="28"
                         HorizontalExpand="True"
                         HorizontalAlignment="Right" />
             </BoxContainer>

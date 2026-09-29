@@ -33,13 +33,12 @@ public sealed partial class OptionCheckBox : Control
     {
         RobustXamlLoader.Load(this);
 
-        RowPanel.MouseFilter = MouseFilterMode.Pass;
-        NameLabel.MouseFilter = MouseFilterMode.Stop;
+        RowPanel.MouseFilter = MouseFilterMode.Stop;
+        NameLabel.MouseFilter = MouseFilterMode.Pass;
+        DescriptionLabel.MouseFilter = MouseFilterMode.Pass;
 
         RowPanel.OnMouseEntered += _ => RowPanel.PanelOverride = HoverStyle;
         RowPanel.OnMouseExited += _ => RowPanel.PanelOverride = null;
-        NameLabel.OnMouseEntered += _ => RowPanel.PanelOverride = HoverStyle;
-        NameLabel.OnMouseExited += _ => RowPanel.PanelOverride = null;
 
         CheckBox.OnToggled += args =>
         {
@@ -47,10 +46,11 @@ public sealed partial class OptionCheckBox : Control
             OnRowToggled?.Invoke(args.Pressed);
         };
 
-        NameLabel.OnKeyBindDown += args =>
+        RowPanel.OnKeyBindDown += args =>
         {
             if (args.Function == EngineKeyFunctions.UIClick && !Disabled)
             {
+                // SetClickPressed only flips the visual state, so dispatch the toggle manually.
                 CheckBox.SetClickPressed(!CheckBox.Pressed);
                 var toggledArgs = new BaseButton.ButtonToggledEventArgs(CheckBox.Pressed, CheckBox, args);
                 OnToggled?.Invoke(toggledArgs);

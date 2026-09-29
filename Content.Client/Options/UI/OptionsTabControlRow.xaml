@@ -2,17 +2,25 @@
          xmlns:controls="clr-namespace:Content.Client.UserInterface.Controls"
          MinHeight="40">
     <controls:StripeBack HasBottomEdge="False">
-        <BoxContainer Orientation="Horizontal" Align="End" Margin="4 6 8 6" SeparationOverride="6">
+        <BoxContainer Orientation="Horizontal" Align="End" Margin="4 6 8 6" SeparationOverride="8">
             <Button Name="DefaultButton"
                     Text="{Loc 'ui-options-default'}"
+                    StyleClasses="AshfallSecondaryAction"
                     TextAlign="Center"
+                    MinHeight="28"
+                    MinWidth="110"
                     Margin="0 0 12 0" />
 
             <Button Name="ResetButton"
                     Text="{Loc 'ui-options-reset-all'}"
-                    StyleClasses="negative" />
+                    StyleClasses="AshfallSecondaryAction"
+                    MinHeight="28"
+                    MinWidth="110" />
             <Button Name="ApplyButton"
-                    Text="{Loc 'ui-options-apply'}" />
+                    Text="{Loc 'ui-options-apply'}"
+                    StyleClasses="AshfallAccentAction"
+                    MinHeight="28"
+                    MinWidth="120" />
         </BoxContainer>
     </controls:StripeBack>
 </Control>

@@ -23,7 +23,9 @@ ashfall-personal-files-slot-move-right = Move candidate right
 
 ashfall-options-title = Settings
 ui-options-log-actions-in-chat = Log actions and examines in chat
+ui-options-log-actions-in-chat-tooltip = Logs item interactions, environmental cues, and examine text directly to chat.
 ui-options-coalesce-identical-messages = Coalesce identical messages in chat
+ui-options-coalesce-identical-messages-tooltip = Combines identical consecutive messages in chat with a counter.
 
 ashfall-personal-files-title = PERSONNEL ARCHIVE // ASHEN INDUSTRIAL CRYOSTORAGE
 ashfall-personal-files-subtitle = Select an employee and confirm their assignment.
