@@ -22,6 +22,7 @@ public sealed partial class LockpickSystem : EntitySystem
     [Dependency] private SharedAudioSystem _audio = default!;
     [Dependency] private LockSystem _lock = default!;
     [Dependency] private DoorSystem _door = default!;
+    [Dependency] private SharedInteractionSystem _interaction = default!;
 
     public override void Initialize()
     {
@@ -86,6 +87,10 @@ public sealed partial class LockpickSystem : EntitySystem
         if (!CanLockpick(target))
             return false;
 
+        // AfterInteract can fire for targets the user only sees; require real reachability.
+        if (!_interaction.InRangeUnobstructed(user, target))
+            return false;
+
         var duration = targetLockPick.Time * ent.Comp.SpeedModifier;
 
         return _doAfter.TryStartDoAfter(new DoAfterArgs(EntityManager,
@@ -108,6 +113,10 @@ public sealed partial class LockpickSystem : EntitySystem
             return;
 
         if (!TryComp<TargetLockPickComponent>(target, out var targetLockPick))
+            return;
+
+        // Recheck eligibility: the door could have been welded, opened or unlocked while the do-after ran.
+        if (!CanLockpick(target))
             return;
 
         _audio.PlayPvs(ent.Comp.Sound, target);
