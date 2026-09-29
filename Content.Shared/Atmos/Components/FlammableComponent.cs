@@ -39,10 +39,10 @@ namespace Content.Shared.Atmos.Components
         [DataField, AutoNetworkedField]
         public TimeSpan ResistTime = TimeSpan.FromSeconds(2);
 
-        [DataField]
+        [DataField, AutoNetworkedField]
         public bool OnFire;
 
-        [DataField]
+        [DataField, AutoNetworkedField]
         public float FireStacks;
 
         [DataField, AutoNetworkedField]

@@ -28,7 +28,7 @@ void fragment() {
     // 1. Burning heat haze distortion around screen perimeter (fast single-frequency)
     if (FireIntensity > 0.01) {
         highp float edgeDist = min(min(coord.x, 1.0 - coord.x), min(coord.y, 1.0 - coord.y));
-        highp float fireEdgeMask = smoothstep(0.35, 0.02, edgeDist);
+        highp float fireEdgeMask = 1.0 - smoothstep(0.02, 0.35, edgeDist);
         highp float heatHaze = sin(coord.y * 30.0 + TIME * 12.0) * cos(coord.x * 24.0 + TIME * 8.0);
         workingCoord += vec2(heatHaze * 0.004 * fireEdgeMask * FireIntensity, heatHaze * 0.0025 * fireEdgeMask * FireIntensity);
     }
@@ -75,33 +75,38 @@ void fragment() {
         col = mix(col, (b1 + b2) * 0.5, blurStrength);
     }
 
-    // 6. Fast Ragged Organic Blood Vignette (Zero procedural loops)
-    highp float grunge = (sin(workingCoord.x * 24.0 + workingCoord.y * 18.0) * cos(workingCoord.x * 32.0 - workingCoord.y * 24.0)
-                        + sin(workingCoord.x * 48.0 - workingCoord.y * 56.0) * 0.5) * 0.10;
-    highp vec2 c2 = aspectOffset * aspectOffset * 1.6;
-    highp float cornerFactor = (c2.x + c2.y) * 0.85;
-    highp float raggedDist = mix(dist, cornerFactor, 0.45) + grunge;
+    // 6. Fast Ragged Organic Blood Vignette & Fire Perimeter
+    highp float raggedDist = dist;
+    if (PainIntensity > 0.005 || CritIntensity > 0.005 || FireIntensity > 0.005) {
+        highp float grunge = (sin(workingCoord.x * 24.0 + workingCoord.y * 18.0) * cos(workingCoord.x * 32.0 - workingCoord.y * 24.0)
+                            + sin(workingCoord.x * 48.0 - workingCoord.y * 56.0) * 0.5) * 0.10;
+        highp vec2 c2 = aspectOffset * aspectOffset * 1.6;
+        highp float cornerFactor = (c2.x + c2.y) * 0.85;
+        raggedDist = mix(dist, cornerFactor, 0.45) + grunge;
+    }
 
-    highp float baseRadius = 0.94 - (PainIntensity * 0.38 + CritIntensity * 0.46);
-    highp float vigSoftness = 0.34;
-    highp float bloodVignette = smoothstep(baseRadius * pulseScale, baseRadius * pulseScale - vigSoftness, raggedDist);
+    if (PainIntensity > 0.005 || CritIntensity > 0.005) {
+        highp float baseRadius = 0.94 - (PainIntensity * 0.38 + CritIntensity * 0.46);
+        highp float vigSoftness = 0.34;
+        highp float bloodVignette = 1.0 - smoothstep(baseRadius * pulseScale - vigSoftness, baseRadius * pulseScale, raggedDist);
 
-    highp vec3 freshArterial = vec3(0.56, 0.015, 0.01);
-    highp vec3 driedVenous = vec3(0.18, 0.004, 0.004);
-    highp vec3 bloodTint = mix(driedVenous, freshArterial, clamp(heartbeat * 0.8 + ShockIntensity, 0.0, 1.0));
+        highp vec3 freshArterial = vec3(0.56, 0.015, 0.01);
+        highp vec3 driedVenous = vec3(0.18, 0.004, 0.004);
+        highp vec3 bloodTint = mix(driedVenous, freshArterial, clamp(heartbeat * 0.8 + ShockIntensity, 0.0, 1.0));
 
-    highp float bloodCoverage = (1.0 - bloodVignette) * (PainIntensity * 0.82 + CritIntensity * 0.65);
-    highp vec3 bloodCol = col * bloodTint * 2.1 + bloodTint * 0.32;
-    col = mix(col, bloodCol, clamp(bloodCoverage, 0.0, 0.90));
+        highp float bloodCoverage = (1.0 - bloodVignette) * (PainIntensity * 0.82 + CritIntensity * 0.65);
+        highp vec3 bloodCol = col * bloodTint * 2.1 + bloodTint * 0.32;
+        col = mix(col, bloodCol, clamp(bloodCoverage, 0.0, 0.90));
 
-    highp float edgeDarkening = smoothstep(1.10, 0.72, raggedDist);
-    col *= mix(1.0, edgeDarkening, clamp(PainIntensity * 0.55 + CritIntensity * 0.70, 0.0, 1.0));
+        highp float edgeDarkening = 1.0 - smoothstep(0.72, 1.10, raggedDist);
+        col *= mix(1.0, edgeDarkening, clamp(PainIntensity * 0.55 + CritIntensity * 0.70, 0.0, 1.0));
+    }
 
     // 7. Oxygen deprivation tunnel-vision
     if (OxygenIntensity > 0.005) {
         highp float oxyBreath = sin(TIME * 1.6) * 0.03 * OxygenIntensity;
         highp float oxyRadius = (0.86 - OxygenIntensity * 0.55) + oxyBreath;
-        highp float oxyTunnel = smoothstep(oxyRadius, oxyRadius - 0.30, dist);
+        highp float oxyTunnel = 1.0 - smoothstep(oxyRadius - 0.30, oxyRadius, dist);
         col *= oxyTunnel;
         col.b += OxygenIntensity * 0.09 * (1.0 - oxyTunnel);
     }
