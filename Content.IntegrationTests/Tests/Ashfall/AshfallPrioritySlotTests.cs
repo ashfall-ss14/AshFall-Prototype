@@ -26,6 +26,15 @@ public sealed class AshfallPrioritySlotTests : GameTest
 {
     public override PoolSettings PoolSettings => new() { InLobby = true };
 
+    // Pooled pairs are reused across tests and the pool system only clears itself on round
+    // restart, so every test clears the player's slots before pinning into them.
+    private static void ResetSlots(AshfallCharacterPoolSystem sys, NetUserId user)
+    {
+        var pool = sys.GetOrCreatePool(user);
+        Array.Clear(pool.PrioritySlots);
+        pool.ConfirmedPriorityIndex = -1;
+    }
+
     [Test]
     public async Task PinSurvivesRerollAndConfirmUsesPinnedIdentity()
     {
@@ -58,6 +67,7 @@ public sealed class AshfallPrioritySlotTests : GameTest
         await server.WaitAssertion(() =>
         {
             var sys = server.EntMan.System<AshfallCharacterPoolSystem>();
+            ResetSlots(sys, user);
             Assert.That(sys.TryPin(user, 0, firstId, job, revision), Is.True);
 
             // Guard rails: unknown candidate and stale revision are rejected.
@@ -157,6 +167,7 @@ public sealed class AshfallPrioritySlotTests : GameTest
         await server.WaitAssertion(() =>
         {
             var sys = server.EntMan.System<AshfallCharacterPoolSystem>();
+            ResetSlots(sys, user);
             var pool = sys.GetOrCreatePool(user);
             firstId = pool.Candidates[0].CandidateId;
             secondId = pool.Candidates[1].CandidateId;
@@ -236,6 +247,7 @@ public sealed class AshfallPrioritySlotTests : GameTest
         await server.WaitAssertion(() =>
         {
             var sys = server.EntMan.System<AshfallCharacterPoolSystem>();
+            ResetSlots(sys, user);
             var pool = sys.GetOrCreatePool(user);
             firstId = pool.Candidates[0].CandidateId;
             job = pool.Candidates[0].CompatibleJobs[0];
@@ -297,6 +309,7 @@ public sealed class AshfallPrioritySlotTests : GameTest
         await server.WaitAssertion(() =>
         {
             var sys = server.EntMan.System<AshfallCharacterPoolSystem>();
+            ResetSlots(sys, user);
             var pool = sys.GetOrCreatePool(user);
             firstId = pool.Candidates[0].CandidateId;
             job = pool.Candidates[0].CompatibleJobs[0];
