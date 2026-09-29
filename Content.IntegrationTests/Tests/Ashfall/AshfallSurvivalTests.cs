@@ -38,7 +38,6 @@ public sealed class AshfallSurvivalTests : GameTest
             lockSys.Lock(target, null, lockComp);
 
             var targetLockPick = entMan.AddComponent<TargetLockPickComponent>(target);
-            targetLockPick.Chance = 1.0f;
             targetLockPick.Time = 0.0f;
 
             Assert.That(lockComp.Locked, Is.True);

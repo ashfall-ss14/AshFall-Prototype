@@ -415,4 +415,3 @@
     materialRepairTreshold: 40
   - type: TargetLockPick
     time: 10.0
-    chance: 0.50

@@ -10,10 +10,4 @@ public sealed partial class TargetLockPickComponent : Component
     /// </summary>
     [DataField]
     public float Time = 8.0f;
-
-    /// <summary>
-    /// Probability of successful picking (0.0 to 1.0).
-    /// </summary>
-    [DataField]
-    public float Chance = 0.65f;
 }

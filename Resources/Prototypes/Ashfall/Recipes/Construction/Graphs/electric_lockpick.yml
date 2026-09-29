@@ -1,0 +1,22 @@
+- type: constructionGraph
+  id: AshfallElectricLockpickGraph
+  start: start
+  graph:
+  - node: start
+    edges:
+    - to: lockpick
+      steps:
+      - material: MetalRod
+        amount: 1
+        doAfter: 2
+      - material: Cable
+        amount: 5
+        doAfter: 2
+      - tag: PowerCell
+        icon:
+          sprite: Objects/Power/power_cells.rsi
+          state: small
+        name: construction-graph-tag-power-cell
+        doAfter: 2
+  - node: lockpick
+    entity: AshfallElectricLockpick

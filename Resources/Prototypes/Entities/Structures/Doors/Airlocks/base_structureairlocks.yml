@@ -14,9 +14,6 @@
     - Anchorable
   - type: Rotatable
   - type: StationAiWhitelist
-  - type: TargetLockPick
-    time: 12.0
-    chance: 0.45
   - type: MeleeSound
     soundGroups:
       Brute:

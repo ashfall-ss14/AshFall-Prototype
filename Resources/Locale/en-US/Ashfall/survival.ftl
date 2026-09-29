@@ -1,12 +1,14 @@
 # Lockpicking
-ashfall-lockpick = lockpick
-ashfall-lockpick-desc = A set of thin tension wrenches and picks for bypassing mechanical and electronic locks.
-ashfall-lockpick-failed = The lockpick slips and jams inside the mechanism.
-ashfall-lockpick-success = The locking mechanism clicks open!
-ashfall-lockpick-verb = Pick lock
+ashfall-electric-lockpick = electric lockpick
+ashfall-electric-lockpick-desc = A battery wired to a bare metal rod for feeding power straight into door locks. The contacts are live, so do not touch without insulated gloves.
+ashfall-electric-lockpick-success = The lock clicks and gives in — power fed straight past the access system!
+ashfall-electric-lockpick-verb = Hotwire lock
+ashfall-electric-lockpick-shocked = The live contacts bite into your hands with a discharge!
+ashfall-electric-lockpick-no-charges = The battery is dead.
+ashfall-electric-lockpick-panel-closed = The maintenance panel is closed — pry it open with a screwdriver first.
 
-ent-AshfallLockpick = lockpick
-    .desc = A set of thin tension wrenches and picks for bypassing mechanical and electronic locks.
+ent-AshfallElectricLockpick = electric lockpick
+    .desc = A battery wired to a bare metal rod for feeding power straight into door locks. The contacts are live, so do not touch without insulated gloves.
 
 # Complex repair
 ashfall-complex-repairable-success = You finish repairing {THE($target)} with the welder.

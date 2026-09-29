@@ -1,16 +1,21 @@
 using Content.Server.Doors.Systems;
+using Content.Server.Electrocution;
 using Content.Server.Popups;
 using Content.Shared.Ashfall.LockPick;
 using Content.Shared.Ashfall.LockPick.Components;
+using Content.Shared.Charges.Components;
+using Content.Shared.Charges.Systems;
 using Content.Shared.DoAfter;
 using Content.Shared.Doors.Components;
 using Content.Shared.Interaction;
 using Content.Shared.Lock;
 using Content.Shared.Popups;
 using Content.Shared.Verbs;
+using Content.Shared.Wires;
 using Robust.Shared.Audio.Systems;
 using Robust.Shared.Random;
 using Robust.Shared.Utility;
+using System;
 
 namespace Content.Server.Ashfall.LockPick.Systems;
 
@@ -23,6 +28,8 @@ public sealed partial class LockpickSystem : EntitySystem
     [Dependency] private LockSystem _lock = default!;
     [Dependency] private DoorSystem _door = default!;
     [Dependency] private SharedInteractionSystem _interaction = default!;
+    [Dependency] private SharedChargesSystem _charges = default!;
+    [Dependency] private ElectrocutionSystem _electrocution = default!;
 
     public override void Initialize()
     {
@@ -55,14 +62,16 @@ public sealed partial class LockpickSystem : EntitySystem
         if (!TryComp<TargetLockPickComponent>(target, out var targetLockPick))
             return;
 
-        if (!CanLockpick(target))
+        if (!CanLockpick(target) ||
+            !TryComp<LimitedChargesComponent>(ent, out var charges) ||
+            !_charges.HasCharges((ent.Owner, charges), 1))
             return;
 
         var user = args.User;
         var verb = new UtilityVerb
         {
             Act = () => TryStartLockpick(ent, user, target, targetLockPick),
-            Text = Loc.GetString("ashfall-lockpick-verb"),
+            Text = Loc.GetString("ashfall-electric-lockpick-verb"),
             Icon = new SpriteSpecifier.Rsi(new ResPath("Ashfall/Objects/Tools/lockpick.rsi"), "lockpick"),
         };
         args.Verbs.Add(verb);
@@ -76,6 +85,10 @@ public sealed partial class LockpickSystem : EntitySystem
                 return false;
         }
 
+        // Hotwiring only works on exposed contacts: the maintenance panel must be opened first.
+        if (TryComp<WiresPanelComponent>(target, out var panel) && !panel.Open)
+            return false;
+
         if (TryComp<LockComponent>(target, out var lockComp) && !lockComp.Locked && !HasComp<DoorComponent>(target))
             return false;
 
@@ -85,7 +98,18 @@ public sealed partial class LockpickSystem : EntitySystem
     public bool TryStartLockpick(Entity<LockpickComponent> ent, EntityUid user, EntityUid target, TargetLockPickComponent targetLockPick)
     {
         if (!CanLockpick(target))
+        {
+            if (TryComp<WiresPanelComponent>(target, out var panel) && !panel.Open)
+                _popup.PopupEntity(Loc.GetString("ashfall-electric-lockpick-panel-closed"), user, user, PopupType.SmallCaution);
+
             return false;
+        }
+
+        if (!_charges.HasCharges(ent.Owner, 1))
+        {
+            _popup.PopupEntity(Loc.GetString("ashfall-electric-lockpick-no-charges"), user, user, PopupType.SmallCaution);
+            return false;
+        }
 
         // AfterInteract can fire for targets the user only sees; require real reachability.
         if (!_interaction.InRangeUnobstructed(user, target))
@@ -119,12 +143,17 @@ public sealed partial class LockpickSystem : EntitySystem
         if (!CanLockpick(target))
             return;
 
+        // A completed attempt always spends a charge, regardless of what follows.
+        _charges.AddCharges(ent.Owner, -1);
+
         _audio.PlayPvs(ent.Comp.Sound, target);
 
-        if (!_random.Prob(targetLockPick.Chance))
+        // Hotwiring live contacts: insulated gloves negate the shock entirely.
+        if (_random.Prob(ent.Comp.ShockChance) &&
+            _electrocution.TryDoElectrocution(args.User, ent, ent.Comp.ShockDamage,
+                TimeSpan.FromSeconds(ent.Comp.ShockTime), refresh: true))
         {
-            _popup.PopupEntity(Loc.GetString("ashfall-lockpick-failed"), args.User, args.User, PopupType.SmallCaution);
-            return;
+            _popup.PopupEntity(Loc.GetString("ashfall-electric-lockpick-shocked"), args.User, args.User, PopupType.LargeCaution);
         }
 
         var ev = new LockPickSuccessEvent(args.User);
@@ -132,11 +161,7 @@ public sealed partial class LockpickSystem : EntitySystem
 
         if (ev.Success)
         {
-            _popup.PopupEntity(Loc.GetString("ashfall-lockpick-success"), args.User, args.User, PopupType.Medium);
-        }
-        else
-        {
-            _popup.PopupEntity(Loc.GetString("ashfall-lockpick-failed"), args.User, args.User, PopupType.SmallCaution);
+            _popup.PopupEntity(Loc.GetString("ashfall-electric-lockpick-success"), args.User, args.User, PopupType.Medium);
         }
     }
 

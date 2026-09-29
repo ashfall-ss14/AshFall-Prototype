@@ -8,7 +8,6 @@
   - type: LockVisuals
   - type: TargetLockPick
     time: 7.0
-    chance: 0.65
   - type: Sprite
     sprite: Structures/Storage/closet.rsi
     noRot: true
