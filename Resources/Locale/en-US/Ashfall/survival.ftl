@@ -1,11 +1,11 @@
 # Lockpicking
 ashfall-electric-lockpick = electric lockpick
 ashfall-electric-lockpick-desc = A battery wired to a bare metal rod for feeding power straight into door locks. The contacts are live, so do not touch without insulated gloves.
-ashfall-electric-lockpick-success = The lock clicks and gives in — power fed straight past the access system!
+ashfall-electric-lockpick-success = The lock clicks and gives in: power fed straight past the access system!
 ashfall-electric-lockpick-verb = Hotwire lock
 ashfall-electric-lockpick-shocked = The live contacts bite into your hands with a discharge!
 ashfall-electric-lockpick-no-charges = The battery is dead.
-ashfall-electric-lockpick-panel-closed = The maintenance panel is closed — pry it open with a screwdriver first.
+ashfall-electric-lockpick-panel-closed = The maintenance panel is closed: pry it open with a screwdriver first.
 
 ent-AshfallElectricLockpick = electric lockpick
     .desc = A battery wired to a bare metal rod for feeding power straight into door locks. The contacts are live, so do not touch without insulated gloves.
