@@ -226,6 +226,18 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
         if (slotIdx < 0 || slotIdx >= CharacterSlotCount)
             return;
 
+        // The submission is valid only against the pool view the questionnaire was filled
+        // in. Any player-initiated slot mutation since (reset, clear, pin, reorder, another
+        // submit) bumps the revision, so a delayed or repeated submission cannot repopulate
+        // a released slot as if it were a fresh choice. Lifecycle transitions (death,
+        // evacuation) push no response to the client and are guarded by the locked check
+        // below instead, which runs against the slot state at processing time.
+        if (msg.PoolRevision != pool.Revision)
+        {
+            SendPoolResponse(msg.MsgChannel, pool);
+            return;
+        }
+
         var existingSlot = pool.PrioritySlots[slotIdx];
         // Ready slots are pinned like OnShift ones: only death or a played shift releases
         // them, so resubmitting the questionnaire cannot silently reroll the candidate.
@@ -267,6 +279,7 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
         };
 
         pool.ConfirmedPriorityIndex = slotIdx;
+        pool.Revision++;
         SendPoolResponse(msg.MsgChannel, pool);
     }
 
@@ -279,6 +292,7 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
             slot.Status != AshfallSlotStatus.Dead)
         {
             pool.ConfirmedPriorityIndex = msg.SlotIndex;
+            pool.Revision++;
         }
         SendPoolResponse(msg.MsgChannel, pool);
     }
@@ -300,6 +314,7 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
             }
 
             pool.PrioritySlots[msg.SlotIndex] = null;
+            pool.Revision++;
             UpdateConfirmedIndex(pool);
         }
         SendPoolResponse(msg.MsgChannel, pool);
@@ -398,6 +413,7 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
         }
 
         pool.PrioritySlots[slotIndex] = new PrioritySlot { Candidate = candidate, Job = job.ID };
+        pool.Revision++;
         UpdateConfirmedIndex(pool);
         return true;
     }
@@ -418,6 +434,7 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
         }
 
         pool.PrioritySlots[slotIndex] = null;
+        pool.Revision++;
         UpdateConfirmedIndex(pool);
         return true;
     }
@@ -441,6 +458,7 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
         // clear and reset would. Which candidate is confirmed stays freely selectable via
         // OnSelectSlot regardless, so reordering grants nothing the lifecycle locks protect.
         (pool.PrioritySlots[from], pool.PrioritySlots[to]) = (pool.PrioritySlots[to], pool.PrioritySlots[from]);
+        pool.Revision++;
         UpdateConfirmedIndex(pool);
         return true;
     }

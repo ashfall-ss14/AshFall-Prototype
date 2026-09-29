@@ -167,7 +167,7 @@ public sealed partial class AshfallCharacterGenSystem : EntitySystem
         if (!_netManager.IsConnected)
             return;
 
-        _netManager.ClientSendMessage(new MsgAshfallLifepathSubmit { Choices = choices });
+        _netManager.ClientSendMessage(new MsgAshfallLifepathSubmit { PoolRevision = PoolRevision, Choices = choices });
     }
 
     public void SelectSlot(int slotIndex)

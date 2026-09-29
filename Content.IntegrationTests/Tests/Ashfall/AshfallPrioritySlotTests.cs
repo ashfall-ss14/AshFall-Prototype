@@ -77,10 +77,14 @@ public sealed class AshfallPrioritySlotTests : GameTest
 
             // A Ready pin is locked: it cannot be moved out by re-pinning elsewhere, and
             // its own slot cannot be pinned over (reordering goes through MovePrioritySlot).
-            Assert.That(sys.TryPin(user, 2, firstId, job, revision), Is.False);
+            Assert.That(sys.TryPin(user, 2, firstId, job, sys.GetOrCreatePool(user).Revision), Is.False);
             Assert.That(sys.GetOrCreatePool(user).PrioritySlots[0], Is.Not.Null);
             Assert.That(sys.GetOrCreatePool(user).PrioritySlots[2], Is.Null);
             Assert.That(sys.GetOrCreatePool(user).ConfirmedPriorityIndex, Is.EqualTo(0));
+
+            // The pin itself moved the revision; the reroll wait below must wait for the
+            // refresh bump, not for the pin's own.
+            revision = sys.GetOrCreatePool(user).Revision;
         });
         await pair.RunTicksSync(5);
 
@@ -306,6 +310,7 @@ public sealed class AshfallPrioritySlotTests : GameTest
 
         Guid firstId = default;
         ProtoId<JobPrototype> job = default!;
+        var revision = -1;
         await server.WaitAssertion(() =>
         {
             var sys = server.EntMan.System<AshfallCharacterPoolSystem>();
@@ -314,6 +319,7 @@ public sealed class AshfallPrioritySlotTests : GameTest
             firstId = pool.Candidates[0].CandidateId;
             job = pool.Candidates[0].CompatibleJobs[0];
             Assert.That(sys.TryPin(user, 0, firstId, job, pool.Revision), Is.True);
+            revision = pool.Revision;
         });
         await pair.RunTicksSync(5);
 
@@ -328,9 +334,9 @@ public sealed class AshfallPrioritySlotTests : GameTest
         };
 
         await client.WaitPost(() =>
-            client.Resolve<INetManager>().ClientSendMessage(new MsgAshfallLifepathSubmit { Choices = MakeChoices(0) }));
+            client.Resolve<INetManager>().ClientSendMessage(new MsgAshfallLifepathSubmit { PoolRevision = revision, Choices = MakeChoices(0) }));
         await client.WaitPost(() =>
-            client.Resolve<INetManager>().ClientSendMessage(new MsgAshfallLifepathSubmit { Choices = MakeChoices(2) }));
+            client.Resolve<INetManager>().ClientSendMessage(new MsgAshfallLifepathSubmit { PoolRevision = revision, Choices = MakeChoices(2) }));
         await PoolManager.WaitUntil(server, () =>
             server.EntMan.System<AshfallCharacterPoolSystem>().GetOrCreatePool(user).PrioritySlots[2] != null, maxTicks: 60);
 
@@ -343,6 +349,99 @@ public sealed class AshfallPrioritySlotTests : GameTest
             Assert.That(pool.PrioritySlots[2], Is.Not.Null,
                 "an empty slot must still accept a valid lifepath submission");
             Assert.That(pool.ConfirmedPriorityIndex, Is.EqualTo(2));
+        });
+    }
+
+    [Test]
+    public async Task StaleLifepathSubmitCannotRestoreReleasedSlot()
+    {
+        var pair = Pair;
+        var server = pair.Server;
+        var client = pair.Client;
+        var user = client.User!.Value;
+
+        // Real lifepath option ids so the server-side generation runs its normal path.
+        ProtoId<AshfallLifepathOptionPrototype> origin = default!, vector = default!, flaw = default!, luggage = default!;
+        await client.WaitAssertion(() =>
+        {
+            var protos = client.Resolve<IPrototypeManager>();
+            origin = protos.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 1).ID;
+            vector = protos.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 2).ID;
+            flaw = protos.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 3).ID;
+            luggage = protos.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 4).ID;
+        });
+
+        var revision = -1;
+        await server.WaitAssertion(() =>
+        {
+            var sys = server.EntMan.System<AshfallCharacterPoolSystem>();
+            ResetSlots(sys, user);
+            revision = sys.GetOrCreatePool(user).Revision;
+        });
+        await pair.RunTicksSync(5);
+
+        AshfallLifepathChoices MakeChoices(int slot) => new()
+        {
+            TargetSlotIndex = slot,
+            Step1Origin = origin,
+            Step2Vector = vector,
+            Step3Flaw = flaw,
+            Step4Luggage = luggage,
+            SelectedSex = Sex.Male,
+        };
+
+        // A fresh submission against the current revision fills the empty slot and bumps it.
+        await client.WaitPost(() =>
+            client.Resolve<INetManager>().ClientSendMessage(new MsgAshfallLifepathSubmit { PoolRevision = revision, Choices = MakeChoices(0) }));
+        await PoolManager.WaitUntil(server, () =>
+            server.EntMan.System<AshfallCharacterPoolSystem>().GetOrCreatePool(user).PrioritySlots[0] != null, maxTicks: 60);
+
+        await server.WaitAssertion(() =>
+        {
+            var sys = server.EntMan.System<AshfallCharacterPoolSystem>();
+            var pool = sys.GetOrCreatePool(user);
+            Assert.That(pool.Revision, Is.GreaterThan(revision));
+
+            // Release the slot the way the lifecycle does: after a played shift the slot is
+            // Evacuated and clearable. Both the submit and the clear moved the revision past
+            // the view the earlier submission was filled against.
+            pool.PrioritySlots[0]!.Status = AshfallSlotStatus.Evacuated;
+            Assert.That(sys.ClearPrioritySlot(user, 0), Is.True);
+            Assert.That(pool.PrioritySlots[0], Is.Null);
+        });
+        await pair.RunTicksSync(5);
+
+        // The delayed or repeated submission carrying the pre-release revision is rejected:
+        // it cannot repopulate the released slot or steal the confirmation.
+        await client.WaitPost(() =>
+            client.Resolve<INetManager>().ClientSendMessage(new MsgAshfallLifepathSubmit { PoolRevision = revision, Choices = MakeChoices(0) }));
+        await pair.RunTicksSync(5);
+
+        await server.WaitAssertion(() =>
+        {
+            var pool = server.EntMan.System<AshfallCharacterPoolSystem>().GetOrCreatePool(user);
+            Assert.That(pool.PrioritySlots[0], Is.Null);
+            Assert.That(pool.ConfirmedPriorityIndex, Is.EqualTo(-1));
+        });
+
+        // A fresh choice made against the current revision still fills the slot normally.
+        var current = -1;
+        await server.WaitAssertion(() =>
+        {
+            current = server.EntMan.System<AshfallCharacterPoolSystem>().GetOrCreatePool(user).Revision;
+        });
+        await pair.RunTicksSync(5);
+
+        await client.WaitPost(() =>
+            client.Resolve<INetManager>().ClientSendMessage(new MsgAshfallLifepathSubmit { PoolRevision = current, Choices = MakeChoices(0) }));
+        await PoolManager.WaitUntil(server, () =>
+            server.EntMan.System<AshfallCharacterPoolSystem>().GetOrCreatePool(user).PrioritySlots[0] != null, maxTicks: 60);
+
+        await server.WaitAssertion(() =>
+        {
+            var pool = server.EntMan.System<AshfallCharacterPoolSystem>().GetOrCreatePool(user);
+            Assert.That(pool.PrioritySlots[0], Is.Not.Null);
+            Assert.That(pool.ConfirmedPriorityIndex, Is.EqualTo(0));
         });
     }
 }

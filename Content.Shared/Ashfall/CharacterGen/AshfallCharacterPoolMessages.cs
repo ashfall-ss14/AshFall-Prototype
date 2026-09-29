@@ -238,10 +238,18 @@ public sealed class MsgAshfallLifepathSubmit : NetMessage
 {
     public override MsgGroups MsgGroup => MsgGroups.Core;
 
+    /// <summary>
+    ///     The pool revision the questionnaire was filled against. A submission is accepted
+    ///     only against the current revision, so a delayed or repeated submit cannot
+    ///     repopulate a slot that was released since the view it was filled in.
+    /// </summary>
+    public int PoolRevision { get; set; }
+
     public Lifepath.AshfallLifepathChoices Choices { get; set; } = new();
 
     public override void ReadFromBuffer(NetIncomingMessage buffer, IRobustSerializer serializer)
     {
+        PoolRevision = buffer.ReadInt32();
         var length = buffer.ReadVariableInt32();
         var bytes = buffer.ReadBytes(length);
         using var stream = new MemoryStream(bytes);
@@ -251,6 +259,7 @@ public sealed class MsgAshfallLifepathSubmit : NetMessage
 
     public override void WriteToBuffer(NetOutgoingMessage buffer, IRobustSerializer serializer)
     {
+        buffer.Write(PoolRevision);
         using var stream = new MemoryStream();
         serializer.SerializeDirect(stream, Choices);
         var bytes = stream.ToArray();
