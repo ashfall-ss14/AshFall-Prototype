@@ -1,6 +1,6 @@
 using Content.Shared.Ashfall.CharacterGen.Prototypes;
+using Content.Shared.Humanoid;
 using Content.Shared.Humanoid.Prototypes;
-using Content.Shared.Preferences;
 using Content.Shared.Roles;
 using Robust.Shared.Maths;
 using Robust.Shared.Prototypes;
@@ -124,8 +124,9 @@ public sealed class AshfallLifepathChoices
     public string? CustomName { get; set; }
 
     /// <summary>
-    ///     Exact character profile generated and previewed on client.
-    ///     Preserved on submission so the saved character profile matches the preview.
+    ///     Sex rolled for the client-side preview. The server keeps it only when the
+    ///     chosen origin's species actually allows it; the rest of the identity is
+    ///     rebuilt server-side from the origin constraints.
     /// </summary>
-    public HumanoidCharacterProfile? GeneratedProfile { get; set; }
+    public Sex SelectedSex { get; set; } = Sex.Male;
 }

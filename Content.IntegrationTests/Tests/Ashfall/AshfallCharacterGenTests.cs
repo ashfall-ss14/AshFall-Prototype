@@ -4,6 +4,7 @@ using System.Linq;
 using Content.IntegrationTests.Fixtures;
 using Content.IntegrationTests.Fixtures.Attributes;
 using Content.Shared.Ashfall.CharacterGen;
+using Content.Shared.Ashfall.CharacterGen.Lifepath;
 using Content.Shared.Ashfall.CharacterGen.Prototypes;
 using Content.Shared.Humanoid;
 using Content.Shared.Humanoid.Markings;
@@ -136,7 +137,7 @@ public sealed class AshfallCharacterGenTests : GameTest
 
     [Test]
     [RunOnSide(Side.Server)]
-    public void GeneratedProfileCanBeNetworkSerializedTest()
+    public void CandidateCanBeNetworkSerializedTest()
     {
         Assert.That(_protoMan.TryIndex(HumanConstraints, out var constraints), Is.True);
         var (expected, _) = PersonGenerator.GenerateCandidate(constraints!, _random);
@@ -389,6 +390,55 @@ public sealed class AshfallCharacterGenTests : GameTest
         Assert.That(unskilledJobs, Is.Not.Empty, "fallback assignments must always exist");
         Assert.That(unskilledJobs.All(jobId => _protoMan.Index<AshfallJobCareerPrototype>(jobId).FallbackOnly),
             Is.True, "unskilled person should only receive fallback jobs");
+    }
+
+    [Test]
+    [RunOnSide(Side.Server)]
+    public void LifepathIdentityIsRebuiltServerSideTest()
+    {
+        var origin = _protoMan.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 1);
+        var vector = _protoMan.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 2);
+        var flaw = _protoMan.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 3);
+        var luggage = _protoMan.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 4);
+        var expectedSpecies = origin.Species?.Id ?? "Human";
+        var species = _protoMan.Index<SpeciesPrototype>(expectedSpecies);
+
+        for (var seed = 0; seed < 50; seed++)
+        {
+            var random = new RobustRandom();
+            random.SetSeed(seed);
+
+            var choices = new AshfallLifepathChoices
+            {
+                Step1Origin = origin.ID,
+                Step2Vector = vector.ID,
+                Step3Flaw = flaw.ID,
+                Step4Luggage = luggage.ID,
+                ExperienceTier = 2,
+                SelectedSex = Sex.Female,
+            };
+
+            var (candidate, _) = PersonGenerator.GenerateFromLifepath(choices, random);
+            var profile = candidate.Profile;
+
+            Assert.That(profile.Species.Id, Is.EqualTo(expectedSpecies), $"seed {seed}");
+            Assert.That(profile.Age, Is.InRange(44, 60), $"seed {seed}: veteran tier age range");
+            Assert.That(species.Sexes, Does.Contain(profile.Sex), $"seed {seed}");
+            Assert.That(profile.Name, Is.Not.Empty, $"seed {seed}");
+        }
+
+        // A rerolled custom name is the only client-authored field that survives submission.
+        var custom = new AshfallLifepathChoices
+        {
+            Step1Origin = origin.ID,
+            Step2Vector = vector.ID,
+            Step3Flaw = flaw.ID,
+            Step4Luggage = luggage.ID,
+            CustomName = "Тест Кандидат",
+            SelectedSex = Sex.Female,
+        };
+        var named = PersonGenerator.GenerateFromLifepath(custom, _random).Candidate;
+        Assert.That(named.Profile.Name, Is.EqualTo("Тест Кандидат"));
     }
 
     [Test]

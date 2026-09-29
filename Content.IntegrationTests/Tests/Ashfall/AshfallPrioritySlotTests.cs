@@ -1,10 +1,15 @@
 using Content.IntegrationTests.Fixtures;
 using Content.Server.Ashfall.CharacterGen;
 using Content.Shared.Ashfall.CharacterGen;
+using Content.Shared.Ashfall.CharacterGen.Lifepath;
+using Content.Shared.Humanoid;
+using Content.Shared.Mobs;
+using Content.Shared.Mobs.Components;
 using Content.Shared.Preferences;
 using Content.Shared.Roles;
 using NUnit.Framework;
 using Robust.Shared.Configuration;
+using Robust.Shared.Map;
 using Robust.Shared.Network;
 using Robust.Shared.Prototypes;
 using System.Linq;
@@ -60,14 +65,10 @@ public sealed class AshfallPrioritySlotTests : GameTest
             Assert.That(sys.TryPin(user, 1, firstId, job, revision + 100), Is.False);
             Assert.That(server.EntMan.System<AshfallCharacterPoolSystem>().GetOrCreatePool(user).PrioritySlots[1], Is.Null);
 
-            // Re-pinning the same candidate into another slot moves the combination there
-            // (a candidate may still never occupy two slots at once).
-            Assert.That(sys.TryPin(user, 2, firstId, job, revision), Is.True);
-            Assert.That(sys.GetOrCreatePool(user).PrioritySlots[0], Is.Null);
-            Assert.That(sys.GetOrCreatePool(user).PrioritySlots[2], Is.Not.Null);
-            Assert.That(sys.GetOrCreatePool(user).ConfirmedPriorityIndex, Is.EqualTo(2));
-
-            Assert.That(sys.TryPin(user, 0, firstId, job, revision), Is.True);
+            // A Ready pin is locked: it cannot be moved out by re-pinning elsewhere, and
+            // its own slot cannot be pinned over (reordering goes through MovePrioritySlot).
+            Assert.That(sys.TryPin(user, 2, firstId, job, revision), Is.False);
+            Assert.That(sys.GetOrCreatePool(user).PrioritySlots[0], Is.Not.Null);
             Assert.That(sys.GetOrCreatePool(user).PrioritySlots[2], Is.Null);
             Assert.That(sys.GetOrCreatePool(user).ConfirmedPriorityIndex, Is.EqualTo(0));
         });
@@ -102,19 +103,19 @@ public sealed class AshfallPrioritySlotTests : GameTest
             Assert.That(profile.JobPriorities[job], Is.EqualTo(JobPriority.High));
             Assert.That(sys.HasCompleteSelection(user), Is.True);
 
-            // Replacing an occupied slot unpins the old combination and takes the new pair.
+            // A locked (Ready) slot rejects replacement and clearing: the pin is released
+            // only by death or a played shift.
             var replacement = pool.Candidates[0];
             Assert.That(
                 sys.TryPin(user, 0, replacement.CandidateId, replacement.CompatibleJobs[0], pool.Revision),
-                Is.True);
-            Assert.That(pool.PrioritySlots[0]!.Candidate.CandidateId, Is.EqualTo(replacement.CandidateId));
-            Assert.That(sys.GetSelectedProfile(user)!.Name, Is.EqualTo(replacement.Profile.Name),
-                "the confirmed slot now resolves to the replacement pair, not the old pinned person");
+                Is.False);
+            Assert.That(pool.PrioritySlots[0]!.Candidate.CandidateId, Is.EqualTo(firstId));
+            Assert.That(sys.GetSelectedProfile(user)!.Name, Is.EqualTo(firstName),
+                "the confirmed slot still resolves to the original pinned person");
 
-            // Clearing leaves other slots untouched and drops the confirmed selection.
-            Assert.That(sys.ClearPrioritySlot(user, 0), Is.True);
-            Assert.That(pool.PrioritySlots[0], Is.Null);
-            Assert.That(sys.HasCompleteSelection(user), Is.False);
+            Assert.That(sys.ClearPrioritySlot(user, 0), Is.False);
+            Assert.That(pool.PrioritySlots[0], Is.Not.Null);
+            Assert.That(sys.HasCompleteSelection(user), Is.True);
         });
     }
 
@@ -220,5 +221,115 @@ public sealed class AshfallPrioritySlotTests : GameTest
                 "pinned content must fit the height-locked card exactly like the empty state");
         });
         await pair.RunTicksSync(5);
+    }
+
+    [Test]
+    public async Task LockedSlotsRejectTamperingUntilDeath()
+    {
+        var pair = Pair;
+        var server = pair.Server;
+        var user = pair.Client.User!.Value;
+
+        Guid firstId = default;
+        ProtoId<JobPrototype> job = default!;
+
+        await server.WaitAssertion(() =>
+        {
+            var sys = server.EntMan.System<AshfallCharacterPoolSystem>();
+            var pool = sys.GetOrCreatePool(user);
+            firstId = pool.Candidates[0].CandidateId;
+            job = pool.Candidates[0].CompatibleJobs[0];
+
+            Assert.That(sys.TryPin(user, 0, firstId, job, pool.Revision), Is.True);
+            var slot = pool.PrioritySlots[0]!;
+
+            // An on-shift slot cannot be cleared, pinned over, or have its pin moved out.
+            slot.Status = AshfallSlotStatus.OnShift;
+            var second = pool.Candidates[1];
+            Assert.That(sys.ClearPrioritySlot(user, 0), Is.False);
+            Assert.That(sys.TryPin(user, 0, second.CandidateId, second.CompatibleJobs[0], pool.Revision), Is.False);
+            Assert.That(sys.TryPin(user, 2, firstId, job, pool.Revision), Is.False);
+            Assert.That(pool.PrioritySlots[0]!.Candidate.CandidateId, Is.EqualTo(firstId));
+            Assert.That(pool.PrioritySlots[2], Is.Null);
+            Assert.That(sys.HasCompleteSelection(user), Is.True);
+
+            // Death of the spawned mob releases the slot and drops the confirmation so the
+            // dead candidate can no longer be respawned through the selected profile.
+            var mob = server.EntMan.SpawnEntity("MobHuman", MapCoordinates.Nullspace);
+            var comp = server.EntMan.GetComponent<MobStateComponent>(mob);
+            slot.SpawnedMob = mob;
+            server.EntMan.EventBus.RaiseLocalEvent(mob,
+                new MobStateChangedEvent(mob, comp, MobState.Alive, MobState.Dead), true);
+
+            Assert.That(slot.Status, Is.EqualTo(AshfallSlotStatus.Dead));
+            Assert.That(pool.ConfirmedPriorityIndex, Is.EqualTo(-1));
+            Assert.That(sys.GetSelectedProfile(user), Is.Null);
+            Assert.That(sys.HasCompleteSelection(user), Is.False);
+
+            // A dead slot is unlocked again: clearing is allowed.
+            Assert.That(sys.ClearPrioritySlot(user, 0), Is.True);
+            Assert.That(pool.PrioritySlots[0], Is.Null);
+        });
+        await pair.RunTicksSync(5);
+    }
+
+    [Test]
+    public async Task LifepathResubmitCannotReplaceReadySlot()
+    {
+        var pair = Pair;
+        var server = pair.Server;
+        var client = pair.Client;
+        var user = client.User!.Value;
+
+        // Real lifepath option ids so the server-side generation runs its normal path.
+        ProtoId<AshfallLifepathOptionPrototype> origin = default!, vector = default!, flaw = default!, luggage = default!;
+        await client.WaitAssertion(() =>
+        {
+            var protos = client.Resolve<IPrototypeManager>();
+            origin = protos.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 1).ID;
+            vector = protos.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 2).ID;
+            flaw = protos.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 3).ID;
+            luggage = protos.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 4).ID;
+        });
+
+        Guid firstId = default;
+        ProtoId<JobPrototype> job = default!;
+        await server.WaitAssertion(() =>
+        {
+            var sys = server.EntMan.System<AshfallCharacterPoolSystem>();
+            var pool = sys.GetOrCreatePool(user);
+            firstId = pool.Candidates[0].CandidateId;
+            job = pool.Candidates[0].CompatibleJobs[0];
+            Assert.That(sys.TryPin(user, 0, firstId, job, pool.Revision), Is.True);
+        });
+        await pair.RunTicksSync(5);
+
+        AshfallLifepathChoices MakeChoices(int slot) => new()
+        {
+            TargetSlotIndex = slot,
+            Step1Origin = origin,
+            Step2Vector = vector,
+            Step3Flaw = flaw,
+            Step4Luggage = luggage,
+            SelectedSex = Sex.Male,
+        };
+
+        await client.WaitPost(() =>
+            client.Resolve<INetManager>().ClientSendMessage(new MsgAshfallLifepathSubmit { Choices = MakeChoices(0) }));
+        await client.WaitPost(() =>
+            client.Resolve<INetManager>().ClientSendMessage(new MsgAshfallLifepathSubmit { Choices = MakeChoices(2) }));
+        await PoolManager.WaitUntil(server, () =>
+            server.EntMan.System<AshfallCharacterPoolSystem>().GetOrCreatePool(user).PrioritySlots[2] != null, maxTicks: 60);
+
+        await server.WaitAssertion(() =>
+        {
+            var pool = server.EntMan.System<AshfallCharacterPoolSystem>().GetOrCreatePool(user);
+            Assert.That(pool.PrioritySlots[0]!.Candidate.CandidateId, Is.EqualTo(firstId),
+                "the Ready pin must survive a lifepath resubmission");
+            Assert.That(pool.PrioritySlots[0]!.Status, Is.EqualTo(AshfallSlotStatus.Ready));
+            Assert.That(pool.PrioritySlots[2], Is.Not.Null,
+                "an empty slot must still accept a valid lifepath submission");
+            Assert.That(pool.ConfirmedPriorityIndex, Is.EqualTo(2));
+        });
     }
 }

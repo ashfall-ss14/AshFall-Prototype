@@ -792,7 +792,8 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         // A generated preview name stays display-only so the server can roll its own culture name.
         _choices.CustomName = _nameRerolled && !string.IsNullOrWhiteSpace(_candidateName) ? _candidateName : null;
         _choices.TargetSlotIndex = _targetSlot;
-        _choices.GeneratedProfile = _currentProfile;
+        // Identity is rebuilt server-side; only the preview's sex roll is preserved.
+        _choices.SelectedSex = _selectedSex;
 
         _genSystem.SubmitLifepath(_choices);
         Finished?.Invoke();
