@@ -50,7 +50,11 @@ public sealed partial class OptionCheckBox : Control
         {
             if (args.Function == EngineKeyFunctions.UIClick && !Disabled)
             {
+                // SetClickPressed only flips the visual state, so dispatch the toggle manually.
                 CheckBox.SetClickPressed(!CheckBox.Pressed);
+                var toggledArgs = new BaseButton.ButtonToggledEventArgs(CheckBox.Pressed, CheckBox, args);
+                OnToggled?.Invoke(toggledArgs);
+                OnRowToggled?.Invoke(CheckBox.Pressed);
                 args.Handle();
             }
         };
