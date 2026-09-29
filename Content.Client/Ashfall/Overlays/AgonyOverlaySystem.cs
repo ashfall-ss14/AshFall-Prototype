@@ -1,4 +1,5 @@
 using Content.Client.Camera;
+using Content.Shared.Atmos;
 using Content.Shared.Atmos.Components;
 using Content.Shared.Body.Components;
 using Content.Shared.Body.Systems;
@@ -7,6 +8,7 @@ using Content.Shared.Damage.Systems;
 using Content.Shared.DamageOverlay;
 using Content.Shared.Mobs;
 using Content.Shared.Ashfall;
+using Robust.Client.GameObjects;
 using Robust.Client.Graphics;
 using Robust.Client.Player;
 using Robust.Shared.Configuration;
@@ -23,9 +25,11 @@ public sealed partial class AgonyOverlaySystem : EntitySystem
     [Dependency] private CameraRecoilSystem _recoil = default!;
     [Dependency] private BloodstreamSystem _bloodstream = default!;
     [Dependency] private IConfigurationManager _config = default!;
+    [Dependency] private AppearanceSystem _appearance = default!;
 
     private AgonyOverlay _overlay = default!;
     private float _lastPainLevel;
+    private bool _initializedPainBaseline;
     private float _heartbeatTimer;
     private float _shockBlur;
     private float _acuteConcussion;
@@ -54,6 +58,7 @@ public sealed partial class AgonyOverlaySystem : EntitySystem
     private void OnPlayerAttached(LocalPlayerAttachedEvent args)
     {
         _lastPainLevel = 0f;
+        _initializedPainBaseline = false;
         _heartbeatTimer = 0f;
         _shockBlur = 0f;
         _acuteConcussion = 0f;
@@ -64,6 +69,7 @@ public sealed partial class AgonyOverlaySystem : EntitySystem
     private void OnPlayerDetached(LocalPlayerDetachedEvent args)
     {
         _lastPainLevel = 0f;
+        _initializedPainBaseline = false;
         _heartbeatTimer = 0f;
         _shockBlur = 0f;
         _acuteConcussion = 0f;
@@ -85,28 +91,37 @@ public sealed partial class AgonyOverlaySystem : EntitySystem
 
         if (_player.LocalEntity is not { } local || !TryComp<DamageOverlayComponent>(local, out var damageOverlay))
         {
+            _initializedPainBaseline = false;
             _lastPainLevel = 0f;
             DecayOverlay(frameTime);
             return;
         }
 
-        // Acute damage detection (gunshot, melee hit, blast spike)
-        if (damageOverlay.PainLevel > _lastPainLevel + 0.003f)
+        if (!_initializedPainBaseline)
         {
-            var painDelta = damageOverlay.PainLevel - _lastPainLevel;
-            _overlay.ShockIntensity = MathF.Min(1.0f, _overlay.ShockIntensity + MathF.Max(0.50f, painDelta * 6f));
-            _shockBlur = MathF.Min(1.0f, _shockBlur + MathF.Max(0.55f, painDelta * 6.5f));
-
-            if (painDelta > 0.015f)
+            _lastPainLevel = damageOverlay.PainLevel;
+            _initializedPainBaseline = true;
+        }
+        else if (_config.GetCVar(AshfallCCVars.AgonyOverlayEnabled))
+        {
+            // Acute damage detection (gunshot, melee hit, blast spike)
+            if (damageOverlay.PainLevel > _lastPainLevel + 0.003f)
             {
-                var kickMagnitude = Math.Clamp(painDelta * 3.5f, 0.15f, 0.85f);
-                var kick = _random.NextAngle().ToVec() * kickMagnitude;
-                _recoil.KickCamera(local, kick);
-            }
+                var painDelta = damageOverlay.PainLevel - _lastPainLevel;
+                _overlay.ShockIntensity = MathF.Min(1.0f, _overlay.ShockIntensity + MathF.Max(0.50f, painDelta * 6f));
+                _shockBlur = MathF.Min(1.0f, _shockBlur + MathF.Max(0.55f, painDelta * 6.5f));
 
-            if (painDelta > 0.06f)
-            {
-                _acuteConcussion = MathF.Min(1.0f, _acuteConcussion + painDelta * 2.5f);
+                if (painDelta > 0.015f)
+                {
+                    var kickMagnitude = Math.Clamp(painDelta * 3.5f, 0.15f, 0.85f);
+                    var kick = _random.NextAngle().ToVec() * kickMagnitude;
+                    _recoil.KickCamera(local, kick);
+                }
+
+                if (painDelta > 0.06f)
+                {
+                    _acuteConcussion = MathF.Min(1.0f, _acuteConcussion + painDelta * 2.5f);
+                }
             }
         }
         _lastPainLevel = damageOverlay.PainLevel;
@@ -208,9 +223,29 @@ public sealed partial class AgonyOverlaySystem : EntitySystem
 
         // Flammable on fire status
         float targetFire = 0f;
-        if (TryComp<FlammableComponent>(local, out var flammable) && flammable.OnFire && damageOverlay.CurrentState != MobState.Dead)
+        if (damageOverlay.CurrentState != MobState.Dead)
         {
-            targetFire = Math.Clamp(0.5f + (flammable.FireStacks / MathF.Max(1f, flammable.MaximumFireStacks)) * 0.5f, 0.4f, 1.0f);
+            bool onFire = false;
+            float fireStacks = 0f;
+            float maxStacks = 10f;
+
+            if (TryComp<FlammableComponent>(local, out var flammable))
+            {
+                onFire = flammable.OnFire;
+                fireStacks = flammable.FireStacks;
+                maxStacks = MathF.Max(1f, flammable.MaximumFireStacks);
+            }
+            else if (_appearance.TryGetData<bool>(local, FireVisuals.OnFire, out var appOnFire) && appOnFire)
+            {
+                onFire = true;
+                if (_appearance.TryGetData<float>(local, FireVisuals.FireStacks, out var appStacks))
+                    fireStacks = appStacks;
+            }
+
+            if (onFire)
+            {
+                targetFire = Math.Clamp(0.5f + (fireStacks / maxStacks) * 0.5f, 0.4f, 1.0f);
+            }
         }
 
         float targetCrit = 0f;
