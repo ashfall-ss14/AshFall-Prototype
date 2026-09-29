@@ -2,6 +2,6 @@
   - "PTSerif-Regular.ttf"
   - "PTSerif-Bold.ttf"
   - "PTSerif-Italic.ttf"
-  license: "OFL-1.1"
-  copyright: "PT Serif, Copyright (c) 2010, ParaType Ltd. Provided for use in the ASHFALL project."
+  license: "Custom"
+  copyright: "SIL Open Font License, Version 1.1. PT Serif, Copyright (c) 2010, ParaType Ltd."
   source: "https://github.com/google/fonts/tree/main/ofl/ptserif"
