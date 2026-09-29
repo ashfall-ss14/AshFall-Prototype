@@ -72,7 +72,7 @@
   description: ashfall-lifepath-step1-independent-desc
   indicatorColor: "#70685A"
   species: Human
-  culture: Nippon
+  culture: Nipponic
   tags: [origin-frontier]
 
 - type: ashfallLifepathOption
@@ -142,7 +142,7 @@
   description: ashfall-lifepath-step1-research-desc
   indicatorColor: "#3D6E7A"
   species: Human
-  culture: Nippon
+  culture: Nipponic
   tags: [origin-science]
 
 - type: ashfallLifepathOption
@@ -252,7 +252,7 @@
   description: ashfall-lifepath-step1-arachnidcavern-desc
   indicatorColor: "#614E73"
   species: Arachnid
-  culture: Arachnid
+  culture: ArachnidHollow
   tags: [origin-mining, origin-industrial]
 
 - type: ashfallLifepathOption
@@ -262,7 +262,7 @@
   description: ashfall-lifepath-step1-arachnidweb-desc
   indicatorColor: "#4A4D6B"
   species: Arachnid
-  culture: Arachnid
+  culture: ArachnidWeb
   tags: [origin-station, origin-logistics]
 
 - type: ashfallLifepathOption
@@ -272,7 +272,7 @@
   description: ashfall-lifepath-step1-veiruhighland-desc
   indicatorColor: "#8A5A3D"
   species: Veiru
-  culture: Veiru
+  culture: VeiruHighland
   tags: [origin-frontier, origin-clan, origin-security]
 
 - type: ashfallLifepathOption
@@ -282,7 +282,7 @@
   description: ashfall-lifepath-step1-veirudesert-desc
   indicatorColor: "#9C7345"
   species: Veiru
-  culture: Veiru
+  culture: VeiruOutland
   tags: [origin-frontier, origin-logistics]
 
 # ==============================================================================

@@ -115,6 +115,8 @@ public sealed class AshfallPersonGenerator
             profile = choices.GeneratedProfile;
             if (!string.IsNullOrWhiteSpace(choices.CustomName))
                 profile = profile.WithName(choices.CustomName);
+            else
+                profile = profile.WithName(GenerateName(culture, profile.Gender, random));
             sex = profile.Sex;
             gender = profile.Gender;
             age = profile.Age;

@@ -81,6 +81,7 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
 
     private HumanoidCharacterProfile? _currentProfile;
     private string _candidateName = string.Empty;
+    private bool _nameRerolled;
     private Sex _selectedSex = Sex.Male;
     private AshfallCulturePrototype? _currentCulture;
     private AshfallLifepathOptionPrototype? _step1Option;
@@ -137,6 +138,7 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         _currentStep = 1;
         _currentProfile = null;
         _candidateName = string.Empty;
+        _nameRerolled = false;
         _step1Option = null;
         _step2Option = null;
         _currentCulture = null;
@@ -467,7 +469,7 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         _candidateName = newName;
         _currentProfile = _currentProfile.WithName(newName);
         CharacterNameLabel.Text = _candidateName;
-        _choices.CustomName = _candidateName;
+        _nameRerolled = true;
     }
 
     private void RegenerateCandidateIdentity()
@@ -503,6 +505,7 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
 
         _currentProfile = _characterGenerator.BuildProfile(name, species, _selectedSex, gender, age, appearance, _random);
         _candidateName = name;
+        _nameRerolled = false;
         CharacterNameLabel.Text = _candidateName;
 
         var speciesName = _prototypes.TryIndex<SpeciesPrototype>(_currentProfile.Species, out var sp)
@@ -786,7 +789,8 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
 
     private void ConfirmCandidate()
     {
-        _choices.CustomName = string.IsNullOrWhiteSpace(_candidateName) ? null : _candidateName;
+        // A generated preview name stays display-only so the server can roll its own culture name.
+        _choices.CustomName = _nameRerolled && !string.IsNullOrWhiteSpace(_candidateName) ? _candidateName : null;
         _choices.TargetSlotIndex = _targetSlot;
         _choices.GeneratedProfile = _currentProfile;
 
