@@ -1,0 +1,66 @@
+# Lockpicking
+ashfall-electric-lockpick = electric lockpick
+ashfall-electric-lockpick-desc = A battery wired to a bare metal rod for feeding power straight into door locks. The contacts are live, so do not touch without insulated gloves.
+ashfall-electric-lockpick-success = The lock clicks and gives in: power fed straight past the access system!
+ashfall-electric-lockpick-verb = Hotwire lock
+ashfall-electric-lockpick-shocked = The live contacts bite into your hands with a discharge!
+ashfall-electric-lockpick-no-charges = The battery is dead.
+ashfall-electric-lockpick-panel-closed = The maintenance panel is closed: pry it open with a screwdriver first.
+
+ent-AshfallElectricLockpick = electric lockpick
+    .desc = A battery wired to a bare metal rod for feeding power straight into door locks. The contacts are live, so do not touch without insulated gloves.
+
+# Complex repair
+ashfall-complex-repairable-success = You finish repairing {THE($target)} with the welder.
+ashfall-complex-repairable-material-needed = {THE($target)} is too damaged! Patch the breaches first: needs { $left }x { $material }.
+ashfall-complex-repairable-material-success = You patch the breach on {THE($target)}. { $left } patches left to install.
+ashfall-complex-repairable-examine = [color=orange]Reinforcement needed: insert { $material } ({ $amount }x) before welding.[/color]
+
+# Barricades
+ashfall-barricade-wooden = wooden barricade
+ashfall-barricade-wooden-desc = A makeshift barricade made of wooden planks. Provides cover against stray projectiles at distance.
+ashfall-barricade-steel = steel barricade
+ashfall-barricade-steel-desc = A heavy barricade made of steel sheets. Solid cover in a shootout.
+ashfall-barricade-plasteel = reinforced barricade
+ashfall-barricade-plasteel-desc = An extremely durable barricade made of plasteel. Withstands heavy fire.
+
+ashfall-barricade-wooden-directional = directional wooden barricade
+ashfall-barricade-wooden-directional-desc = A reinforced wooden barricade for frontal defense.
+ashfall-barricade-steel-directional = directional steel barricade
+ashfall-barricade-steel-directional-desc = A steel frontal cover for hallway defense.
+ashfall-barricade-plasteel-directional = directional reinforced barricade
+ashfall-barricade-plasteel-directional-desc = A heavy-duty directional plasteel barrier.
+
+ashfall-barricade-wooden-floor = low wooden barricade
+ashfall-barricade-wooden-floor-desc = A low wooden obstacle providing partial cover.
+ashfall-barricade-steel-floor = low steel barricade
+ashfall-barricade-steel-floor-desc = A low steel obstacle providing partial cover.
+ashfall-barricade-plasteel-floor = low reinforced barricade
+ashfall-barricade-plasteel-floor-desc = A low reinforced plasteel obstacle.
+
+ashfall-deployable-barrier = tactical barrier
+ashfall-deployable-barrier-desc = A deployable folding barrier providing quick cover when locked in place.
+
+ent-AshfallBarricadeWooden = wooden barricade
+    .desc = A makeshift barricade made of wooden planks. Provides cover against stray projectiles at distance.
+ent-AshfallBarricadeSteel = steel barricade
+    .desc = A heavy barricade made of steel sheets. Solid cover in a shootout.
+ent-AshfallBarricadePlasteel = reinforced barricade
+    .desc = An extremely durable barricade made of plasteel. Withstands heavy fire.
+
+ent-AshfallBarricadeWoodenDirectional = directional wooden barricade
+    .desc = A reinforced wooden barricade for frontal defense.
+ent-AshfallBarricadeSteelDirectional = directional steel barricade
+    .desc = A steel frontal cover for hallway defense.
+ent-AshfallBarricadePlasteelDirectional = directional reinforced barricade
+    .desc = A heavy-duty directional plasteel barrier.
+
+ent-AshfallBarricadeWoodenFloor = low wooden barricade
+    .desc = A low wooden obstacle providing partial cover.
+ent-AshfallBarricadeSteelFloor = low steel barricade
+    .desc = A low steel obstacle providing partial cover.
+ent-AshfallBarricadePlasteelFloor = low reinforced barricade
+    .desc = A low reinforced plasteel obstacle.
+
+ent-AshfallDeployableBarrier = tactical barrier
+    .desc = A deployable folding barrier providing quick cover when locked in place.

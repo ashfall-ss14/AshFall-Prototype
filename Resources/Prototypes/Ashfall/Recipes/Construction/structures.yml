@@ -1,0 +1,88 @@
+# Construction bases
+- type: construction
+  abstract: true
+  parent: BaseStructure
+  id: AshfallBaseBarricadeConstruction
+  canBuildInImpassable: true
+  canRotate: false
+
+- type: construction
+  abstract: true
+  parent: BaseStructure
+  id: AshfallBaseBarricadeDirectionalConstruction
+  canBuildInImpassable: true
+
+# Full-tile barricades
+- type: construction
+  parent: AshfallBaseBarricadeConstruction
+  id: AshfallBarricadeWooden
+  name: ashfall-barricade-wooden
+  description: ashfall-barricade-wooden-desc
+  graph: AshfallBarricadeWoodenGraph
+  targetNode: barricade
+  category: construction-category-structures
+
+- type: construction
+  parent: AshfallBaseBarricadeConstruction
+  id: AshfallBarricadePlasteel
+  name: ashfall-barricade-plasteel
+  description: ashfall-barricade-plasteel-desc
+  graph: AshfallBarricadePlasteelGraph
+  targetNode: barricade
+  category: construction-category-structures
+
+# Directional barricades
+- type: construction
+  parent: AshfallBaseBarricadeDirectionalConstruction
+  id: AshfallBarricadeWoodenDirectional
+  name: ashfall-barricade-wooden-directional
+  description: ashfall-barricade-wooden-directional-desc
+  graph: AshfallBarricadeWoodenGraph
+  targetNode: barricadeDirectional
+  category: construction-category-structures
+
+- type: construction
+  parent: AshfallBaseBarricadeDirectionalConstruction
+  id: AshfallBarricadeSteelDirectional
+  name: ashfall-barricade-steel-directional
+  description: ashfall-barricade-steel-directional-desc
+  graph: AshfallBarricadeSteelGraph
+  targetNode: barricadeDirectional
+  category: construction-category-structures
+
+- type: construction
+  parent: AshfallBaseBarricadeDirectionalConstruction
+  id: AshfallBarricadePlasteelDirectional
+  name: ashfall-barricade-plasteel-directional
+  description: ashfall-barricade-plasteel-directional-desc
+  graph: AshfallBarricadePlasteelGraph
+  targetNode: barricadeDirectional
+  category: construction-category-structures
+
+# Floor low barricades
+- type: construction
+  parent: AshfallBaseBarricadeDirectionalConstruction
+  id: AshfallBarricadeWoodenFloor
+  name: ashfall-barricade-wooden-floor
+  description: ashfall-barricade-wooden-floor-desc
+  graph: AshfallBarricadeWoodenGraph
+  targetNode: barricadeFloor
+  category: construction-category-structures
+
+- type: construction
+  parent: AshfallBaseBarricadeDirectionalConstruction
+  id: AshfallBarricadeSteelFloor
+  name: ashfall-barricade-steel-floor
+  description: ashfall-barricade-steel-floor-desc
+  graph: AshfallBarricadeSteelGraph
+  targetNode: barricadeFloor
+  category: construction-category-structures
+
+- type: construction
+  parent: AshfallBaseBarricadeDirectionalConstruction
+  id: AshfallBarricadePlasteelFloor
+  name: ashfall-barricade-plasteel-floor
+  description: ashfall-barricade-plasteel-floor-desc
+  graph: AshfallBarricadePlasteelGraph
+  targetNode: barricadeFloor
+  category: construction-category-structures

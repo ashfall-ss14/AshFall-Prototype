@@ -50,3 +50,4 @@
   - type: IgnitionSource
     temperature: 700
     ignited: true
+    contactIgnitionRate: 0

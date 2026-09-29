@@ -6,6 +6,8 @@
   - type: AccessReader
   - type: Lock
   - type: LockVisuals
+  - type: TargetLockPick
+    time: 7.0
   - type: Sprite
     sprite: Structures/Storage/closet.rsi
     noRot: true
