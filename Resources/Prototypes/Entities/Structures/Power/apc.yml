@@ -24,6 +24,11 @@
     netsync: false
   - type: AccessReader
     access: [["Engineering"]]
+  - type: ComplexRepairable
+    qualityNeeded: Welding
+    fuelCost: 4
+    material: Steel
+    materialRepairTreshold: 30
   - type: Sprite
     drawdepth: WallMountedItems
     sprite: Structures/Wallmounts/apc.rsi

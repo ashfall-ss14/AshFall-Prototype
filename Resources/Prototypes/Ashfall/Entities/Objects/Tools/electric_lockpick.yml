@@ -1,0 +1,18 @@
+- type: entity
+  name: electric lockpick
+  parent: BaseItem
+  id: AshfallElectricLockpick
+  description: A battery wired to a bare metal rod for feeding power straight into door locks. The contacts are live, so do not touch without insulated gloves.
+  components:
+  - type: Sprite
+    sprite: Ashfall/Objects/Tools/lockpick.rsi
+    state: lockpick
+  - type: Item
+    size: Tiny
+  - type: Lockpick
+    speedModifier: 1.0
+  - type: LimitedCharges
+    maxCharges: 3
+  - type: Construction
+    graph: AshfallElectricLockpickGraph
+    node: lockpick

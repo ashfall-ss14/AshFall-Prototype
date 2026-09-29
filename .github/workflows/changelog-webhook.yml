@@ -1,19 +1,29 @@
 name: Changelog Discord Webhook
 
 on:
-  pull_request:
+  pull_request_target:
     types: [closed]
     branches: [master]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to send changelog for (e.g. 11)'
+        required: true
+        type: string
 
 jobs:
   send-changelog:
-    # Запуск только при успешном слиянии (merge) PR в master
-    if: github.event.pull_request.merged == true
+    # Запуск только при успешном слиянии (merge) PR в master, либо при ручном запуске
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Parse changelog and dispatch to Discord
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_CHANGELOG_WEBHOOK }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
+          REPOSITORY: ${{ github.repository }}
           PR_BODY: ${{ github.event.pull_request.body }}
           PR_URL: ${{ github.event.pull_request.html_url }}
           PR_TITLE: ${{ github.event.pull_request.title }}
@@ -26,6 +36,7 @@ jobs:
           import os
           import re
           import urllib.request
+          import urllib.error
 
           def main():
               # Цвет полосы карточки Discord Embed (#907036)
@@ -36,12 +47,32 @@ jobs:
                   print("Секрет DISCORD_CHANGELOG_WEBHOOK не найден или пуст. Пропуск отправки.")
                   return
 
-              pr_body = os.environ.get("PR_BODY", "")
-              pr_url = os.environ.get("PR_URL", "")
-              pr_title = os.environ.get("PR_TITLE", "")
-              pr_number = os.environ.get("PR_NUMBER", "")
-              pr_author = os.environ.get("PR_AUTHOR", "")
-              pr_author_avatar = os.environ.get("PR_AUTHOR_AVATAR", "")
+              event_name = os.environ.get("EVENT_NAME", "")
+              if event_name == "workflow_dispatch":
+                  pr_num = os.environ.get("INPUT_PR_NUMBER", "").strip()
+                  repo = os.environ.get("REPOSITORY", "")
+                  token = os.environ.get("GITHUB_TOKEN", "")
+                  api_url = f"https://api.github.com/repos/{repo}/pulls/{pr_num}"
+                  req = urllib.request.Request(api_url, headers={
+                      "Authorization": f"Bearer {token}",
+                      "Accept": "application/vnd.github+json",
+                      "User-Agent": "Ashfall-Webhook-Dispatcher"
+                  })
+                  with urllib.request.urlopen(req) as resp:
+                      pr_data = json.loads(resp.read().decode("utf-8"))
+                  pr_body = pr_data.get("body", "") or ""
+                  pr_url = pr_data.get("html_url", "")
+                  pr_title = pr_data.get("title", "")
+                  pr_number = str(pr_data.get("number", ""))
+                  pr_author = pr_data.get("user", {}).get("login", "")
+                  pr_author_avatar = pr_data.get("user", {}).get("avatar_url", "")
+              else:
+                  pr_body = os.environ.get("PR_BODY", "") or ""
+                  pr_url = os.environ.get("PR_URL", "")
+                  pr_title = os.environ.get("PR_TITLE", "")
+                  pr_number = os.environ.get("PR_NUMBER", "")
+                  pr_author = os.environ.get("PR_AUTHOR", "")
+                  pr_author_avatar = os.environ.get("PR_AUTHOR_AVATAR", "")
 
               # Очищаем от HTML-комментариев (включая закомментированный шаблон)
               clean_body = re.sub(r"<!--[\s\S]*?-->", "", pr_body)
@@ -56,6 +87,8 @@ jobs:
               m_header = re.match(r"(##\s*(?:Чейнджлог|Changelog)[\s\S]*?)(?=\n##\s+|$)", raw_section, re.IGNORECASE)
               if m_header:
                   raw_section = m_header.group(1).strip()
+              else:
+                  raw_section = re.split(r"\n##\s+", raw_section)[0].strip()
 
               if ":cl:" not in raw_section:
                   print("Метка :cl: не найдена. Пропуск.")
@@ -136,18 +169,24 @@ jobs:
                   return
 
               description = "\n\n".join(output_blocks)
+              if len(description) > 4000:
+                  description = description[:3990] + "\n..."
+
+              title_str = f"PR #{pr_number}: {pr_title}"
+              if len(title_str) > 256:
+                  title_str = title_str[:253] + "..."
 
               payload = {
                   "embeds": [
                       {
-                          "title": f"PR #{pr_number}: {pr_title}",
+                          "title": title_str,
                           "url": pr_url,
                           "description": description,
                           "color": EMBED_COLOR,
                           "author": {
-                              "name": pr_author,
+                              "name": pr_author[:256] if pr_author else "",
                               "icon_url": pr_author_avatar,
-                              "url": f"https://github.com/{pr_author}"
+                              "url": f"https://github.com/{pr_author}" if pr_author else ""
                           },
                           "image": {
                               "url": "https://cdn.discohook.app/transparent/400x1.png"
@@ -168,6 +207,10 @@ jobs:
               try:
                   with urllib.request.urlopen(req) as resp:
                       print(f"Оповещение успешно отправлено! Код ответа: {resp.status}")
+              except urllib.error.HTTPError as e:
+                  err_body = e.read().decode("utf-8", errors="ignore")
+                  print(f"Ошибка при отправке в Discord (HTTP {e.code}): {err_body}")
+                  raise e
               except Exception as e:
                   print(f"Ошибка при отправке в Discord: {e}")
                   raise e

@@ -1,0 +1,8 @@
+# Ashfall tools
+- type: construction
+  parent: BaseTool
+  id: AshfallElectricLockpick
+  name: ashfall-electric-lockpick
+  description: ashfall-electric-lockpick-desc
+  graph: AshfallElectricLockpickGraph
+  targetNode: lockpick
