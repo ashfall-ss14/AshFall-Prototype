@@ -1383,3 +1383,20 @@
         GlassBeaker:
           amount: 2
           defaultPrototype: Beaker
+
+- type: entity
+  id: ADTCoffeeMachineCircuitboard #AshFall-Tweak
+  parent: BaseMachineCircuitboard
+  name: Coffe machine dispencer board
+  description: A machine printed circuit board for a Coffe machine.
+  components:
+    - type: Sprite
+      state: service
+    - type: MachineBoard
+      prototype: ADTCoffeeMachineEmpty
+      stackRequirements:
+        Plastic: 5
+      tagRequirements:
+          GlassBeaker:
+            amount: 1
+            defaultPrototype: Beaker
