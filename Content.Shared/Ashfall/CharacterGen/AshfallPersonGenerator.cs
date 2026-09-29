@@ -217,12 +217,26 @@ public sealed class AshfallPersonGenerator
             }
         }
 
-        var eligible = AshfallJobScorer.ScoreEligibleJobs(person, _prototypes);
-        if (!string.IsNullOrEmpty(choices.SelectedJob.Id) && !eligible.Contains(choices.SelectedJob))
+        if (!string.IsNullOrEmpty(choices.SelectedJob.Id) &&
+            _prototypes.TryIndex<AshfallJobCareerPrototype>(choices.SelectedJob.Id, out var selectedCareer) &&
+            selectedCareer.Domain == domain)
         {
-            eligible.Insert(0, choices.SelectedJob);
+            foreach (var (reqComp, reqLevel) in selectedCareer.RequiredCompetencies)
+            {
+                var curLevel = person.GetLevel(reqComp);
+                if (curLevel < reqLevel)
+                {
+                    var neededExp = AshfallCareerLevels.ThresholdFor(reqLevel) - person.GetOrAddCompetency(reqComp).Experience;
+                    if (neededExp > 0)
+                        person.AddExperience(reqComp, neededExp, AshfallProvenanceSource.Career, selectedCareer.ID);
+                }
+            }
+            if (selectedCareer.RequiresLeadershipHistory)
+                person.LeadershipHistory = true;
         }
-        else if (!string.IsNullOrEmpty(choices.SelectedJob.Id) && eligible.Contains(choices.SelectedJob))
+
+        var eligible = AshfallJobScorer.ScoreEligibleJobs(person, _prototypes);
+        if (!string.IsNullOrEmpty(choices.SelectedJob.Id) && eligible.Contains(choices.SelectedJob))
         {
             eligible.Remove(choices.SelectedJob);
             eligible.Insert(0, choices.SelectedJob);

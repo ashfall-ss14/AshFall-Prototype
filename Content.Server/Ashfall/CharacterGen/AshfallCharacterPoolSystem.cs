@@ -204,9 +204,21 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
 
         var (candidate, structure) = _personGenerator.GenerateFromLifepath(msg.Choices, _random);
 
+        var selectedJobId = msg.Choices.SelectedJob.Id;
         var jobId = !string.IsNullOrEmpty(msg.Choices.SelectedJob.Id)
             ? msg.Choices.SelectedJob.Id
             : (candidate.CompatibleJobs.Count > 0 ? candidate.CompatibleJobs[0].Id : "Passenger");
+
+        var eligibleJobs = AshfallJobScorer.ScoreEligibleJobs(structure, _protoManager);
+        if (!_protoManager.TryIndex<JobPrototype>(jobId, out var job) ||
+            !job.SetPreference ||
+            !candidate.CompatibleJobs.Contains(job.ID) ||
+            (!string.IsNullOrEmpty(selectedJobId) && !eligibleJobs.Contains(job.ID)) ||
+            !IsJobAllowed(player, job.ID, candidate.Profile))
+        {
+            SendPoolResponse(msg.MsgChannel, pool);
+            return;
+        }
 
         if (!candidate.CompatibleJobs.Contains(jobId))
             candidate.CompatibleJobs.Insert(0, jobId);
@@ -226,7 +238,9 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
     {
         var player = msg.MsgChannel.UserId;
         var pool = GetOrCreatePool(player);
-        if (msg.SlotIndex >= 0 && msg.SlotIndex < CharacterSlotCount && pool.PrioritySlots[msg.SlotIndex] != null)
+        if (msg.SlotIndex >= 0 && msg.SlotIndex < CharacterSlotCount &&
+            pool.PrioritySlots[msg.SlotIndex] is { } slot &&
+            slot.Status != AshfallSlotStatus.Dead)
         {
             pool.ConfirmedPriorityIndex = msg.SlotIndex;
         }
@@ -258,7 +272,8 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
     private void OnPlayerSpawnComplete(PlayerSpawnCompleteEvent ev)
     {
         if (ev.Player.UserId is { } userId && _playerPools.TryGetValue(userId, out var pool) &&
-            pool.TryGetConfirmedSlot(out var slot))
+            pool.TryGetConfirmedSlot(out var slot) &&
+            slot.Status == AshfallSlotStatus.Ready)
         {
             slot.Status = AshfallSlotStatus.OnShift;
             slot.SpawnedMob = ev.Mob;

@@ -14,6 +14,7 @@ using Robust.Client.Graphics;
 using Robust.Client.UserInterface.Controls;
 using Robust.Client.UserInterface.CustomControls;
 using Robust.Client.UserInterface.XAML;
+using Robust.Shared.Enums;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Utility;
 
@@ -34,10 +35,17 @@ public sealed partial class AshfallSkillsDetailWindow : DefaultWindow
         DetailsCloseButton.OnPressed += _ => Close();
     }
 
-    public void Populate(GeneralStationRecord record)
+    public void Populate(GeneralStationRecord record, HumanoidCharacterProfile? profile = null)
     {
         Title = Loc.GetString("ashfall-skills-window-title", ("name", record.Name));
         CandidateNameLabel.Text = record.Name;
+
+        var sex = record.Gender switch
+        {
+            Gender.Male => Loc.GetString("ashfall-personal-files-sex-male"),
+            Gender.Female => Loc.GetString("ashfall-personal-files-sex-female"),
+            _ => Loc.GetString("ashfall-personal-files-sex-other"),
+        };
 
         var speciesName = _proto.TryIndex<SpeciesPrototype>(record.Species, out var speciesProto)
             ? Loc.GetString(speciesProto.Name)
@@ -45,14 +53,14 @@ public sealed partial class AshfallSkillsDetailWindow : DefaultWindow
 
         CandidateBioLabel.Text = Loc.GetString("ashfall-personal-files-dossier-bio",
             ("age", record.Age),
-            ("sex", record.Gender.ToString()),
+            ("sex", sex),
             ("species", speciesName));
 
         CandidateJobLabel.Text = Loc.GetString("ashfall-skills-window-job", ("job", record.JobTitle));
 
         _proto.TryIndex<JobPrototype>(record.JobPrototype, out var job);
 
-        PopulateCategories(speciesProto, job, null);
+        PopulateCategories(speciesProto, job, profile);
     }
 
     public void Populate(HumanoidCharacterProfile profile, JobPrototype? job)
@@ -166,9 +174,12 @@ public sealed partial class AshfallSkillsDetailWindow : DefaultWindow
                     cardContent.AddChild(descLabel);
                 }
 
+                var profileStr = profile != null
+                    ? profileDiff.ToString()
+                    : Loc.GetString("ashfall-personal-files-record-unavailable");
                 var breakdownText = Loc.GetString("ashfall-skills-window-breakdown",
                     ("species", speciesBase),
-                    ("profile", profileDiff),
+                    ("profile", profileStr),
                     ("job", jobFloor));
                 var breakdownLabel = new Label
                 {
