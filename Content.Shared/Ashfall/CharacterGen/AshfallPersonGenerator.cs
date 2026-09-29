@@ -104,27 +104,46 @@ public sealed class AshfallPersonGenerator
                 .FirstOrDefault(c => c.Species == species.ID) ?? _prototypes.Index(DefaultHumanConstraints);
         }
 
-        var age = choices.ExperienceTier switch
+        HumanoidCharacterProfile profile;
+        Sex sex;
+        Gender gender;
+        int age;
+        string morphology = string.Empty;
+
+        if (choices.GeneratedProfile != null)
         {
-            0 => random.Next(19, 25),
-            2 => random.Next(44, 60),
-            _ => random.Next(27, 40),
-        };
-
-        var sex = random.Pick(species.Sexes);
-        var gender = sex switch
+            profile = choices.GeneratedProfile;
+            if (!string.IsNullOrWhiteSpace(choices.CustomName))
+                profile = profile.WithName(choices.CustomName);
+            sex = profile.Sex;
+            gender = profile.Gender;
+            age = profile.Age;
+        }
+        else
         {
-            Sex.Female => Gender.Female,
-            Sex.Male => Gender.Male,
-            _ => Gender.Epicene
-        };
+            age = choices.ExperienceTier switch
+            {
+                0 => random.Next(19, 25),
+                2 => random.Next(44, 60),
+                _ => random.Next(27, 40),
+            };
 
-        var name = !string.IsNullOrWhiteSpace(choices.CustomName)
-            ? choices.CustomName
-            : GenerateName(culture, gender, random);
+            sex = random.Pick(species.Sexes);
+            gender = sex switch
+            {
+                Sex.Female => Gender.Female,
+                Sex.Male => Gender.Male,
+                _ => Gender.Epicene
+            };
 
-        var (appearance, morphology) = _characterGenerator.GenerateAppearance(constraints, species, sex, age, random, culture);
-        var profile = _characterGenerator.BuildProfile(name, species, sex, gender, age, appearance, random);
+            var name = !string.IsNullOrWhiteSpace(choices.CustomName)
+                ? choices.CustomName
+                : GenerateName(culture, gender, random);
+
+            var (appearance, morph) = _characterGenerator.GenerateAppearance(constraints, species, sex, age, random, culture);
+            morphology = morph;
+            profile = _characterGenerator.BuildProfile(name, species, sex, gender, age, appearance, random);
+        }
 
         var person = new AshfallPersonStructure
         {

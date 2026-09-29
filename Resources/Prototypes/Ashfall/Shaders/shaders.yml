@@ -32,3 +32,8 @@
   id: AshfallDossierBackground
   kind: source
   path: "/Textures/Ashfall/Shaders/dossier_bg.swsl"
+
+- type: shader
+  id: AshfallLifepathMorph
+  kind: source
+  path: "/Textures/Ashfall/Shaders/lifepath_morph.swsl"

@@ -28,10 +28,11 @@ public sealed class AshfallDossierSheetlet : Sheetlet<AshfallStylesheet>
     public const string LedgerValueClass = "AshfallLedgerValue";
 
     public const string WeaknessClass = "AshfallDossierWeakness";
+    public const string TabButtonClass = "AshfallDossierTabButton";
 
     public override StyleRule[] GetRules(AshfallStylesheet sheet, object config)
     {
-        var displayFont = ResCache.GetFont("/Fonts/NotoSans/NotoSans-Bold.ttf", 20);
+        var displayFont = ResCache.GetFont("/Fonts/Cozette/CozetteVector.ttf", 20);
         var candidateFont = ResCache.GetFont("/Fonts/NotoSans/NotoSans-Bold.ttf", 16);
         var titleFont = ResCache.GetFont("/Fonts/NotoSans/NotoSans-Bold.ttf", 15);
         var bodyFont = ResCache.GetFont("/Fonts/Tahoma/tahoma.ttf", 14);
@@ -39,33 +40,45 @@ public sealed class AshfallDossierSheetlet : Sheetlet<AshfallStylesheet>
         var monoSmall = ResCache.GetFont("/Fonts/RobotoMono/RobotoMono-Regular.ttf", 11);
         var weaknessFont = ResCache.GetFont("/Fonts/Tahoma/tahoma.ttf", 13);
 
-        // Tactile dark option cards with clear borders and warm amber hover
-        var optionNormal = new StyleBoxFlat
-        {
-            BackgroundColor = Color.FromHex("#10141CE6"),
-            BorderThickness = new Thickness(1),
-            BorderColor = Color.FromHex("#222936"),
-        };
-        optionNormal.SetContentMarginOverride(StyleBox.Margin.Horizontal, 18);
-        optionNormal.SetContentMarginOverride(StyleBox.Margin.Vertical, 12);
+        // Option cards: completely borderless, floating lines of dialogue
+        var optionNormal = new StyleBoxEmpty();
+        optionNormal.SetContentMarginOverride(StyleBox.Margin.Horizontal, 4);
+        optionNormal.SetContentMarginOverride(StyleBox.Margin.Vertical, 8);
 
-        var optionHover = new StyleBoxFlat
-        {
-            BackgroundColor = Color.FromHex("#18202CF0"),
-            BorderThickness = new Thickness(1),
-            BorderColor = Color.FromHex("#8C6A3E"),
-        };
-        optionHover.SetContentMarginOverride(StyleBox.Margin.Horizontal, 18);
-        optionHover.SetContentMarginOverride(StyleBox.Margin.Vertical, 12);
+        var optionHover = new StyleBoxEmpty();
+        optionHover.SetContentMarginOverride(StyleBox.Margin.Horizontal, 4);
+        optionHover.SetContentMarginOverride(StyleBox.Margin.Vertical, 8);
 
-        var optionPressed = new StyleBoxFlat
+        var optionPressed = new StyleBoxEmpty();
+        optionPressed.SetContentMarginOverride(StyleBox.Margin.Horizontal, 4);
+        optionPressed.SetContentMarginOverride(StyleBox.Margin.Vertical, 8);
+
+        var tabNormal = new StyleBoxFlat
         {
-            BackgroundColor = Color.FromHex("#131720F0"),
-            BorderThickness = new Thickness(1),
-            BorderColor = Color.FromHex("#C89248"),
+            BackgroundColor = Color.FromHex("#12151CEE"),
+            BorderThickness = new Thickness(1, 1, 0, 1),
+            BorderColor = Color.FromHex("#2A313E"),
         };
-        optionPressed.SetContentMarginOverride(StyleBox.Margin.Horizontal, 18);
-        optionPressed.SetContentMarginOverride(StyleBox.Margin.Vertical, 12);
+        tabNormal.SetContentMarginOverride(StyleBox.Margin.Horizontal, 6);
+        tabNormal.SetContentMarginOverride(StyleBox.Margin.Vertical, 14);
+
+        var tabHover = new StyleBoxFlat
+        {
+            BackgroundColor = Color.FromHex("#1A202BF8"),
+            BorderThickness = new Thickness(1, 1, 0, 1),
+            BorderColor = Color.FromHex("#C88A3E"),
+        };
+        tabHover.SetContentMarginOverride(StyleBox.Margin.Horizontal, 6);
+        tabHover.SetContentMarginOverride(StyleBox.Margin.Vertical, 14);
+
+        var tabPressed = new StyleBoxFlat
+        {
+            BackgroundColor = Color.FromHex("#0E1116EE"),
+            BorderThickness = new Thickness(1, 1, 0, 1),
+            BorderColor = Color.FromHex("#E29B42"),
+        };
+        tabPressed.SetContentMarginOverride(StyleBox.Margin.Horizontal, 6);
+        tabPressed.SetContentMarginOverride(StyleBox.Margin.Vertical, 14);
 
         return new StyleRule[]
         {
@@ -120,6 +133,29 @@ public sealed class AshfallDossierSheetlet : Sheetlet<AshfallStylesheet>
             ButtonRule(OptionCardClass).PseudoHovered()
                 .ParentOf(E<Label>().Class(OptionTitleClass))
                 .Prop(Label.StylePropertyFontColor, Color.FromHex("#F0A84E")),
+            ButtonRule(OptionCardClass).PseudoHovered()
+                .ParentOf(E<Label>().Class(SerifClass))
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#F5F2EA")),
+            ButtonRule(OptionCardClass).PseudoHovered()
+                .ParentOf(E()).ParentOf(E<Label>().Class(SerifClass))
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#F5F2EA")),
+            ButtonRule(OptionCardClass).PseudoPressed()
+                .ParentOf(E<Label>().Class(SerifClass))
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#FFAE33")),
+            ButtonRule(OptionCardClass).PseudoPressed()
+                .ParentOf(E()).ParentOf(E<Label>().Class(SerifClass))
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#FFAE33")),
+
+            E<Button>().Class(TabButtonClass).PseudoNormal()
+                .Prop(Button.StylePropertyStyleBox, tabNormal)
+                .Prop(Label.StylePropertyFont, monoSmall)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#C8B89E")),
+            E<Button>().Class(TabButtonClass).PseudoHovered()
+                .Prop(Button.StylePropertyStyleBox, tabHover)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#F0A84E")),
+            E<Button>().Class(TabButtonClass).PseudoPressed()
+                .Prop(Button.StylePropertyStyleBox, tabPressed)
+                .Prop(Label.StylePropertyFontColor, Color.FromHex("#FFFFFF")),
         };
     }
 

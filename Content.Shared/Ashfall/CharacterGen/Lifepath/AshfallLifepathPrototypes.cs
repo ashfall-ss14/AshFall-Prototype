@@ -1,5 +1,6 @@
 using Content.Shared.Ashfall.CharacterGen.Prototypes;
 using Content.Shared.Humanoid.Prototypes;
+using Content.Shared.Preferences;
 using Content.Shared.Roles;
 using Robust.Shared.Maths;
 using Robust.Shared.Prototypes;
@@ -39,6 +40,18 @@ public sealed partial class AshfallLifepathOptionPrototype : IPrototype
     /// </summary>
     [DataField]
     public Color IndicatorColor { get; private set; } = Color.FromHex("#D48944");
+
+    /// <summary>
+    ///     Tags describing this origin or option (e.g. origin-mining, origin-station, etc.).
+    /// </summary>
+    [DataField]
+    public List<string> Tags { get; private set; } = new();
+
+    /// <summary>
+    ///     Tags this option matches against from prior steps for dynamic causal filtering.
+    /// </summary>
+    [DataField]
+    public List<string> MatchingTags { get; private set; } = new();
 
     // --- Step 1: Biological Origin & Species ---
 
@@ -109,4 +122,10 @@ public sealed class AshfallLifepathChoices
     ///     Custom name if player chose to overwrite procedural cultural name.
     /// </summary>
     public string? CustomName { get; set; }
+
+    /// <summary>
+    ///     Exact character profile generated and previewed on client.
+    ///     Preserved on submission so the saved character profile matches the preview.
+    /// </summary>
+    public HumanoidCharacterProfile? GeneratedProfile { get; set; }
 }
