@@ -243,6 +243,7 @@ public sealed class AshfallCharacterGenTests : GameTest
         }
 
         // Generative invariants across many seeds.
+        var generatedCertificationCount = 0;
         for (var seed = 100; seed < 600; seed++)
         {
             var random = new RobustRandom();
@@ -279,7 +280,24 @@ public sealed class AshfallCharacterGenTests : GameTest
             Assert.That(candidate.Dossier.Sections, Has.All.Matches<AshfallDossierSection>(s =>
                 !string.IsNullOrWhiteSpace(s.Title) && s.Lines.Count > 0 && s.Lines.All(l => !string.IsNullOrWhiteSpace(l))),
                 $"seed {seed}");
+
+            var educationLines = candidate.Dossier.Sections.Single(s => s.Kind == "education").Lines;
+            var certificationLines = educationLines.Where(line => line.StartsWith("• ")).ToArray();
+            Assert.That(certificationLines, Has.Length.EqualTo(structure.Certifications.Count), $"seed {seed}");
+            Assert.That(certificationLines, Has.All.Contains("[color="), $"seed {seed}");
+
+            for (var i = 0; i < certificationLines.Length; i++)
+            {
+                var certification = _protoMan.Index(structure.Certifications[i]);
+                var labelKey = certification.Kind == AshfallCertificationKind.Specialization
+                    ? "ashfall-cert-kind-specialization"
+                    : "ashfall-cert-kind-course";
+                Assert.That(certificationLines[i], Does.Contain(Loc.GetString(labelKey)), $"seed {seed}");
+                generatedCertificationCount++;
+            }
         }
+
+        Assert.That(generatedCertificationCount, Is.GreaterThan(0), "no generated candidates had certifications");
     }
 
     [Test]
