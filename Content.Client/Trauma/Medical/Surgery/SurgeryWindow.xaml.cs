@@ -159,7 +159,7 @@ public sealed partial class SurgeryWindow : FancyWindow
             label.Set(msg, null);
 
             Steps.AddChild(label);
-            Steps.AddChild(new HSeparator { Margin = new Thickness(0, 0, 0, 1) });
+            Steps.AddChild(new Separator { Orientation = Separator.OrientationMode.Horizontal, Margin = new Thickness(0, 0, 0, 1) });
         }
 
         var netPart = _ent.GetNetEntity(part);

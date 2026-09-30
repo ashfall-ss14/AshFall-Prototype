@@ -230,8 +230,6 @@ public sealed partial class StationSpawningSystem : EntitySystem
 
         return null;
     }
-ontent.Shared/Station/Systems/StationSpawningSystem.cs
-
     /// <summary>
     /// Attempts to spawn a player character onto the given station.
     /// </summary>

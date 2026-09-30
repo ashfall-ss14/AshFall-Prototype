@@ -30,7 +30,6 @@ public sealed partial class ChatTab : Control
         Control.AddOptionCheckBox(CCVars.LoocAboveHeadShow, ShowLoocAboveHeadCheckBox);
 
         Control.AddOptionCheckBox(CCVars.ShowOocPatronColor, ShowOocPatronColor);
-        Control.AddOptionCheckBox(CCVars.InterfaceChatFollowButton, ChatFollowButton);
         Control.AddOptionCheckBox(AshfallCCVars.ChatLogInChat, LogActionsInChatCheckBox);
         Control.AddOptionCheckBox(AshfallCCVars.ChatCoalesceIdenticalMessages, CoalesceIdenticalMessagesCheckBox);
 

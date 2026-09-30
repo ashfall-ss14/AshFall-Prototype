@@ -21,7 +21,6 @@ using Content.Shared.Damage.ForceSay;
 using Content.Shared.Decals;
 using Content.Shared.Input;
 using Content.Shared.Radio;
-using Content.Shared.Roles.RoleCodeword;
 using Robust.Client.Audio;
 using Robust.Client.GameObjects;
 using Robust.Client.Graphics;

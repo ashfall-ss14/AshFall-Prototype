@@ -21,7 +21,7 @@ public sealed partial class ServerGameTicker
         var allprotos = ProtoMan.EnumeratePrototypes<LobbyBackgroundPrototype>().ToList();
         _lobbyBackgrounds ??= new List<ProtoId<LobbyBackgroundPrototype>>();
 
-        var configuredBackground = _cfg.GetCVar(AshfallCCVars.LobbyBackground);
+        var configuredBackground = Cfg.GetCVar(AshfallCCVars.LobbyBackground);
         if (!string.IsNullOrWhiteSpace(configuredBackground) &&
             ProtoMan.TryIndex<LobbyBackgroundPrototype>(configuredBackground, out var configuredProto) &&
             WhitelistedBackgroundExtensions.Contains(configuredProto.Background.Extension))

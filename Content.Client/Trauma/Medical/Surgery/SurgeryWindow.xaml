@@ -8,6 +8,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
     x:Class="Content.Medical.Client.Surgery.SurgeryWindow"
     xmlns:controls="using:Content.Medical.Client.Surgery"
     xmlns:cc="using:Content.Client.Administration.UI.CustomControls"
+    xmlns:ui="using:Content.Client.UserInterface.Controls"
     Title="{Loc 'surgery-ui-window-title'}"
     MinSize="400 400">
     <BoxContainer Orientation="Vertical" HorizontalExpand="True" VerticalExpand="True">
@@ -19,7 +20,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
             <Button Name="StepsButton" Text="{Loc 'surgery-ui-window-steps'}"
                     HorizontalExpand="True" StyleClasses="OpenBoth" />
         </BoxContainer>
-        <cc:HSeparator />
+        <ui:Separator Orientation="Horizontal" />
         <ScrollContainer VScrollEnabled="True" HorizontalExpand="True" VerticalExpand="True">
             <BoxContainer Name="Parts" Orientation="Vertical" Visible="False" />
             <BoxContainer Name="Surgeries" Orientation="Vertical" Visible="False" />

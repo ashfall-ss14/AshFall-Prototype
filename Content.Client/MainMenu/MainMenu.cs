@@ -190,7 +190,6 @@ namespace Content.Client.MainMenu
         {
             _isConnecting = state;
             _mainMenuControl.DirectConnectButton.Disabled = state;
-            _mainMenuControl.ConnectionStatus.Visible = state;
         }
     }
 }

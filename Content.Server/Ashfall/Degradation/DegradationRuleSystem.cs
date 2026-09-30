@@ -1,4 +1,5 @@
 using Content.Server.GameTicking.Rules;
+using Content.Shared.GameTicking.Rules;
 using Content.Server.Station.Events;
 using Content.Server.Station.Systems;
 using Content.Shared.GameTicking.Components;
@@ -40,13 +41,13 @@ public sealed partial class DegradationRuleSystem : GameRuleSystem<DegradationRu
             Log.Error(
                 $"Degradation profile {profile.ID} cannot satisfy required tags: " +
                 string.Join(", ", scenario.MissingRequiredTags));
-            GameTicker.EndGameRule(uid, gameRule);
+            GameTicker.EndGameRule((uid, gameRule));
             return;
         }
 
         foreach (var fault in scenario.Faults)
         {
-            var faultRule = GameTicker.AddFilteredGameRule(fault.Rule);
+            var faultRule = GameTicker.AddGameRule(fault.Rule);
             if (faultRule == null)
             {
                 Log.Warning($"Degradation fault {fault.Id} ({fault.Rule}) was ignored and will not be applied.");
@@ -71,7 +72,7 @@ public sealed partial class DegradationRuleSystem : GameRuleSystem<DegradationRu
         var query = EntityQueryEnumerator<DegradationRuleComponent, GameRuleComponent>();
         while (query.MoveNext(out var uid, out var rule, out _))
         {
-            if (HasComp<EndedGameRuleComponent>(uid) || rule.Scenario == null)
+            if (!HasComp<GameRuleComponent>(uid) || rule.Scenario == null)
                 continue;
 
             foreach (var grid in ev.Station.Comp.Grids)

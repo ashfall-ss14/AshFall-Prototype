@@ -45,7 +45,7 @@ public abstract partial class VariationPassSystem<T> : GameRuleSystem<T>
     {
         for (var i = 0; i < 64; i++)
         {
-            if (!TryFindRandomTileOnStation(station, out _, out _, out coordinates))
+            if (!Stations.TryFindRandomTileOnStation(station, out _, out _, out coordinates))
                 continue;
             if (!TryComp<DegradationZoneTargetComponent>(rule, out var target) ||
                 Zones.TryGetZone(coordinates, out var zone) && zone.ID == target.Zone.Id)

@@ -123,7 +123,7 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
                 pool.RefreshesUsed++;
 
                 if (_playerManager.TryGetSessionById(player, out var session))
-                    EntityManager.System<GameTicker>().ToggleReady(session, false);
+                    EntityManager.System<ServerGameTicker>().ToggleReady(session, false);
             }
         }
 

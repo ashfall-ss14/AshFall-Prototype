@@ -11,13 +11,13 @@
             </BoxContainer>
         </PanelContainer>
 
-        <controls:HLine StyleClasses="highlight" Thickness="1" />
+        <controls:Separator Orientation="Horizontal" StyleClasses="highlight" Thickness="1" />
 
         <ScrollContainer VerticalExpand="True" HorizontalExpand="True" HScrollEnabled="False">
             <BoxContainer Name="CategoriesContainer" Orientation="Vertical" HorizontalExpand="True" Margin="4 0" SeparationOverride="12" />
         </ScrollContainer>
 
-        <controls:HLine StyleClasses="highlight" Thickness="1" />
+        <controls:Separator Orientation="Horizontal" StyleClasses="highlight" Thickness="1" />
 
         <Button Name="DetailsCloseButton" Text="{Loc ashfall-skills-window-close}" StyleClasses="AshfallSecondaryAction" HorizontalAlignment="Right" MinWidth="120" MinHeight="32" />
     </BoxContainer>

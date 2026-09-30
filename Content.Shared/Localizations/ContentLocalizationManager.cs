@@ -33,7 +33,7 @@ namespace Content.Shared.Localizations
             RegisterCommonFunctions(culture);
             RegisterCommonFunctions(cultureEn);
 
-            _loc.SetFallbackCluture(cultureEn);
+            _loc.SetFallbackCulture(cultureEn);
             _loc.SetCulture(culture);
 
             /*
