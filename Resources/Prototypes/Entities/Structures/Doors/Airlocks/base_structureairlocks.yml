@@ -192,6 +192,11 @@
     cost: 6
     delay: 8
     fx: EffectRCDDeconstruct8
+  - type: ComplexRepairable
+    qualityNeeded: Welding
+    fuelCost: 5
+    material: Steel
+    materialRepairTreshold: 50
   - type: Destructible
     thresholds:
     - trigger:

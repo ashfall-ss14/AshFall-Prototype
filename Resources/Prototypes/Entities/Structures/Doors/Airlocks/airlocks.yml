@@ -54,6 +54,8 @@
     sprite: Structures/Doors/Airlocks/Standard/engineering-base.rsi
   - type: Wires
     layoutId: AirlockEngineering
+  - type: TargetLockPick
+    time: 12.0
 
 - type: entity
   parent: AirlockEngineering
@@ -158,6 +160,8 @@
   components:
   - type: Sprite
     sprite: Structures/Doors/Airlocks/Standard/airlock-maints.rsi
+  - type: TargetLockPick
+    time: 12.0
 
 - type: entity
   parent: AirlockSecurity # if you get syndie door somehow it counts as sec

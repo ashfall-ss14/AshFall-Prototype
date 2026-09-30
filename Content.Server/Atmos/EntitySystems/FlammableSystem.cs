@@ -317,7 +317,9 @@ namespace Content.Server.Atmos.EntitySystems
 
             if (flammable.FireStacks <= 0)
             {
-                TryExtinguish((uid, flammable));
+                // FireStacks still changed even when extinguishing is denied, so keep it synced.
+                if (!TryExtinguish((uid, flammable)))
+                    Dirty(uid, flammable);
             }
             else
             {
@@ -491,6 +493,7 @@ namespace Content.Server.Atmos.EntitySystems
                 if (flammable.FireStacks < 0)
                 {
                     flammable.FireStacks = MathF.Min(0, flammable.FireStacks + 1);
+                    Dirty(uid, flammable);
                 }
 
                 if (!flammable.OnFire)

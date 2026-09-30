@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="https://discord.gg/qC5nxGVeYN"><img src="https://img.shields.io/badge/Discord-Присоединиться-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord" /></a>
+  <a href="https://discord.gg/6hZhXhtUv"><img src="https://img.shields.io/badge/Discord-Присоединиться-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord" /></a>
   <a href="https://github.com/space-wizards/space-station-14"><img src="https://img.shields.io/badge/База-Space_Station_14-44403c?style=flat-square" alt="Space Station 14" /></a>
   <a href="#лицензия"><img src="https://img.shields.io/badge/Лицензия-MIT_%2F_AGPLv3-ea580c?style=flat-square" alt="Лицензия" /></a>
 </p>
@@ -14,7 +14,7 @@
   <a href="#как-играть">Как играть</a> •
   <a href="#сборка">Сборка</a> •
   <a href="#лицензия">Лицензия</a> •
-  <a href="https://discord.gg/qC5nxGVeYN">Discord</a>
+  <a href="https://discord.gg/6hZhXhtUv">Discord</a>
 </p>
 
 ---
@@ -41,7 +41,7 @@
 Проект в разработке, плейтесты анонсируются в сообществе.
 
 1. Установите официальный лаунчер [Space Station 14](https://spacestation14.io/) или альтернативный [Trauma Launcher](https://github.com/Trauma-Station/Trauma.Launcher).
-2. Зайдите в наш [Discord](https://discord.gg/qC5nxGVeYN) за расписанием тестов и адресом сервера.
+2. Зайдите в наш [Discord](https://discord.gg/6hZhXhtUv) за расписанием тестов и адресом сервера.
 
 ## Сборка
 
@@ -61,6 +61,6 @@ dotnet build
 ## Лицензия
 
 - Исходный код Space Station 14: [LICENSE.TXT](LICENSE.TXT) (MIT).
-- Код Ashfall: [PROJECT-LICENSE.md](PROJECT-LICENSE.md) и [LICENSE.md](LICENSE.md).
+- Код Ashfall: [PROJECT-LICENSE.md](PROJECT-LICENSE.md).
 - Доноры и апстримы: [UPSTREAM.md](UPSTREAM.md) и [DONORS.yml](DONORS.yml).
-- Контакты: [SECURITY.md](SECURITY.md) или [Discord](https://discord.gg/qC5nxGVeYN).
+- Контакты: [SECURITY.md](SECURITY.md) или [Discord](https://discord.gg/6hZhXhtUv).
