@@ -1,0 +1,41 @@
+- type: jukebox
+  id: AshConstellations
+  name: 1. constellations
+  path:
+    path: /Audio/Jukebox/constellations.ogg
+
+- type: jukebox
+  id: AshDrifting
+  name: 2.drifting
+  path:
+    path: /Audio/Jukebox/drifting.ogg
+
+- type: jukebox
+  id: AshFlipFlap
+  name: 3. flip-flap
+  path:
+    path: /Audio/Jukebox/vokaloid/flip-flap.ogg
+
+- type: jukebox
+  id: AshSector11
+  name: 4. Sector11
+  path:
+    path: /Audio/Jukebox/sector11.ogg
+
+- type: jukebox
+  id: AshStarlight
+  name: 5. Starlight
+  path:
+    path: /Audio/Jukebox/starlight.ogg
+
+- type: jukebox
+  id: AshSunset
+  name: 6. Sunset
+  path:
+    path: /Audio/Jukebox/sunset.ogg
+
+- type: jukebox
+  id: AshTitle3
+  name: 7. title3
+  path:
+    path: /Audio/Jukebox/title3.ogg

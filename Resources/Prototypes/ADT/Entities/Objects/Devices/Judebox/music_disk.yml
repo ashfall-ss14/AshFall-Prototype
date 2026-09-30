@@ -1,0 +1,98 @@
+- type: entity
+  parent: BaseItem
+  id: ADTMusicDiskStandard
+  name: music disk (standard)
+  description: A time-tested collection of symphonies and orchestral works. For those who appreciate elegance.
+  components:
+  - type: Sprite
+    sprite: ADT/Objects/Misc/music_disk.rsi
+    layers:
+    - state: disk_base
+      color: "#1cf01c"
+    - state: disk_label_music
+  - type: Item
+    size: Tiny
+  - type: Damageable
+  - type: Appearance
+  - type: EmitSoundOnPickup
+    sound:
+      path: /Audio/ADT/Items/Handling/disk_pickup.ogg
+      params:
+        volume: -6
+  - type: EmitSoundOnDrop
+    sound:
+      path: /Audio/ADT/Items/Handling/disk_drop.ogg
+      params:
+        volume: -6
+  - type: EmitSoundOnLand
+    sound:
+      path: /Audio/ADT/Items/Handling/disk_drop.ogg
+      params:
+        volume: -6
+  - type: JukeboxDisk
+    tracksCollection: Standard
+  - type: GenericVisualizer
+    visuals:
+      enum.ToggleableVisuals.Enabled:
+        enum.ToggleableVisuals.Layer:
+          True: { visible: true }
+          False: { visible: false }
+  - type: StaticPrice
+    price: 50
+
+#- type: entity
+#  parent: BaseItem
+#  id: ADTMusicDiskRandom
+#  name: old music disc
+#  description: A worn disc of unknown origin. Perhaps there will be some collector who wants to get his hands on it.
+#  components:
+#  - type: Sprite
+#    sprite: Objects/Misc/module.rsi
+#    layers:
+#    - state: harddisk
+#      map: [ "base" ]
+#  - type: Item
+#    size: Tiny
+#  - type: Damageable
+#  - type: Appearance
+#  - type: EmitSoundOnPickup
+#    sound:
+#      path: /Audio/ADT/Items/Handling/disk_pickup.ogg
+#      params:
+#        volume: -6
+#  - type: EmitSoundOnDrop
+#    sound:
+#      path: /Audio/ADT/Items/Handling/disk_drop.ogg
+#      params:
+#        volume: -6
+#  - type: EmitSoundOnLand
+#    sound:
+#      path: /Audio/ADT/Items/Handling/disk_drop.ogg
+#      params:
+#        volume: -6
+#  - type: JukeboxDisk
+#    useRandom: true
+#  - type: GenericVisualizer
+#    visuals:
+#     enum.ToggleableVisuals.Enabled:
+#       enum.ToggleableVisuals.Layer:
+#         True: { visible: true }
+#         False: { visible: false }
+# - type: StaticPrice
+#   price: 210
+
+- type: entity
+  parent: ADTMusicDiskStandard
+  id: ADTMusicDiskTest
+  name: music disk
+  components:
+  - type: Sprite
+    sprite: ADT/Objects/Misc/music_disk.rsi
+    layers:
+    - state: disk_base
+      color: "#0b8a55"
+    - state: disk_label_music
+  - type: JukeboxDisk
+    tracksCollection: Test
+  - type: StaticPrice
+    price: 50
