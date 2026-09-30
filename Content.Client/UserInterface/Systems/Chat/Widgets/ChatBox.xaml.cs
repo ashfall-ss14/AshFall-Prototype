@@ -1,5 +1,7 @@
 using System.Linq;
 using Content.Client.Ashfall.UI.Chat;
+using Content.Client.UserInterface.Controls;
+using Content.Client.UserInterface.RichText;
 using Content.Client.UserInterface.Systems.Chat.Controls;
 using Content.Shared.Ashfall;
 using Content.Shared.Chat;
@@ -22,7 +24,7 @@ namespace Content.Client.UserInterface.Systems.Chat.Widgets;
 
 [GenerateTypedNameReferences]
 [Virtual]
-public partial class ChatBox : UIWidget
+public partial class ChatBox : UIWidget, IEntityLinkClickHandler
 {
     [Dependency] private IEntityManager _entManager = default!;
     [Dependency] private ILogManager _log = default!;
@@ -172,6 +174,20 @@ public partial class ChatBox : UIWidget
         _searchController.SetSearch(this, query);
     }
 
+    /// <summary>
+    /// Calls update function on every child <see cref="TextLinkLabel"/> in the ChatBox's OutputPanel "Contents"
+    /// </summary>
+    public void UpdateTextLinkLabelProperties(SharedChatSystem _sharedChatSys)
+    {
+        foreach (var contentsChild in Contents.Children)
+        {
+            if (contentsChild is TextLinkLabel textLinkLabel)
+            {
+                textLinkLabel.UpdateLabelProperties(_sharedChatSys);
+            }
+        }
+    }
+
     private void OnChannelFilter(ChatChannel channel, bool active)
     {
         Contents.Clear();
@@ -237,6 +253,15 @@ public partial class ChatBox : UIWidget
             return;
 
         ChatInput.ChannelSelector.Select(toSelect);
+    }
+
+    /// <summary>
+    /// Sends a message to the server when this chat message is clicked.
+    /// </summary>
+    /// <param name="netEntity">Target entity of our event</param>
+    public void HandleClick(NetEntity netEntity)
+    {
+        _entManager.RaisePredictiveEvent(new ChatLinkClickedRequestEvent(netEntity));
     }
 
     private void OnInputKeyBindDown(GUIBoundKeyEventArgs args)

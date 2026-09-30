@@ -17,6 +17,19 @@
                     <ui:OptionCheckBox Name="DiscordRich" Title="{Loc 'ui-options-discordrich'}" />
                 </BoxContainer>
 
+                <!-- Speech -->
+                <BoxContainer Orientation="Vertical" SeparationOverride="3" HorizontalExpand="True">
+                    <Label Text="{Loc 'ui-options-general-speech'}" StyleClasses="AshfallSectionHeader" Margin="0 4 0 2"/>
+                    <ui:OptionCheckBox Name="ShowOocPatronColor"
+                                       Title="{Loc 'ui-options-show-ooc-patron-color'}" />
+                    <ui:OptionCheckBox Name="ShowLoocAboveHeadCheckBox"
+                                       Title="{Loc 'ui-options-show-looc-on-head'}" />
+                    <ui:OptionCheckBox Name="FancySpeechBubblesCheckBox"
+                                       Title="{Loc 'ui-options-fancy-speech'}" />
+                    <ui:OptionCheckBox Name="FancyNameBackgroundsCheckBox"
+                                       Title="{Loc 'ui-options-fancy-name-background'}" />
+                </BoxContainer>
+
                 <!-- Cursor & Indicators -->
                 <BoxContainer Orientation="Vertical" SeparationOverride="3" HorizontalExpand="True">
                     <Label Text="{Loc 'ui-options-general-cursor'}" StyleClasses="AshfallSectionHeader" Margin="0 4 0 2"/>

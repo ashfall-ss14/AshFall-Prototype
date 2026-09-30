@@ -94,7 +94,7 @@ public abstract partial class SharedTabletopSystem : EntitySystem
         var meta = MetaData(handEnt.Value);
         var protoId = meta.EntityPrototype?.ID;
 
-        var hologram = EntityManager.PredictedSpawn(protoId, session.Position.Offset(-1, 0));
+        var hologram = PredictedSpawn(protoId, session.Position.Offset(-1, 0));
         var ev = new Content.Trauma.Common.Tabletop.TabletopSpawnedEvent();
         RaiseLocalEvent(hologram, ref ev);
 

@@ -13,18 +13,10 @@ public readonly record struct PlantGrowEvent(NetEntity Tray);
 /// Event raised when a harvest is attempted.
 /// </summary>
 [ByRefEvent]
-public sealed class DoHarvestEvent(EntityUid user, EntityUid target) : CancellableEntityEventArgs
-{
-    public EntityUid User { get; } = user;
-    public EntityUid Target { get; } = target;
-}
+public record struct PlantHarvestAttemptEvent(EntityUid User, EntityUid Target, EntityUid? Used = null, bool Cancelled = false);
 
 /// <summary>
-/// Event raised after a harvest is attempted.
+/// Event raised after a plant has been harvested.
 /// </summary>
 [ByRefEvent]
-public sealed class AfterDoHarvestEvent(EntityUid user, EntityUid target) : CancellableEntityEventArgs
-{
-    public EntityUid User { get; } = user;
-    public EntityUid Target { get; } = target;
-}
+public readonly record struct PlantHarvestedEvent(EntityUid User, EntityUid Target);

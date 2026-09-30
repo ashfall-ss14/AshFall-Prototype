@@ -309,7 +309,7 @@ namespace Content.Client.Chat.UI
                 OutlineColorOverride = TextOutline.Default.Color,
             };
 
-            label.SetMessage(FormatSpeech(message.WrappedMessage, fontColor));
+            label.SetMessage(FormatSpeech(message.WrappedMessage, fontColor), tagsAllowed: null);
 
             var panel = new PanelContainer
             {
@@ -345,7 +345,7 @@ namespace Content.Client.Chat.UI
                     OutlineColorOverride = TextOutline.Default.Color,
                 };
 
-                label.SetMessage(ExtractAndFormatSpeechSubstring(message, "BubbleContent", fontColor));
+                label.SetMessage(ExtractAndFormatSpeechSubstring(message, "BubbleContent", fontColor), tagsAllowed: null);
 
                 Control content = label;
                 if (TryGetLanguageIcon(message, out var iconTexture))
@@ -401,9 +401,9 @@ namespace Content.Client.Chat.UI
                 headerContainer.AddChild(iconTexture);
             }
 
-            bubbleHeader.SetMessage(ExtractAndFormatSpeechSubstring(message, "BubbleHeader", fontColor));
+            bubbleHeader.SetMessage(ExtractAndFormatSpeechSubstring(message, "BubbleHeader", fontColor), tagsAllowed:null);
             headerContainer.AddChild(bubbleHeader);
-            bubbleContent.SetMessage(ExtractAndFormatSpeechSubstring(message, "BubbleContent", fontColor));
+            bubbleContent.SetMessage(ExtractAndFormatSpeechSubstring(message, "BubbleContent", fontColor), tagsAllowed:null);
 
             var mainPanel = new PanelContainer
             {

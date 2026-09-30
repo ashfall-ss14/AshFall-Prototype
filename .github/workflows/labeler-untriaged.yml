@@ -1,4 +1,4 @@
-﻿name: "Labels: Untriaged"
+name: "Labels: Untriaged"
 
 on:
   pull_request_target:

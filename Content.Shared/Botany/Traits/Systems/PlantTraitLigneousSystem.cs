@@ -37,21 +37,21 @@ public sealed partial class PlantTraitLigneousSystem : EntitySystem
         }
 
         // Ligneous requires sharp tool.
-        var harvestToolQuality = ent.Comp.HarvestToolQuality;
-        if (harvestToolQuality.HasValue && !_tool.HasQuality(args.Used, harvestToolQuality.Value))
-        {
-            _popup.PopupCursor(Loc.GetString("plant-component-ligneous-cant-harvest-message"), args.User);
             return;
         }
 
-        _plantHarvest.TryHandleHarvest(ent.Owner, args.User);
+        _plantHarvest.TryHandleHarvest(ent.Owner, args.User, args.Used);
         args.Handled = true;
     }
 
     [SubscribeLocalEvent(before: [typeof(PlantHarvestSystem)])]
-    private void OnDoHarvest(Entity<PlantTraitLigneousComponent> ent, ref DoHarvestEvent args)
+    private void OnHarvestAttempt(Entity<PlantTraitLigneousComponent> ent, ref PlantHarvestAttemptEvent args)
     {
+        if (args.Used is { } used
+            && _tool.HasQuality(used, ent.Comp.HarvestToolQuality))
+            return;
+
         _popup.PopupCursor(Loc.GetString("plant-component-ligneous-cant-harvest-message"), args.User);
-        args.Cancel();
+        args.Cancelled = true;
     }
 }

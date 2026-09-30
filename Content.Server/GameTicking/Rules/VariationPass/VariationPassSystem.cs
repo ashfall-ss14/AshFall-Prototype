@@ -1,6 +1,7 @@
-﻿using Ashfall.Server.Degradation.Components;
+using Ashfall.Server.Degradation.Components;
 using Content.Server._Starlight.Zones;
 using Content.Server.Station.Systems;
+using Content.Shared.GameTicking.Rules;
 using Robust.Shared.Map;
 using Robust.Shared.Random;
 
@@ -13,7 +14,7 @@ namespace Content.Server.GameTicking.Rules.VariationPass;
 public abstract partial class VariationPassSystem<T> : GameRuleSystem<T>
     where T: IComponent
 {
-    [Dependency] protected StationSystem Stations = default!;
+    [Dependency] protected ServerStationSystem Stations = default!;
     [Dependency] protected IRobustRandom Random = default!;
     [Dependency] protected ZoneSystem Zones = default!;
 

@@ -1,4 +1,4 @@
-﻿// <Trauma>
+// <Trauma>
 using Content.Medical.Common.Damage;
 using Content.Medical.Common.EntityEffects;
 using Content.Medical.Common.Targeting;
