@@ -10,6 +10,17 @@ highp float hash21(highp vec2 p) {
     return fract(p.x * p.y);
 }
 
+highp float vnoise(highp vec2 p) {
+    highp vec2 i = floor(p);
+    highp vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    highp float a = hash21(i);
+    highp float b = hash21(i + vec2(1.0, 0.0));
+    highp float c = hash21(i + vec2(0.0, 1.0));
+    highp float d = hash21(i + vec2(1.0, 1.0));
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
 void fragment() {
     highp vec4 col = texture2D(TEXTURE, UV);
     if (col.a < 0.01) {
@@ -19,35 +30,38 @@ void fragment() {
 
     // Step 1: Dark mysterious silhouette
     if (isSilhouette > 0.5) {
-        // Deep charcoal tone with subtle atmospheric scanline shimmer
         highp float shimmer = sin(UV.y * 60.0 + time * 1.8) * 0.03;
         highp vec3 sil = vec3(0.05, 0.065, 0.09) + vec3(shimmer);
         COLOR = vec4(sil, col.a * 0.95);
         return;
     }
 
-    // Morph transition between steps (pixel dissolve / glitch sweep)
+    // Dark-fire reveal, bottom-up: the figure condenses out of ember haze.
+    // Geometry is never warped, only masked by a drifting noise field.
     if (progress < 1.0) {
-        // Pixel grid size (approx 64x128 blocks)
-        highp vec2 blockUV = floor(UV * vec2(48.0, 96.0));
-        highp float noise = hash21(blockUV);
+        highp float n = vnoise(UV * vec2(24.0, 36.0) + vec2(time * 0.15, -time * 0.55));
+        // Bottom rows reach the threshold earlier, so the fire climbs upward.
+        highp float threshold = progress * 1.25 - UV.y * 0.35;
+        highp float d = n - threshold;
 
-        // Vertical progression gradient combined with pixel noise
-        highp float threshold = progress * 1.3 - (1.0 - UV.y) * 0.3;
-
-        if (noise > threshold + 0.08) {
-            // Unrevealed / silhouette portion
-            highp float shimmer = sin(UV.y * 60.0 + time * 2.0) * 0.04;
-            highp vec3 sil = vec3(0.05, 0.065, 0.09) + vec3(shimmer);
-            COLOR = vec4(sil, col.a * 0.85);
-        } else if (noise > threshold) {
-            // Bright amber / plasma glitch edge during dissolve
-            COLOR = vec4(0.95, 0.65, 0.25, col.a);
+        if (d > 0.12) {
+            // Unrevealed: near-black smoke with a faint deep-ember flicker.
+            highp float ember = vnoise(UV * vec2(10.0, 14.0) + vec2(0.0, -time * 0.8));
+            highp vec3 smoke = vec3(0.015, 0.013, 0.014) + vec3(0.10, 0.03, 0.01) * ember * ember;
+            COLOR = vec4(smoke, col.a * (0.55 + 0.35 * ember));
+        } else if (d > -0.04) {
+            // Burning edge: dark red base glowing up to amber, flickering with time.
+            highp float edge = clamp((0.12 - d) / 0.16, 0.0, 1.0);
+            highp float flick = 0.75 + 0.25 * sin(time * 21.0 + n * 40.0);
+            highp vec3 deep = vec3(0.24, 0.05, 0.02);
+            highp vec3 hot = vec3(0.91, 0.60, 0.28) * flick;
+            highp vec3 emberCol = mix(hot, deep, edge);
+            COLOR = vec4(emberCol, col.a);
         } else {
-            // Revealed texture with subtle horizontal scan glitch
-            highp float glitch = sin(UV.y * 120.0 + time * 8.0) * (1.0 - progress) * 0.02;
-            highp vec4 tex = texture2D(TEXTURE, UV + vec2(glitch, 0.0));
-            COLOR = tex;
+            // Revealed texture, briefly warm-tinted right after passing the edge.
+            highp float warmth = clamp(-d / 0.35, 0.0, 1.0);
+            highp vec3 tint = mix(vec3(1.06, 0.92, 0.80), vec3(1.0), warmth);
+            COLOR = vec4(col.rgb * tint, col.a);
         }
     } else {
         COLOR = col;

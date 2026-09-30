@@ -52,10 +52,10 @@
                     <BoxContainer Name="ContentColumn" Orientation="Vertical" SeparationOverride="20" HorizontalExpand="True">
                         <Label Name="PromptQuestionLabel" StyleClasses="AshfallDossierDisplay" />
 
-                        <!-- Steps 1-4: Narrative Choices -->
+                        <!-- Steps 1-5: Narrative Choices -->
                         <BoxContainer Name="OptionsContainer" Orientation="Vertical" SeparationOverride="12" HorizontalExpand="True" Margin="0 4 0 0" />
 
-                        <!-- Step 5: Final Dossier Decisions -->
+                        <!-- Step 6: Final Dossier Decisions -->
                         <BoxContainer Name="DossierContainer" Orientation="Vertical" SeparationOverride="18" HorizontalExpand="True" Visible="False">
                             <!-- Introspective summary lines (Borderless minimalist aesthetic) -->
                             <BoxContainer Name="DossierSections" Orientation="Vertical" SeparationOverride="14" HorizontalExpand="True" />
@@ -71,10 +71,6 @@
                                 <BoxContainer Orientation="Horizontal" SeparationOverride="12" HorizontalExpand="True">
                                     <Label Text="{Loc 'ashfall-lifepath-field-job'}" StyleClasses="AshfallDossierLabel" VAlign="Center" MinWidth="110" />
                                     <OptionButton Name="JobOption" HorizontalExpand="True" />
-                                </BoxContainer>
-                                <BoxContainer Orientation="Horizontal" SeparationOverride="12" HorizontalExpand="True">
-                                    <Label Text="{Loc 'ashfall-lifepath-field-experience'}" StyleClasses="AshfallDossierLabel" VAlign="Center" MinWidth="110" />
-                                    <OptionButton Name="ExperienceOption" HorizontalExpand="True" />
                                 </BoxContainer>
                             </BoxContainer>
 

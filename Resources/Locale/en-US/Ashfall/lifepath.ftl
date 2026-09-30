@@ -1,18 +1,21 @@
 # Step Headers
-ashfall-lifepath-header-step1 = ORIGIN
-ashfall-lifepath-prompt-step1 = Where did your journey begin?
+ashfall-lifepath-header-step1 = AGE
+ashfall-lifepath-prompt-step1 = How many years have your eyes been open?
 
-ashfall-lifepath-header-step2 = CRAFT
-ashfall-lifepath-prompt-step2 = What is your hands' true craft?
+ashfall-lifepath-header-step2 = ORIGIN
+ashfall-lifepath-prompt-step2 = Where did your journey begin?
 
-ashfall-lifepath-header-step3 = CHARACTER
-ashfall-lifepath-prompt-step3 = How do you react when everything falls apart?
+ashfall-lifepath-header-step3 = CRAFT
+ashfall-lifepath-prompt-step3 = What is your hands' true craft?
 
-ashfall-lifepath-header-step4 = MOTIVATION
-ashfall-lifepath-prompt-step4 = What brought you to this station?
+ashfall-lifepath-header-step4 = CHARACTER
+ashfall-lifepath-prompt-step4 = How do you react when everything falls apart?
 
-ashfall-lifepath-header-step5 = DOSSIER
-ashfall-lifepath-prompt-step5 = Qualification verification and candidate profile confirmation
+ashfall-lifepath-header-step5 = MOTIVATION
+ashfall-lifepath-prompt-step5 = What brought you to this station?
+
+ashfall-lifepath-header-step6 = DOSSIER
+ashfall-lifepath-prompt-step6 = Qualification verification and candidate profile confirmation
 
 # Dossier flyout tab
 ashfall-lifepath-dossier-tab = DOSSIER
@@ -21,6 +24,19 @@ ashfall-lifepath-dossier-tab-close = CLOSE DOSSIER
 # Sex toggle
 ashfall-lifepath-sex-male = M
 ashfall-lifepath-sex-female = F
+
+# ==============================================================================
+# Step 1: Age (First-person dialogue)
+# ==============================================================================
+
+ashfall-lifepath-age-young-title = Young Eyes
+ashfall-lifepath-age-young-desc = "I have few years behind me. First shift, first debt, first scar. My only property is a name and two hands."
+
+ashfall-lifepath-age-mid-title = Middle of the Road
+ashfall-lifepath-age-mid-desc = "My life is midstream. There is already enough to remember, and still somewhere to go."
+
+ashfall-lifepath-age-elder-title = Old Spirit
+ashfall-lifepath-age-elder-desc = "My spirit is old. The body is weaker now, but the mind carries experience. I remember stations that no longer exist."
 
 # ==============================================================================
 # Step 1: Origin (First-person dialogue)
@@ -116,9 +132,11 @@ ashfall-lifepath-step1-veirudesert-desc = "Our watchpost stood on the dune edge.
 
 ashfall-lifepath-step2-engi-title = Wrench and Welding
 ashfall-lifepath-step2-engi-desc = "My hands grew used to a heavy wrench and arc welding. Got my first burn on day three, from a bare rod without gloves."
+ashfall-lifepath-step2-engi-mining-desc = "The rock taught me to listen to metal. I know which pipe is tired by the tremor in the wrench, before it bursts."
 
 ashfall-lifepath-step2-atmos-title = Pipes and Ventilation
 ashfall-lifepath-step2-atmos-desc = "Palm against a manifold, I feel pressure bleed before a gauge registers. Gauges lied more often than hands."
+ashfall-lifepath-step2-atmos-station-desc = "The station breathes through me. One hissing valve on the lower deck tells me who left the hatch open again."
 
 ashfall-lifepath-step2-salvage-title = Cutting and Salvage
 ashfall-lifepath-step2-salvage-desc = "My hands grew used to stiff EVA gloves and the plasma cutter. Drop a tool in vacuum, and it's gone forever."
@@ -133,7 +151,8 @@ ashfall-lifepath-step2-chemist-title = Chemical Synthesis
 ashfall-lifepath-step2-chemist-desc = "My hands worked flasks and precision balances. Won't mix up reagents even if the label wore off."
 
 ashfall-lifepath-step2-sec-title = Station Security
-ashfall-lifepath-step2-sec-desc = "My hands got used to stun batons, riot shields, and cuffing a suspect without snapping their wrists."
+ashfall-lifepath-step2-sec-desc = "The baton. I snap restraints on a stranger's wrists in two seconds flat, and my hands don't shake."
+ashfall-lifepath-step2-sec-clan-desc = "In the clan, fights were a language older than speech. I grew up on it and can answer without a translator."
 
 ashfall-lifepath-step2-warden-title = Custody and Protocols
 ashfall-lifepath-step2-warden-desc = "My hands grew used to key rings and the armory log. Cell locked, gear accounted for, signature signed."
@@ -146,12 +165,14 @@ ashfall-lifepath-step2-serv-desc = "My hands grew used to mops and spare air fil
 
 ashfall-lifepath-step2-cook-title = Provisions and Galley
 ashfall-lifepath-step2-cook-desc = "My hands cooked for the whole rotation, a hundred portions. They still remember the weight of the soup cauldron."
+ashfall-lifepath-step2-cook-agri-desc = "The dome greenhouse grew everything at once. I remember the taste of every sprout before it ever became food."
 
 ashfall-lifepath-step2-botanist-title = Greenhouse and Hydroponics
 ashfall-lifepath-step2-botanist-desc = "My hands got used to damp substrate and delicate replanting. Crops don't wait, so it often meant graveyard hours."
 
 ashfall-lifepath-step2-cargo-title = Freight and Warehousing
 ashfall-lifepath-step2-cargo-desc = "My hands know how to stack crates so the pile doesn't topple. I pull the bottom crate without unpacking the top."
+ashfall-lifepath-step2-cargo-logistics-desc = "I read shipping marks with my eyes closed. Father loaded, mother counted waybills, I do both at once."
 
 # ==============================================================================
 # Step 3: Character & Stress Reaction (First-person dialogue)
@@ -164,10 +185,12 @@ ashfall-lifepath-step3-pedant-weakness = Clings to protocols even when they don'
 ashfall-lifepath-step3-daredevil-title = Decisiveness
 ashfall-lifepath-step3-daredevil-desc = "Better to act right away, even if flawed. I can't stand waiting around for others to make up their minds."
 ashfall-lifepath-step3-daredevil-weakness = Takes reckless risks in pursuit of rapid resolutions.
+ashfall-lifepath-step3-daredevil-mining-desc = "In the pits, whoever hesitated got hauled out in pieces. I don't hesitate."
 
 ashfall-lifepath-step3-paranoid-title = Prudence
 ashfall-lifepath-step3-paranoid-desc = "I double-check airlock dog-latches, and I don't trust crew reports until I see the pressure myself."
 ashfall-lifepath-step3-paranoid-weakness = Mistrustful of crewmates and spends excessive time re-verifying safety.
+ashfall-lifepath-step3-paranoid-frontier-desc = "Out on the frontier the law came once a year. Good locks, dogs, and sleeping in my boots brought me home whole."
 
 ashfall-lifepath-step3-burnout-title = Composure
 ashfall-lifepath-step3-burnout-desc = "I've seen enough hull breaches. Panic doesn't patch metal, so I just quietly do what must be done."
@@ -184,10 +207,21 @@ ashfall-lifepath-step3-pragmatist-weakness = Willing to sacrifice others' comfor
 ashfall-lifepath-step3-idealist-title = Integrity
 ashfall-lifepath-step3-idealist-desc = "I don't leave my people behind and I keep my word, even if directives say otherwise."
 ashfall-lifepath-step3-idealist-weakness = Refuses pragmatic compromises in favor of rigid principles.
+ashfall-lifepath-step3-idealist-security-desc = "Security called me soft. But when the compartment burned, I was the one going in, and they argued outside."
 
 ashfall-lifepath-step3-diplomat-title = Diplomacy
 ashfall-lifepath-step3-diplomat-desc = "I know how to talk down terrified people before they pull the trigger. A couple of calm minutes usually does it."
 ashfall-lifepath-step3-diplomat-weakness = Tries to negotiate when decisive force is immediately required.
+
+ashfall-lifepath-step3-sadist-title = Cruelty
+ashfall-lifepath-step3-sadist-desc = "I know how to inflict pain better than I know how to heal it. Orders never specify the exact method of keeping order."
+ashfall-lifepath-step3-sadist-weakness = When the enemy hurts, I watch their face a little too closely.
+ashfall-lifepath-step3-sadist-medical-desc = "I understand pain professionally. Too professionally, my colleagues used to say, before they transferred to another shift."
+
+ashfall-lifepath-step3-cynic-title = Cynicism
+ashfall-lifepath-step3-cynic-desc = "Everyone on this station is selling something. At least I name my price up front."
+ashfall-lifepath-step3-cynic-weakness = "Believes in people no longer. In paperwork, unfortunately, also no."
+ashfall-lifepath-step3-cynic-corporate-desc = "The corporation taught me: the smile is included in the contract price, sincerity is billed separately."
 
 # ==============================================================================
 # Step 4: Motivation (First-person dialogue)
@@ -196,6 +230,7 @@ ashfall-lifepath-step3-diplomat-weakness = Tries to negotiate when decisive forc
 ashfall-lifepath-step4-balance-title = Fair Contract
 ashfall-lifepath-step4-balance-desc = "ASH-07 paid more than neighboring sites. I had debts, and this contract pays them off in two years."
 ashfall-lifepath-step4-balance-quirk = Closely monitors duty rosters and payroll logs.
+ashfall-lifepath-step4-balance-young-desc = "My first real contract. I don't know yet that not everyone gets a sign-on bonus."
 
 ashfall-lifepath-step4-decay-title = Fresh Start
 ashfall-lifepath-step4-decay-desc = "This contract was my ticket away from the past. ASH-07 was far enough away."
@@ -212,6 +247,7 @@ ashfall-lifepath-step4-stubborn-quirk = Refuses to leave assigned responsibiliti
 ashfall-lifepath-step4-predator-title = Career Growth
 ashfall-lifepath-step4-predator-desc = "Promotions happen faster on remote berths, fewer people want them. Plan was to return with rank."
 ashfall-lifepath-step4-predator-quirk = Actively seeks opportunities to optimize workflow and impress leadership.
+ashfall-lifepath-step4-predator-elder-desc = "I've waited for this promotion longer than some stations live. One last step up remains."
 
 ashfall-lifepath-step4-idealist-title = Crew Support
 ashfall-lifepath-step4-idealist-desc = "ASH-07 was short-handed. Someone had to go, and it happened to be me."
@@ -220,6 +256,7 @@ ashfall-lifepath-step4-idealist-quirk = Always willing to share rations or take 
 ashfall-lifepath-step4-ghost-title = Quiet Focus
 ashfall-lifepath-step4-ghost-desc = "Wanted a posting without command hovering over my shoulder. ASH-07 fit the bill: quiet and distant."
 ashfall-lifepath-step4-ghost-quirk = Avoids bustling corridors and prefers quiet night rotations.
+ashfall-lifepath-step4-ghost-elder-desc = "I got tired of the noise three stations ago. From here on I only need quiet."
 
 ashfall-lifepath-step4-fatalist-title = Dedicated Calling
 ashfall-lifepath-step4-fatalist-desc = "I just enjoy doing good work. ASH-07 had plenty that needed fixing, and that was enough for me."
@@ -227,7 +264,13 @@ ashfall-lifepath-step4-fatalist-quirk = Takes intense personal pride in the craf
 
 # Lobby Slot Screen
 ashfall-lobby-slots-title = STATION PERSONNEL ROSTER
+ashfall-lobby-slot-title = BERTH #{ $slot }
 ashfall-lobby-slot-empty = VACANT BERTH
+ashfall-lobby-slot-vacant = VACANT
+ashfall-lobby-slot-bio = { $species }, { $age } { $age ->
+    [one] year
+   *[other] years
+} old
 ashfall-lobby-slot-create = [ Complete Questionnaire ]
 ashfall-lobby-slot-status-ready = READY FOR SHIFT
 ashfall-lobby-slot-status-onshift = ON SHIFT (LOCKED)
@@ -254,12 +297,14 @@ ashfall-lifepath-reroll-name = Reroll Name
 ashfall-lifepath-field-name = Name:
 ashfall-lifepath-field-experience = Experience:
 ashfall-lifepath-field-job = Assignment:
+ashfall-lifepath-field-age = Age:
 
 # Dossier Sections
 ashfall-lifepath-ledger-origin = ORIGIN
 ashfall-lifepath-ledger-vector = CRAFT
 ashfall-lifepath-ledger-flaw = CHARACTER
 ashfall-lifepath-ledger-luggage = MOTIVATION
+ashfall-lifepath-ledger-age = AGE
 ashfall-lifepath-flaw-weakness = TRAIT
 
 # Service Captions

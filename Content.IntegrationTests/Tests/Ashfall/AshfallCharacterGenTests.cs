@@ -451,10 +451,10 @@ public sealed class AshfallCharacterGenTests : GameTest
     [RunOnSide(Side.Server)]
     public void LifepathIdentityIsRebuiltServerSideTest()
     {
-        var origin = _protoMan.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 1);
-        var vector = _protoMan.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 2);
-        var flaw = _protoMan.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 3);
-        var luggage = _protoMan.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 4);
+        var origin = _protoMan.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 2);
+        var vector = _protoMan.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 3);
+        var flaw = _protoMan.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 4);
+        var luggage = _protoMan.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 5);
         var expectedSpecies = origin.Species?.Id ?? "Human";
         var species = _protoMan.Index<SpeciesPrototype>(expectedSpecies);
 

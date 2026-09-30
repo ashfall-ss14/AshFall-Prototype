@@ -93,6 +93,51 @@ public sealed partial class AshfallLifepathOptionPrototype : IPrototype
     /// </summary>
     [DataField]
     public string? AccessoryId { get; private set; }
+
+    /// <summary>
+    ///     Experience tier (0 = young, 1 = mid, 2 = elder) set by the age-step options only.
+    /// </summary>
+    [DataField]
+    public int ExperienceTier { get; private set; } = -1;
+
+    /// <summary>
+    ///     Context text variants. The first variant whose conditions match the choices made in
+    ///     previous steps replaces the base description (and optionally the weakness or quirk).
+    /// </summary>
+    [DataField]
+    public List<AshfallLifepathTextVariant> Variants { get; private set; } = new();
+}
+
+/// <summary>
+///     An alternative text for a lifepath option, shown when earlier answers match its conditions.
+/// </summary>
+[DataDefinition]
+[Serializable, NetSerializable]
+public sealed partial class AshfallLifepathTextVariant
+{
+    /// <summary>
+    ///     Any-of match against the tags accumulated from previous steps.
+    /// </summary>
+    [DataField]
+    public List<string>? RequiresTags { get; private set; }
+
+    /// <summary>
+    ///     Exact match against the craft domain chosen at the previous step.
+    /// </summary>
+    [DataField]
+    public string? RequiresDomain { get; private set; }
+
+    [DataField]
+    public ProtoId<AshfallPsychotypePrototype>? RequiresPsychotype { get; private set; }
+
+    [DataField(required: true)]
+    public LocId Description { get; private set; } = default!;
+
+    [DataField]
+    public LocId? StressWeaknessLoc { get; private set; }
+
+    [DataField]
+    public LocId? QuirkDescription { get; private set; }
 }
 
 /// <summary>

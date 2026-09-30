@@ -1,18 +1,21 @@
 # Заголовки шагов
-ashfall-lifepath-header-step1 = ИСТОК
-ashfall-lifepath-prompt-step1 = Где начался твой путь?
+ashfall-lifepath-header-step1 = ВОЗРАСТ
+ashfall-lifepath-prompt-step1 = Сколько лет твои глаза открыты?
 
-ashfall-lifepath-header-step2 = РЕМЕСЛО
-ashfall-lifepath-prompt-step2 = К чему привыкли твои руки?
+ashfall-lifepath-header-step2 = ИСТОК
+ashfall-lifepath-prompt-step2 = Где начался твой путь?
 
-ashfall-lifepath-header-step3 = ХАРАКТЕР
-ashfall-lifepath-prompt-step3 = Как ты ведёшь себя, когда всё рушится?
+ashfall-lifepath-header-step3 = РЕМЕСЛО
+ashfall-lifepath-prompt-step3 = К чему привыкли твои руки?
 
-ashfall-lifepath-header-step4 = МОТИВАЦИЯ
-ashfall-lifepath-prompt-step4 = Что привело тебя на эту станцию?
+ashfall-lifepath-header-step4 = ХАРАКТЕР
+ashfall-lifepath-prompt-step4 = Как ты ведёшь себя, когда всё рушится?
 
-ashfall-lifepath-header-step5 = ЛИЧНОЕ ДЕЛО
-ashfall-lifepath-prompt-step5 = Проверка квалификации и утверждение профиля кандидата
+ashfall-lifepath-header-step5 = МОТИВАЦИЯ
+ashfall-lifepath-prompt-step5 = Что привело тебя на эту станцию?
+
+ashfall-lifepath-header-step6 = ЛИЧНОЕ ДЕЛО
+ashfall-lifepath-prompt-step6 = Проверка квалификации и утверждение профиля кандидата
 
 # Вкладка выдвижного досье
 ashfall-lifepath-dossier-tab = ЛИЧНОЕ ДЕЛО
@@ -23,7 +26,19 @@ ashfall-lifepath-sex-male = М
 ashfall-lifepath-sex-female = Ж
 
 
-# Шаг 1: Исток (Реплики от первого лица)
+# Шаг 1: Возраст духа
+
+ashfall-lifepath-age-young-title = Молодые глаза
+ashfall-lifepath-age-young-desc = "Мне ещё мало лет. Первая смена, первый долг, первый шрам. Из имущества у меня только имя и руки."
+
+ashfall-lifepath-age-mid-title = Середина пути
+ashfall-lifepath-age-mid-desc = "Моя жизнь посреди своего потока. Уже есть что помнить, ещё есть куда идти."
+
+ashfall-lifepath-age-elder-title = Старый дух
+ashfall-lifepath-age-elder-desc = "Мой дух стар. Тело уже не так сильно, зато разум несёт опыт. Я помню станции, которых больше нет."
+
+
+# Шаг 2: Исток (Реплики от первого лица)
 
 ashfall-lifepath-step1-mining-title = Шурфы внешнего кольца
 ashfall-lifepath-step1-mining-desc = "Я родился в посёлке при шурфах. До восьми я думал, что небо бывает только нарисованным."
@@ -110,14 +125,16 @@ ashfall-lifepath-step1-veirudesert-title = Пустынный дозор Вей�
 ashfall-lifepath-step1-veirudesert-desc = "Глиняный пост на краю барханов. В карауле приходилось часами щуриться на горизонт через песок."
 
 # ==============================================================================
-# Шаг 2: Ремесло и Специализация (Реплики от первого лица)
+# Шаг 3: Ремесло и Специализация (Реплики от первого лица)
 # ==============================================================================
 
 ashfall-lifepath-step2-engi-title = Ключ и сварка
 ashfall-lifepath-step2-engi-desc = "Пальцы в вечных мозолях от трубного ключа. Шов от сварки кладу вслепую, по звуку дуги."
+ashfall-lifepath-step2-engi-mining-desc = "Порода научила меня слушать металл. По дрожи ключа я знаю, какая труба устала, раньше, чем она сама лопнет."
 
 ashfall-lifepath-step2-atmos-title = Трубы и вентиляция
 ashfall-lifepath-step2-atmos-desc = "Вибрацию и свист стравленного клапана ладонь ловит раньше автоматики. Заслонки кручу на ощупь."
+ashfall-lifepath-step2-atmos-station-desc = "Станция дышит через меня. По одному свисту клапана на нижнем уровне я знаю, кто опять не закрыл шлюз."
 
 ashfall-lifepath-step2-salvage-title = Резка и утилизация
 ashfall-lifepath-step2-salvage-desc = "Тяжёлые вакуумные рукавицы и рукоять плазмореза. Если выронишь резак за борт, уже не поймаешь."
@@ -129,10 +146,11 @@ ashfall-lifepath-step2-paramedic-title = Полевая эвакуация
 ashfall-lifepath-step2-paramedic-desc = "Ручки носилок врезаются в ладони на бегу. Если люк заклинило, в ход сразу идёт фомка."
 
 ashfall-lifepath-step2-chemist-title = Химический синтез
-ashfall-lifepath-step2-chemist-desc = "Точные пипетки и тонкие мензурки. Составы определяю по густоте и весу флакона."
+ashfall-lifepath-step2-chemist-desc = "Густоту раствора я вижу по тому, как он стекает со стенок колбы. Вес флакона в руке честнее любой этикетки."
 
 ashfall-lifepath-step2-sec-title = Охрана порядка
-ashfall-lifepath-step2-sec-desc = "Застёгивать пластиковые стяжки на чужих запястьях получается за пару секунд. Дубинку держу крепко."
+ashfall-lifepath-step2-sec-desc = "Дубинка. Пластиковые стяжки защёлкиваются на чужих запястьях за пару секунд, и руки у меня при этом не дрожат."
+ashfall-lifepath-step2-sec-clan-desc = "В клане драки были языком постарше речи. Я на нём вырос и умею отвечать без переводчика."
 
 ashfall-lifepath-step2-warden-title = Изолятор и регламент
 ashfall-lifepath-step2-warden-desc = "Связка ключей на поясе и журнал приёма. Автоматически проверяю защёлки на каждой решётке."
@@ -145,92 +163,117 @@ ashfall-lifepath-step2-serv-desc = "Тряпка, гаечный ключ и с�
 
 ashfall-lifepath-step2-cook-title = Снабжение и кухня
 ashfall-lifepath-step2-cook-desc = "Разделочный секач и чугунный бак на сотню порций. Нож точу каждое утро до бритвенной остроты."
+ashfall-lifepath-step2-cook-agri-desc = "Купольная оранжерея растила всё подряд. Я помню вкус каждого ростка ещё до того, как он стал едой."
 
 ashfall-lifepath-step2-botanist-title = Оранжерея и гидропоника
 ashfall-lifepath-step2-botanist-desc = "Корни, мокрый гидрогель и садовые ножницы. Ростки пересаживаю аккуратно, чтобы не оборвать завязь."
 
 ashfall-lifepath-step2-cargo-title = Склад и снабжение
 ashfall-lifepath-step2-cargo-desc = "Зацепы грузового манипулятора и ремни крепления. Нижний ящик выдёргиваю так, чтобы штабель не поехал."
+ashfall-lifepath-step2-cargo-logistics-desc = "Маркировку читаю с закрытыми глазами. Отец грузил, мать считала накладные, я делаю оба дела сразу."
 
 # ==============================================================================
-# Шаг 3: Характер и Стресс (Реплики от первого лица)
+# Шаг 4: Характер и Стресс (Реплики от первого лица)
 # ==============================================================================
 
 ashfall-lifepath-step3-pedant-title = Педантичность
 ashfall-lifepath-step3-pedant-desc = "Открыть аварийный регламент и идти строго по пунктам. Самодеятельность только плодит трупы."
-ashfall-lifepath-step3-pedant-weakness = Держится за регламент, даже когда тот не подходит к ситуации.
+ashfall-lifepath-step3-pedant-weakness = "Ни одного пропущенного пункта. Ни себе, ни людям."
 
 ashfall-lifepath-step3-daredevil-title = Решительность
 ashfall-lifepath-step3-daredevil-desc = "Действовать сразу, разбираться потом. Секунда промедления стоит жизни."
-ashfall-lifepath-step3-daredevil-weakness = Идёт на неоправданный риск ради быстрого результата.
+ashfall-lifepath-step3-daredevil-weakness = "Сначала лезу, потом думаю. Иногда это дорого стоит."
+ashfall-lifepath-step3-daredevil-mining-desc = "На шурфе кто мешкал, того вытаскивали по частям. Я не мешкаю."
 
 ashfall-lifepath-step3-paranoid-title = Осторожность
 ashfall-lifepath-step3-paranoid-desc = "Проверять шлюзовые замки дважды и никому не верить на слово. Доклады всегда врут."
-ashfall-lifepath-step3-paranoid-weakness = Подозрителен к коллегам и слишком долго перепроверяет безопасность.
+ashfall-lifepath-step3-paranoid-weakness = "Доверяю только своим замкам. Люди в этот список не входят."
+ashfall-lifepath-step3-paranoid-frontier-desc = "На рубеже закон приезжал раз в год. Меня вытащили целым замки, собаки и привычка спать в ботинках."
 
 ashfall-lifepath-step3-burnout-title = Хладнокровие
 ashfall-lifepath-step3-burnout-desc = "Аварий я повидал достаточно. Паника ничего не чинит, поэтому я молча делаю, что должен."
-ashfall-lifepath-step3-burnout-weakness = Эмоционально отстранён и глух к жалобам окружающих.
+ashfall-lifepath-step3-burnout-weakness = "Чужая паника проходит мимо меня. Чужая радость тоже."
 
 ashfall-lifepath-step3-stoic-title = Сдержанность
 ashfall-lifepath-step3-stoic-desc = "Меньше разговоров под сиреной. Пустая болтовня пробоину не залатает."
-ashfall-lifepath-step3-stoic-weakness = Неохотно идёт на контакт и скрывает собственную усталость.
+ashfall-lifepath-step3-stoic-weakness = "О себе говорю только по существу. Усталость прячу даже от себя."
 
 ashfall-lifepath-step3-pragmatist-title = Прагматизм
 ashfall-lifepath-step3-pragmatist-desc = "Считать остаток кислорода и фильтров, а не чужие обиды. Спасать тех, кого реально вытащить."
-ashfall-lifepath-step3-pragmatist-weakness = Готов пожертвовать чужим комфортом ради общего спасения.
+ashfall-lifepath-step3-pragmatist-weakness = "Спасаю тех, кого можно спасти. Остальных записываю в потери."
 
 ashfall-lifepath-step3-idealist-title = Принципиальность
 ashfall-lifepath-step3-idealist-desc = "Никого не оставлять в аварийном отсеке. Даже если поступил приказ задраить переборку."
-ashfall-lifepath-step3-idealist-weakness = Отказывается от разумных компромиссов ради принципов.
+ashfall-lifepath-step3-idealist-weakness = "Поступаю как правильно, а не как выгодно. Пока выходит дорого."
+ashfall-lifepath-step3-idealist-security-desc = "В охране меня звали мягким. Но когда горел отсек, внутрь шёл я, а спорили снаружи."
 
 ashfall-lifepath-step3-diplomat-title = Дипломатичность
 ashfall-lifepath-step3-diplomat-desc = "Сначала заставить всех опустить стволы и отдышаться. Стрельба в панике ещё никого не спасла."
-ashfall-lifepath-step3-diplomat-weakness = Пытается договариваться там, где нужна немедленная сила.
+ashfall-lifepath-step3-diplomat-weakness = "Тяну к миру даже там, где нужен выстрел."
+
+ashfall-lifepath-step3-sadist-title = Жестокость
+ashfall-lifepath-step3-sadist-desc = "Боль умею причинять точнее, чем лечить. Приказ обычно не уточняет, каким именно способом добиваться порядка."
+ashfall-lifepath-step3-sadist-weakness = "Когда противнику больно, я слишком внимательно слежу за его лицом."
+ashfall-lifepath-step3-sadist-medical-desc = "Боль я понимаю профессионально. Слишком профессионально, говорили коллеги, прежде чем уйти в другую смену."
+
+ashfall-lifepath-step3-cynic-title = Цинизм
+ashfall-lifepath-step3-cynic-desc = "Все на этой станции что-то продают. Я хотя бы называю цену сразу."
+ashfall-lifepath-step3-cynic-weakness = "В людей больше не верю. В акты и накладные, увы, тоже."
+ashfall-lifepath-step3-cynic-corporate-desc = "Корпорация научила меня: улыбка входит в цену договора, а искренность считается доплатой."
 
 # ==============================================================================
-# Шаг 4: Мотивация (Реплики от первого лица)
+# Шаг 5: Мотивация (Реплики от первого лица)
 # ==============================================================================
 
 ashfall-lifepath-step4-balance-title = Выгодный контракт
 ashfall-lifepath-step4-balance-desc = "Контракт на ASH-07 покрывал накопившиеся долги. За такие подъёмные можно потерпеть любую дыру."
-ashfall-lifepath-step4-balance-quirk = Внимательно следит за табелем смен и финансовой ведомостью.
+ashfall-lifepath-step4-balance-quirk = "Табель смен и ведомость читаю внимательнее писем."
+ashfall-lifepath-step4-balance-young-desc = "Мой первый настоящий контракт. Я ещё не знаю, что подъёмные бывают не у всех."
 
 ashfall-lifepath-step4-decay-title = Новый старт
 ashfall-lifepath-step4-decay-desc = "Нужно было срочно сменить сектор и залечь на дно. Здесь никто не лезет в старые базы данных."
-ashfall-lifepath-step4-decay-quirk = Не любит расспросов о своём прошлом и смотрит только вперёд.
+ashfall-lifepath-step4-decay-quirk = "О прошлом не рассказываю никому."
 
 ashfall-lifepath-step4-indifference-title = Профессиональный вызов
 ashfall-lifepath-step4-indifference-desc = "Усталость от вылизанных систем. Здесь всё собрано на скрутках, зато есть где применить опыт."
-ashfall-lifepath-step4-indifference-quirk = С азартом берётся за самые запущенные и сложные поломки.
+ashfall-lifepath-step4-indifference-quirk = "Беру самую убитую технику. Ей я хоть верю."
 
 ashfall-lifepath-step4-stubborn-title = Долг и верность
 ashfall-lifepath-step4-stubborn-desc = "Обычное распределение по профсоюзной квоте. Пока не подписан приказ об отзыве, пост оставлять нельзя."
-ashfall-lifepath-step4-stubborn-quirk = Не оставляет порученную работу незаконченной, что бы ни происходило.
+ashfall-lifepath-step4-stubborn-quirk = "Не уйду, пока не доделаю. Хоть всю смену стой."
 
 ashfall-lifepath-step4-predator-title = Карьерный рост
 ashfall-lifepath-step4-predator-desc = "В глухих секторах повышение дают за выслугу, а не за связи. План простой: отработать контракт и вернуться старшим смены."
-ashfall-lifepath-step4-predator-quirk = Ищет возможности выделиться перед начальством и оптимизировать процессы.
+ashfall-lifepath-step4-predator-quirk = "Начальство помню по именам и отчествам. На всякий случай."
+ashfall-lifepath-step4-predator-elder-desc = "Выслугу я ждал дольше, чем живут некоторые станции. Осталось одно последнее повышение."
 
 ashfall-lifepath-step4-idealist-title = Поддержка других
 ashfall-lifepath-step4-idealist-desc = "На периферии вечно не хватает рабочих рук. Кто-то должен крутить эти гайки."
-ashfall-lifepath-step4-idealist-quirk = Всегда готов разделить паёк или подставить плечо уставшему товарищу.
+ashfall-lifepath-step4-idealist-quirk = "Паёк делю пополам, не раздумывая."
 
 ashfall-lifepath-step4-ghost-title = Покой вдали от суеты
 ashfall-lifepath-step4-ghost-desc = "Тишина, ночные вахты и никакого начальства над душой. Для нормальной работы больше ничего не нужно."
-ashfall-lifepath-step4-ghost-quirk = Избегает лишнего шума и предпочитает работать в ночные смены.
+ashfall-lifepath-step4-ghost-quirk = "Работаю ночами. Тишина честнее людей."
+ashfall-lifepath-step4-ghost-elder-desc = "От шума я устал ещё три станции назад. Дальше мне нужна только тишина."
 
 ashfall-lifepath-step4-fatalist-title = Преданность ремеслу
 ashfall-lifepath-step4-fatalist-desc = "Есть поломка, есть инструмент для ремонта. Разницы нет, на какой станции крутить вентили."
-ashfall-lifepath-step4-fatalist-quirk = Работает с неподдельной гордостью за качество каждого шва и узла.
+ashfall-lifepath-step4-fatalist-quirk = "Каждый шов и узел подписал бы своим именем."
 
 # Экран выбора слотов (Лобби)
 ashfall-lobby-slots-title = ЛИЧНЫЙ СОСТАВ СМЕНЫ
+ashfall-lobby-slot-title = СЛОТ #{ $slot }
 ashfall-lobby-slot-empty = ВАКАНТНЫЙ СЛОТ
+ashfall-lobby-slot-vacant = ВАКАНТНО
+ashfall-lobby-slot-bio = { $species }, { $age ->
+    [one] { $age } год
+    [few] { $age } года
+   *[many] { $age } лет
+}
 ashfall-lobby-slot-create = [ Заполнить анкету ]
 ashfall-lobby-slot-status-ready = ГОТОВ К СМЕНЕ
 ashfall-lobby-slot-status-onshift = НА СМЕНЕ (БЛОКИРОВКА)
-ashfall-lobby-slot-status-evacuated = СМЕНА СДАНА (ЭВАКУИРОВАН)
+ashfall-lobby-slot-status-evacuated = СМЕНА СДАНА (ЭВАКУАЦИРОВАНЫ)
 ashfall-lobby-slot-status-dead = ПОГИБ В ИСПОЛНЕНИИ
 ashfall-lobby-slot-button-select = НАЗНАЧИТЬ НА СМЕНУ
 ashfall-lobby-slot-button-selected = НАЗНАЧЕН
@@ -253,12 +296,14 @@ ashfall-lifepath-reroll-name = Другое имя
 ashfall-lifepath-field-name = Имя:
 ashfall-lifepath-field-experience = Опыт:
 ashfall-lifepath-field-job = Должность:
+ashfall-lifepath-field-age = Возраст:
 
 # Разделы досье
 ashfall-lifepath-ledger-origin = ИСТОК
 ashfall-lifepath-ledger-vector = РЕМЕСЛО
 ashfall-lifepath-ledger-flaw = ХАРАКТЕР
 ashfall-lifepath-ledger-luggage = МОТИВАЦИЯ
+ashfall-lifepath-ledger-age = ВОЗРАСТ
 ashfall-lifepath-flaw-weakness = ОСОБЕННОСТЬ
 
 # Служебные подписи

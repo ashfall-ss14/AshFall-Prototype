@@ -43,7 +43,7 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
     [Dependency] private IRobustRandom _random = default!;
     [Dependency] private IResourceCache _resCache = default!;
 
-    private const int TotalSteps = 5;
+    private const int TotalSteps = 6;
     private const string MorphShaderId = "AshfallLifepathMorph";
     private const string HumanSpeciesId = "Human";
 
@@ -69,7 +69,6 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
 
     private BoxContainer DossierContainer => this.FindControl<BoxContainer>("DossierContainer");
     private BoxContainer DossierSections => this.FindControl<BoxContainer>("DossierSections");
-    private OptionButton ExperienceOption => this.FindControl<OptionButton>("ExperienceOption");
     private OptionButton JobOption => this.FindControl<OptionButton>("JobOption");
     private Button ConfirmCandidateButton => this.FindControl<Button>("ConfirmCandidateButton");
 
@@ -84,8 +83,10 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
     private bool _nameRerolled;
     private Sex _selectedSex = Sex.Male;
     private AshfallCulturePrototype? _currentCulture;
+    private AshfallLifepathOptionPrototype? _ageOption;
     private AshfallLifepathOptionPrototype? _step1Option;
     private AshfallLifepathOptionPrototype? _step2Option;
+    private AshfallLifepathOptionPrototype? _step3Option;
 
     private readonly List<ProtoId<JobPrototype>> _departmentJobs = new();
 
@@ -116,7 +117,6 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         _personGenerator = new AshfallPersonGenerator(_prototypes, _characterGenerator);
 
         BackButton.OnPressed += _ => BackToLobby?.Invoke();
-        ExperienceOption.OnItemSelected += OnExperienceChanged;
         JobOption.OnItemSelected += OnJobSelected;
         ConfirmCandidateButton.OnPressed += _ => ConfirmCandidate();
         RerollNameButton.OnPressed += _ => RerollCandidateName();
@@ -141,6 +141,8 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         _nameRerolled = false;
         _step1Option = null;
         _step2Option = null;
+        _step3Option = null;
+        _ageOption = null;
         _currentCulture = null;
         _selectedSex = _random.Prob(0.5f) ? Sex.Male : Sex.Female;
 
@@ -213,7 +215,7 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         PromptQuestionLabel.Modulate = new Color(1f, 1f, 1f, 0f);
         _stepTime = 0f;
 
-        if (step <= 4)
+        if (step <= 5)
         {
             OptionsContainer.Visible = true;
             DossierContainer.Visible = false;
@@ -268,66 +270,7 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         var allStepOptions = _prototypes.EnumeratePrototypes<AshfallLifepathOptionPrototype>()
             .Where(o => o.Step == step)
             .ToList();
-
-        List<AshfallLifepathOptionPrototype> options;
-
-        if (step == 1)
-        {
-            // Step 1: Draw 4 distinct origins from the master pool of 24+ origins
-            _random.Shuffle(allStepOptions);
-            options = allStepOptions.Take(4).ToList();
-        }
-        else if (step == 2 && _step1Option != null)
-        {
-            // Step 2: Causal filtering based on Step 1 origin tags
-            var originTags = _step1Option.Tags;
-            var matching = allStepOptions.Where(o => o.MatchingTags.Any(t => originTags.Contains(t))).ToList();
-            var fallback = allStepOptions.Except(matching).ToList();
-
-            _random.Shuffle(matching);
-            _random.Shuffle(fallback);
-
-            options = matching.Concat(fallback).Take(4).ToList();
-            _random.Shuffle(options);
-        }
-        else if (step == 3)
-        {
-            // Step 3: Bias traits contextually by craft domain or origin tags
-            var domain = _step2Option?.Domain;
-            var originTags = _step1Option?.Tags ?? new List<string>();
-
-            var matching = allStepOptions.Where(o =>
-                (!string.IsNullOrEmpty(domain) && o.Domain == domain) ||
-                o.MatchingTags.Any(t => originTags.Contains(t))).ToList();
-            var fallback = allStepOptions.Except(matching).ToList();
-
-            _random.Shuffle(matching);
-            _random.Shuffle(fallback);
-
-            options = matching.Concat(fallback).Take(4).ToList();
-            _random.Shuffle(options);
-        }
-        else if (step == 4)
-        {
-            // Step 4: Bias motivations contextually by prior choices
-            var originTags = _step1Option?.Tags ?? new List<string>();
-            var craftTags = _step2Option?.Tags ?? new List<string>();
-
-            var matching = allStepOptions.Where(o =>
-                o.MatchingTags.Any(t => originTags.Contains(t) || craftTags.Contains(t))).ToList();
-            var fallback = allStepOptions.Except(matching).ToList();
-
-            _random.Shuffle(matching);
-            _random.Shuffle(fallback);
-
-            options = matching.Concat(fallback).Take(4).ToList();
-            _random.Shuffle(options);
-        }
-        else
-        {
-            _random.Shuffle(allStepOptions);
-            options = allStepOptions.Take(4).ToList();
-        }
+        var options = PickOptions(allStepOptions, 4, step);
 
         for (var i = 0; i < options.Count; i++)
         {
@@ -351,7 +294,7 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
             HorizontalExpand = true,
         };
 
-        var wrapped = WrapText(Loc.GetString(opt.Description), 54);
+        var wrapped = WrapText(Loc.GetString(GetOptionDescription(opt)), 54);
 
         var descLabel = new Label
         {
@@ -374,27 +317,123 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         switch (opt.Step)
         {
             case 1:
-                _choices.Step1Origin = opt.ID;
-                UpdateSpriteStep1(opt);
+                _ageOption = opt;
+                _choices.ExperienceTier = opt.ExperienceTier is >= 0 and <= 2 ? opt.ExperienceTier : 1;
                 LoadStep(2);
                 break;
 
             case 2:
-                _choices.Step2Vector = opt.ID;
-                UpdateSpriteStep2(opt);
+                _choices.Step1Origin = opt.ID;
+                UpdateSpriteStep1(opt);
                 LoadStep(3);
                 break;
 
             case 3:
-                _choices.Step3Flaw = opt.ID;
+                _choices.Step2Vector = opt.ID;
+                UpdateSpriteStep2(opt);
                 LoadStep(4);
                 break;
 
             case 4:
-                _choices.Step4Luggage = opt.ID;
+                _step3Option = opt;
+                _choices.Step3Flaw = opt.ID;
                 LoadStep(5);
                 break;
+
+            case 5:
+                _choices.Step4Luggage = opt.ID;
+                LoadStep(6);
+                break;
         }
+    }
+
+    private List<AshfallLifepathOptionPrototype> PickOptions(
+        List<AshfallLifepathOptionPrototype> candidates,
+        int count,
+        int step)
+    {
+        var contextTags = new HashSet<string>();
+        if (_ageOption != null) contextTags.UnionWith(_ageOption.Tags);
+        if (_step1Option != null) contextTags.UnionWith(_step1Option.Tags);
+        if (_step2Option != null) contextTags.UnionWith(_step2Option.Tags);
+        if (_step3Option != null) contextTags.UnionWith(_step3Option.Tags);
+
+        var selected = new List<AshfallLifepathOptionPrototype>(Math.Min(count, candidates.Count));
+        var remaining = new List<AshfallLifepathOptionPrototype>(candidates);
+        while (selected.Count < count && remaining.Count > 0)
+        {
+            var weights = remaining.Select(option => GetOptionWeight(option, step, contextTags)).ToArray();
+            var totalWeight = weights.Sum();
+            if (totalWeight <= 0f)
+            {
+                _random.Shuffle(remaining);
+                selected.AddRange(remaining.Take(count - selected.Count));
+                break;
+            }
+
+            var roll = _random.NextFloat(0f, totalWeight);
+            var selectedIndex = 0;
+            for (; selectedIndex < weights.Length - 1; selectedIndex++)
+            {
+                roll -= weights[selectedIndex];
+                if (roll < 0f)
+                    break;
+            }
+
+            selected.Add(remaining[selectedIndex]);
+            remaining.RemoveAt(selectedIndex);
+        }
+
+        _random.Shuffle(selected);
+        return selected;
+    }
+
+    private float GetOptionWeight(AshfallLifepathOptionPrototype option, int step, HashSet<string> contextTags)
+    {
+        var weight = 1f;
+        var hasContextMatch = option.MatchingTags.Any(contextTags.Contains);
+        if (step == 3 && _step2Option?.Domain is { } domain && option.Domain == domain)
+            hasContextMatch = true;
+
+        if (hasContextMatch)
+            weight *= 3f;
+
+        if (_currentCulture == null)
+            return weight;
+
+        foreach (var affinity in _currentCulture.LifepathAffinities)
+        {
+            if (!affinity.Tags.Any(tag => option.Tags.Contains(tag) || option.MatchingTags.Contains(tag)))
+                continue;
+
+            weight *= MathF.Max(0f, affinity.Weight);
+        }
+
+        return weight;
+    }
+
+    private LocId GetOptionDescription(AshfallLifepathOptionPrototype option)
+    {
+        return GetOptionVariant(option)?.Description ?? option.Description;
+    }
+
+    private LocId? GetOptionWeakness(AshfallLifepathOptionPrototype option)
+    {
+        return GetOptionVariant(option)?.StressWeaknessLoc ?? option.StressWeaknessLoc;
+    }
+
+    private AshfallLifepathTextVariant? GetOptionVariant(AshfallLifepathOptionPrototype option)
+    {
+        var contextTags = new HashSet<string>();
+        if (_ageOption != null) contextTags.UnionWith(_ageOption.Tags);
+        if (_step1Option != null) contextTags.UnionWith(_step1Option.Tags);
+        if (_step2Option != null) contextTags.UnionWith(_step2Option.Tags);
+        if (_step3Option != null) contextTags.UnionWith(_step3Option.Tags);
+
+        return option.Variants.FirstOrDefault(candidate =>
+            (candidate.RequiresTags == null || candidate.RequiresTags.Any(contextTags.Contains)) &&
+            (candidate.RequiresDomain == null || candidate.RequiresDomain == _step2Option?.Domain) &&
+            (candidate.RequiresPsychotype == null || candidate.RequiresPsychotype == _step3Option?.Psychotype));
     }
 
     protected override void FrameUpdate(FrameEventArgs args)
@@ -496,7 +535,12 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
             _ => Gender.Epicene
         };
 
-        var age = 30;
+        var age = _choices.ExperienceTier switch
+        {
+            0 => _random.Next(19, 25),
+            2 => _random.Next(44, 60),
+            _ => _random.Next(27, 40),
+        };
         var (appearance, _) = _characterGenerator.GenerateAppearance(constraints, species, _selectedSex, age, _random, _currentCulture);
         var name = _currentCulture != null
             ? _random.Pick(_prototypes.Index<DatasetPrototype>(gender == Gender.Female ? _currentCulture.FirstNamesFemale : _currentCulture.FirstNamesMale).Values) + " " +
@@ -559,6 +603,21 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         ConfirmCandidateButton.Text = Loc.GetString("ashfall-lifepath-confirm-button", ("slot", _targetSlot + 1));
         DossierSections.RemoveAllChildren();
 
+        if (_ageOption != null && _currentProfile != null)
+        {
+            var ageName = _choices.ExperienceTier switch
+            {
+                0 => Loc.GetString("ashfall-lifepath-exp-junior"),
+                2 => Loc.GetString("ashfall-lifepath-exp-veteran"),
+                _ => Loc.GetString("ashfall-lifepath-exp-standard"),
+            };
+            DossierSections.AddChild(CreateSummaryRow(
+                "ashfall-lifepath-ledger-age",
+                ageName,
+                Loc.GetString("ashfall-lifepath-field-age") + " " + _currentProfile.Age,
+                null));
+        }
+
         // 1. Origin & Craft summary
         if (_step1Option != null && _step2Option != null)
         {
@@ -573,7 +632,8 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
         // 2. Character Flaw & Stress Weakness
         if (_prototypes.TryIndex(_choices.Step3Flaw, out var flawOpt))
         {
-            var weakness = flawOpt.StressWeaknessLoc is { } wLoc ? Loc.GetString(wLoc) : null;
+            var weaknessLoc = GetOptionWeakness(flawOpt);
+            var weakness = weaknessLoc is { } wLoc ? Loc.GetString(wLoc) : null;
             var flawRow = CreateSummaryRow(
                 "ashfall-lifepath-ledger-flaw",
                 Loc.GetString(flawOpt.Title),
@@ -589,16 +649,9 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
                 "ashfall-lifepath-ledger-luggage",
                 Loc.GetString(lugOpt.Title),
                 null,
-                Loc.GetString(lugOpt.Description));
+                Loc.GetString(GetOptionDescription(lugOpt)));
             DossierSections.AddChild(motRow);
         }
-
-        // Experience tiers
-        ExperienceOption.Clear();
-        ExperienceOption.AddItem(Loc.GetString("ashfall-lifepath-exp-junior"), 0);
-        ExperienceOption.AddItem(Loc.GetString("ashfall-lifepath-exp-standard"), 1);
-        ExperienceOption.AddItem(Loc.GetString("ashfall-lifepath-exp-veteran"), 2);
-        ExperienceOption.SelectId(_choices.ExperienceTier);
 
         // Populate jobs strictly from the chosen domain
         _prototypes.TryIndex(_choices.Step2Vector, out var step2Opt);
@@ -755,22 +808,6 @@ public sealed partial class AshfallLifepathScreen : PanelContainer
             "Service" => id.Contains("janitor") || id.Contains("bartender") || id.Contains("chef") || id.Contains("cook") || id.Contains("botanist") || id.Contains("clown") || id.Contains("mime") || id.Contains("passenger"),
             _ => true,
         };
-    }
-
-    private void OnExperienceChanged(OptionButton.ItemSelectedEventArgs args)
-    {
-        ExperienceOption.SelectId(args.Id);
-        _choices.ExperienceTier = args.Id;
-        if (_currentProfile != null)
-        {
-            var newAge = args.Id switch
-            {
-                0 => _random.Next(19, 25),
-                2 => _random.Next(44, 60),
-                _ => _random.Next(27, 40),
-            };
-            _currentProfile = _currentProfile.WithAge(newAge);
-        }
     }
 
     private void OnJobSelected(OptionButton.ItemSelectedEventArgs args)

@@ -156,3 +156,37 @@
     multiplier: 1.5
   - tag: origin-industrial
     multiplier: 1.4
+
+- type: ashfallPsychotype
+  id: AshfallPsychotypeSadist
+  name: ashfall-psychotype-sadist
+  tag: psychotype-sadist
+  weight: 1.0
+  weightModifiers:
+  - tag: domain-security
+    multiplier: 1.6
+  - tag: origin-clan
+    multiplier: 1.4
+  - tag: origin-mining
+    multiplier: 1.3
+  - tag: domain-medical
+    multiplier: 0.6
+  - tag: age-young
+    multiplier: 1.2
+
+- type: ashfallPsychotype
+  id: AshfallPsychotypeCynic
+  name: ashfall-psychotype-cynic
+  tag: psychotype-cynic
+  weight: 1.0
+  weightModifiers:
+  - tag: origin-corporate
+    multiplier: 1.5
+  - tag: domain-supply
+    multiplier: 1.3
+  - tag: senior-career
+    multiplier: 1.3
+  - tag: age-young
+    multiplier: 0.8
+  - tag: domain-service
+    multiplier: 1.2

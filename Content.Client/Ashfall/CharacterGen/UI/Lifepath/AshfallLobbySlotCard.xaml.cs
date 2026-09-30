@@ -95,7 +95,7 @@ public sealed partial class AshfallLobbySlotCard : PanelContainer
     {
         SlotIndex = slotIndex;
         IsSelected = isSelected;
-        SlotNumberLabel.Text = $"СЛОТ #{slotIndex + 1}";
+        SlotNumberLabel.Text = Loc.GetString("ashfall-lobby-slot-title", ("slot", slotIndex + 1));
 
         if (slot == null)
         {
@@ -107,7 +107,7 @@ public sealed partial class AshfallLobbySlotCard : PanelContainer
             InfoContainer.Visible = false;
             ActionsContainer.Visible = false;
 
-            StatusBadgeLabel.Text = "ВАКАНТНО";
+            StatusBadgeLabel.Text = Loc.GetString("ashfall-lobby-slot-vacant");
             SetBadgeColor(Color.FromHex("#1F2124"), Color.FromHex("#3B3E44"), Color.FromHex("#707780"));
         }
         else
@@ -131,7 +131,7 @@ public sealed partial class AshfallLobbySlotCard : PanelContainer
             var speciesName = _prototypes.TryIndex<SpeciesPrototype>(profile.Species, out var sp)
                 ? Loc.GetString(sp.Name)
                 : profile.Species.Id;
-            BioLabel.Text = $"{speciesName}, {profile.Age} лет";
+            BioLabel.Text = Loc.GetString("ashfall-lobby-slot-bio", ("species", speciesName), ("age", profile.Age));
 
             // Department color
             var depColor = GetDepartmentColor(slot.Candidate.PrimaryDomain);
