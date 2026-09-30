@@ -1,0 +1,692 @@
+# Guided Lifepath options in authentic RPG style with dynamic causal dependencies.
+# The client rolls 4 distinct options per step, dynamically filtered and biased by previous choices
+# and by the culture's lifepath affinities. Text variants swap in based on earlier answers.
+
+# ==============================================================================
+# Step 1: Age («Сколько лет твои глаза открыты?»)
+# ==============================================================================
+
+- type: ashfallLifepathOption
+  id: LifepathAgeYoung
+  step: 1
+  title: ashfall-lifepath-age-young-title
+  description: ashfall-lifepath-age-young-desc
+  indicatorColor: "#5E8B82"
+  experienceTier: 0
+  tags: [age-young]
+
+- type: ashfallLifepathOption
+  id: LifepathAgeMid
+  step: 1
+  title: ashfall-lifepath-age-mid-title
+  description: ashfall-lifepath-age-mid-desc
+  indicatorColor: "#7D6B58"
+  experienceTier: 1
+  tags: [age-mid]
+
+- type: ashfallLifepathOption
+  id: LifepathAgeElder
+  step: 1
+  title: ashfall-lifepath-age-elder-title
+  description: ashfall-lifepath-age-elder-desc
+  indicatorColor: "#615D70"
+  experienceTier: 2
+  tags: [age-elder]
+
+# ==============================================================================
+# Step 2: Biological Origin & Upbringing («Где начался твой путь?»)
+# ==============================================================================
+
+- type: ashfallLifepathOption
+  id: LifepathOriginMining
+  step: 2
+  title: ashfall-lifepath-step1-mining-title
+  description: ashfall-lifepath-step1-mining-desc
+  indicatorColor: "#6B5848"
+  species: Human
+  culture: Panslavic
+  tags: [origin-mining, origin-industrial]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginOrbital
+  step: 2
+  title: ashfall-lifepath-step1-orbital-title
+  description: ashfall-lifepath-step1-orbital-desc
+  indicatorColor: "#4A6B82"
+  species: Human
+  culture: Atlantic
+  tags: [origin-station, origin-urban]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginAgricultural
+  step: 2
+  title: ashfall-lifepath-step1-agri-title
+  description: ashfall-lifepath-step1-agri-desc
+  indicatorColor: "#527A4E"
+  species: Human
+  culture: Rheinik
+  tags: [origin-agricultural, origin-frontier]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginFreight
+  step: 2
+  title: ashfall-lifepath-step1-freight-title
+  description: ashfall-lifepath-step1-freight-desc
+  indicatorColor: "#7A684E"
+  species: Human
+  culture: Mashriqi
+  tags: [origin-logistics, origin-ship]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginStationFamily
+  step: 2
+  title: ashfall-lifepath-step1-stationfamily-title
+  description: ashfall-lifepath-step1-stationfamily-desc
+  indicatorColor: "#5A6578"
+  species: Human
+  culture: Panslavic
+  tags: [origin-station]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginCorporate
+  step: 2
+  title: ashfall-lifepath-step1-corporate-title
+  description: ashfall-lifepath-step1-corporate-desc
+  indicatorColor: "#425C78"
+  species: Human
+  culture: Atlantic
+  tags: [origin-corporate]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginIndependent
+  step: 2
+  title: ashfall-lifepath-step1-independent-title
+  description: ashfall-lifepath-step1-independent-desc
+  indicatorColor: "#70685A"
+  species: Human
+  culture: Nipponic
+  tags: [origin-frontier]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginMaintenance
+  step: 2
+  title: ashfall-lifepath-step1-maintenance-title
+  description: ashfall-lifepath-step1-maintenance-desc
+  indicatorColor: "#7D5838"
+  species: Human
+  culture: Panslavic
+  tags: [origin-industrial]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginEarthMetro
+  step: 2
+  title: ashfall-lifepath-step1-earthmetro-title
+  description: ashfall-lifepath-step1-earthmetro-desc
+  indicatorColor: "#55606E"
+  species: Human
+  culture: Atlantic
+  tags: [origin-urban]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginLunarHabitat
+  step: 2
+  title: ashfall-lifepath-step1-lunar-title
+  description: ashfall-lifepath-step1-lunar-desc
+  indicatorColor: "#6C7A82"
+  species: Human
+  culture: Rheinik
+  tags: [origin-station]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginShipboard
+  step: 2
+  title: ashfall-lifepath-step1-shipboard-title
+  description: ashfall-lifepath-step1-shipboard-desc
+  indicatorColor: "#5B7065"
+  species: Human
+  culture: Mashriqi
+  tags: [origin-ship, origin-nomad]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginFrontierPort
+  step: 2
+  title: ashfall-lifepath-step1-frontierport-title
+  description: ashfall-lifepath-step1-frontierport-desc
+  indicatorColor: "#826645"
+  species: Human
+  culture: Panslavic
+  tags: [origin-frontier, origin-logistics]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginArcology
+  step: 2
+  title: ashfall-lifepath-step1-arcology-title
+  description: ashfall-lifepath-step1-arcology-desc
+  indicatorColor: "#6B4E38"
+  species: Human
+  culture: Rheinik
+  tags: [origin-industrial, origin-urban]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginResearchEnclave
+  step: 2
+  title: ashfall-lifepath-step1-research-title
+  description: ashfall-lifepath-step1-research-desc
+  indicatorColor: "#3D6E7A"
+  species: Human
+  culture: Nipponic
+  tags: [origin-science]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginMedicalHabitat
+  step: 2
+  title: ashfall-lifepath-step1-medhabitat-title
+  description: ashfall-lifepath-step1-medhabitat-desc
+  indicatorColor: "#3B7A75"
+  species: Human
+  culture: Atlantic
+  tags: [origin-medical]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginSecurityGarrison
+  step: 2
+  title: ashfall-lifepath-step1-garrison-title
+  description: ashfall-lifepath-step1-garrison-desc
+  indicatorColor: "#7A3535"
+  species: Human
+  culture: Panslavic
+  tags: [origin-security]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginServiceQuarter
+  step: 2
+  title: ashfall-lifepath-step1-servicequarter-title
+  description: ashfall-lifepath-step1-servicequarter-desc
+  indicatorColor: "#4E7058"
+  species: Human
+  culture: Mashriqi
+  tags: [origin-service]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginPenalContract
+  step: 2
+  title: ashfall-lifepath-step1-penal-title
+  description: ashfall-lifepath-step1-penal-desc
+  indicatorColor: "#584848"
+  species: Human
+  culture: Panslavic
+  tags: [origin-industrial, origin-frontier]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginSalvageBarge
+  step: 2
+  title: ashfall-lifepath-step1-salvagebarge-title
+  description: ashfall-lifepath-step1-salvagebarge-desc
+  indicatorColor: "#785E42"
+  species: Human
+  culture: Atlantic
+  tags: [origin-ship, origin-industrial]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginUnderdeck
+  step: 2
+  title: ashfall-lifepath-step1-underdeck-title
+  description: ashfall-lifepath-step1-underdeck-desc
+  indicatorColor: "#4F5359"
+  species: Human
+  culture: Mashriqi
+  tags: [origin-station, origin-urban]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginKassik
+  step: 2
+  title: ashfall-lifepath-step1-kassik-title
+  description: ashfall-lifepath-step1-kassik-desc
+  indicatorColor: "#B55A38"
+  species: Reptilian
+  culture: UnathiClan
+  tags: [origin-frontier, origin-clan]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginUnathiForge
+  step: 2
+  title: ashfall-lifepath-step1-unathiforge-title
+  description: ashfall-lifepath-step1-unathiforge-desc
+  indicatorColor: "#C25327"
+  species: Reptilian
+  culture: UnathiClan
+  tags: [origin-industrial, origin-clan]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginKirwani
+  step: 2
+  title: ashfall-lifepath-step1-kirwani-title
+  description: ashfall-lifepath-step1-kirwani-desc
+  indicatorColor: "#4A828A"
+  species: Moth
+  culture: LuamFlutter
+  tags: [origin-agricultural, origin-science]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginLuamNomad
+  step: 2
+  title: ashfall-lifepath-step1-luamnomad-title
+  description: ashfall-lifepath-step1-luamnomad-desc
+  indicatorColor: "#5C8C7D"
+  species: Moth
+  culture: LuamFlutter
+  tags: [origin-nomad, origin-ship]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginArachnidCavern
+  step: 2
+  title: ashfall-lifepath-step1-arachnidcavern-title
+  description: ashfall-lifepath-step1-arachnidcavern-desc
+  indicatorColor: "#614E73"
+  species: Arachnid
+  culture: ArachnidHollow
+  tags: [origin-mining, origin-industrial]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginArachnidWebNest
+  step: 2
+  title: ashfall-lifepath-step1-arachnidweb-title
+  description: ashfall-lifepath-step1-arachnidweb-desc
+  indicatorColor: "#4A4D6B"
+  species: Arachnid
+  culture: ArachnidWeb
+  tags: [origin-station, origin-logistics]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginVeiruHighland
+  step: 2
+  title: ashfall-lifepath-step1-veiruhighland-title
+  description: ashfall-lifepath-step1-veiruhighland-desc
+  indicatorColor: "#8A5A3D"
+  species: Veiru
+  culture: VeiruHighland
+  tags: [origin-frontier, origin-clan, origin-security]
+
+- type: ashfallLifepathOption
+  id: LifepathOriginVeiruDesert
+  step: 2
+  title: ashfall-lifepath-step1-veirudesert-title
+  description: ashfall-lifepath-step1-veirudesert-desc
+  indicatorColor: "#9C7345"
+  species: Veiru
+  culture: VeiruOutland
+  tags: [origin-frontier, origin-logistics]
+
+# ==============================================================================
+# Step 3: Craft & Specialization («К чему привыкли твои руки?»)
+# ==============================================================================
+
+- type: ashfallLifepathOption
+  id: LifepathVectorEngineering
+  step: 3
+  title: ashfall-lifepath-step2-engi-title
+  description: ashfall-lifepath-step2-engi-desc
+  indicatorColor: "#B87333"
+  domain: Engineering
+  previewJob: StationEngineer
+  tags: [craft-engineering]
+  matchingTags: [origin-industrial, origin-mining, origin-station]
+  variants:
+  - requiresTags: [origin-mining]
+    description: ashfall-lifepath-step2-engi-mining-desc
+
+- type: ashfallLifepathOption
+  id: LifepathVectorAtmos
+  step: 3
+  title: ashfall-lifepath-step2-atmos-title
+  description: ashfall-lifepath-step2-atmos-desc
+  indicatorColor: "#8C6E4E"
+  domain: Engineering
+  previewJob: AtmosphericTechnician
+  tags: [craft-engineering, craft-atmos]
+  matchingTags: [origin-station, origin-ship, origin-industrial]
+  variants:
+  - requiresTags: [origin-station]
+    description: ashfall-lifepath-step2-atmos-station-desc
+
+- type: ashfallLifepathOption
+  id: LifepathVectorSalvage
+  step: 3
+  title: ashfall-lifepath-step2-salvage-title
+  description: ashfall-lifepath-step2-salvage-desc
+  indicatorColor: "#946A38"
+  domain: Engineering
+  previewJob: SalvageSpecialist
+  tags: [craft-engineering, craft-salvage]
+  matchingTags: [origin-mining, origin-ship, origin-frontier, origin-industrial]
+
+- type: ashfallLifepathOption
+  id: LifepathVectorMedical
+  step: 3
+  title: ashfall-lifepath-step2-med-title
+  description: ashfall-lifepath-step2-med-desc
+  indicatorColor: "#3B6E7D"
+  domain: Medical
+  previewJob: MedicalDoctor
+  tags: [craft-medical]
+  matchingTags: [origin-medical, origin-science, origin-station]
+
+- type: ashfallLifepathOption
+  id: LifepathVectorParamedic
+  step: 3
+  title: ashfall-lifepath-step2-paramedic-title
+  description: ashfall-lifepath-step2-paramedic-desc
+  indicatorColor: "#387D6E"
+  domain: Medical
+  previewJob: Paramedic
+  tags: [craft-medical, craft-frontier]
+  matchingTags: [origin-medical, origin-frontier, origin-urban]
+
+- type: ashfallLifepathOption
+  id: LifepathVectorChemist
+  step: 3
+  title: ashfall-lifepath-step2-chemist-title
+  description: ashfall-lifepath-step2-chemist-desc
+  indicatorColor: "#4E6B7A"
+  domain: Medical
+  previewJob: Chemist
+  tags: [craft-medical, craft-chemistry]
+  matchingTags: [origin-science, origin-medical, origin-industrial]
+
+- type: ashfallLifepathOption
+  id: LifepathVectorSecurity
+  step: 3
+  title: ashfall-lifepath-step2-sec-title
+  description: ashfall-lifepath-step2-sec-desc
+  indicatorColor: "#8E3636"
+  domain: Security
+  previewJob: SecurityOfficer
+  tags: [craft-security]
+  matchingTags: [origin-security, origin-urban, origin-clan]
+  variants:
+  - requiresTags: [origin-clan]
+    description: ashfall-lifepath-step2-sec-clan-desc
+
+- type: ashfallLifepathOption
+  id: LifepathVectorWarden
+  step: 3
+  title: ashfall-lifepath-step2-warden-title
+  description: ashfall-lifepath-step2-warden-desc
+  indicatorColor: "#752E2E"
+  domain: Security
+  previewJob: Warden
+  tags: [craft-security]
+  matchingTags: [origin-security, origin-station, origin-corporate]
+
+- type: ashfallLifepathOption
+  id: LifepathVectorDetective
+  step: 3
+  title: ashfall-lifepath-step2-detective-title
+  description: ashfall-lifepath-step2-detective-desc
+  indicatorColor: "#61384A"
+  domain: Security
+  previewJob: Detective
+  tags: [craft-security]
+  matchingTags: [origin-security, origin-urban, origin-corporate]
+
+- type: ashfallLifepathOption
+  id: LifepathVectorService
+  step: 3
+  title: ashfall-lifepath-step2-serv-title
+  description: ashfall-lifepath-step2-serv-desc
+  indicatorColor: "#4B6B52"
+  domain: Service
+  previewJob: Janitor
+  tags: [craft-service]
+  matchingTags: [origin-service, origin-station, origin-urban]
+
+- type: ashfallLifepathOption
+  id: LifepathVectorCook
+  step: 3
+  title: ashfall-lifepath-step2-cook-title
+  description: ashfall-lifepath-step2-cook-desc
+  indicatorColor: "#7D623C"
+  domain: Service
+  previewJob: Chef
+  tags: [craft-service, craft-kitchen]
+  matchingTags: [origin-service, origin-agricultural, origin-ship]
+  variants:
+  - requiresTags: [origin-agricultural]
+    description: ashfall-lifepath-step2-cook-agri-desc
+
+- type: ashfallLifepathOption
+  id: LifepathVectorBotanist
+  step: 3
+  title: ashfall-lifepath-step2-botanist-title
+  description: ashfall-lifepath-step2-botanist-desc
+  indicatorColor: "#527D3B"
+  domain: Service
+  previewJob: Botanist
+  tags: [craft-service, craft-agriculture]
+  matchingTags: [origin-agricultural, origin-science, origin-frontier]
+
+- type: ashfallLifepathOption
+  id: LifepathVectorCargo
+  step: 3
+  title: ashfall-lifepath-step2-cargo-title
+  description: ashfall-lifepath-step2-cargo-desc
+  indicatorColor: "#7A6842"
+  domain: Service
+  previewJob: CargoTechnician
+  tags: [craft-service, craft-logistics]
+  matchingTags: [origin-logistics, origin-ship, origin-station, origin-corporate]
+  variants:
+  - requiresTags: [origin-logistics]
+    description: ashfall-lifepath-step2-cargo-logistics-desc
+
+# ==============================================================================
+# Step 4: Character Trait & Stress Reaction («Какая черта определяет твой подход к делу?»)
+# ==============================================================================
+
+- type: ashfallLifepathOption
+  id: LifepathFlawPedant
+  step: 4
+  title: ashfall-lifepath-step3-pedant-title
+  description: ashfall-lifepath-step3-pedant-desc
+  indicatorColor: "#727780"
+  psychotype: AshfallPsychotypePedant
+  stressWeaknessLoc: ashfall-lifepath-step3-pedant-weakness
+  matchingTags: [origin-station, origin-science, origin-corporate]
+
+- type: ashfallLifepathOption
+  id: LifepathFlawDaredevil
+  step: 4
+  title: ashfall-lifepath-step3-daredevil-title
+  description: ashfall-lifepath-step3-daredevil-desc
+  indicatorColor: "#A85B24"
+  psychotype: AshfallPsychotypeDaredevil
+  stressWeaknessLoc: ashfall-lifepath-step3-daredevil-weakness
+  matchingTags: [origin-frontier, origin-mining, origin-ship]
+  variants:
+  - requiresTags: [origin-mining]
+    description: ashfall-lifepath-step3-daredevil-mining-desc
+
+- type: ashfallLifepathOption
+  id: LifepathFlawParanoid
+  step: 4
+  title: ashfall-lifepath-step3-paranoid-title
+  description: ashfall-lifepath-step3-paranoid-desc
+  indicatorColor: "#684873"
+  psychotype: AshfallPsychotypeParanoid
+  stressWeaknessLoc: ashfall-lifepath-step3-paranoid-weakness
+  matchingTags: [origin-security, origin-station, origin-urban]
+  variants:
+  - requiresTags: [origin-frontier]
+    description: ashfall-lifepath-step3-paranoid-frontier-desc
+
+- type: ashfallLifepathOption
+  id: LifepathFlawBurnout
+  step: 4
+  title: ashfall-lifepath-step3-burnout-title
+  description: ashfall-lifepath-step3-burnout-desc
+  indicatorColor: "#304357"
+  psychotype: AshfallPsychotypeBurnout
+  stressWeaknessLoc: ashfall-lifepath-step3-burnout-weakness
+  matchingTags: [origin-industrial, origin-medical, origin-ship]
+
+- type: ashfallLifepathOption
+  id: LifepathFlawStoic
+  step: 4
+  title: ashfall-lifepath-step3-stoic-title
+  description: ashfall-lifepath-step3-stoic-desc
+  indicatorColor: "#50756F"
+  psychotype: AshfallPsychotypeStoic
+  stressWeaknessLoc: ashfall-lifepath-step3-stoic-weakness
+  matchingTags: [origin-mining, origin-clan, origin-frontier]
+
+- type: ashfallLifepathOption
+  id: LifepathFlawPragmatist
+  step: 4
+  title: ashfall-lifepath-step3-pragmatist-title
+  description: ashfall-lifepath-step3-pragmatist-desc
+  indicatorColor: "#8A6D35"
+  psychotype: AshfallPsychotypePragmatist
+  stressWeaknessLoc: ashfall-lifepath-step3-pragmatist-weakness
+  matchingTags: [origin-corporate, origin-logistics, origin-industrial]
+
+- type: ashfallLifepathOption
+  id: LifepathFlawIdealist
+  step: 4
+  title: ashfall-lifepath-step3-idealist-title
+  description: ashfall-lifepath-step3-idealist-desc
+  indicatorColor: "#647D4C"
+  psychotype: AshfallPsychotypeIdealist
+  stressWeaknessLoc: ashfall-lifepath-step3-idealist-weakness
+  matchingTags: [origin-agricultural, origin-science, origin-medical]
+  variants:
+  - requiresDomain: Security
+    description: ashfall-lifepath-step3-idealist-security-desc
+
+- type: ashfallLifepathOption
+  id: LifepathFlawDiplomat
+  step: 4
+  title: ashfall-lifepath-step3-diplomat-title
+  description: ashfall-lifepath-step3-diplomat-desc
+  indicatorColor: "#3F7587"
+  psychotype: AshfallPsychotypeDiplomat
+  stressWeaknessLoc: ashfall-lifepath-step3-diplomat-weakness
+  matchingTags: [origin-service, origin-urban, origin-corporate]
+
+- type: ashfallLifepathOption
+  id: LifepathFlawSadist
+  step: 4
+  title: ashfall-lifepath-step3-sadist-title
+  description: ashfall-lifepath-step3-sadist-desc
+  indicatorColor: "#7A2E2E"
+  psychotype: AshfallPsychotypeSadist
+  stressWeaknessLoc: ashfall-lifepath-step3-sadist-weakness
+  matchingTags: [origin-security, origin-clan, origin-mining]
+  variants:
+  - requiresDomain: Medical
+    description: ashfall-lifepath-step3-sadist-medical-desc
+
+- type: ashfallLifepathOption
+  id: LifepathFlawCynic
+  step: 4
+  title: ashfall-lifepath-step3-cynic-title
+  description: ashfall-lifepath-step3-cynic-desc
+  indicatorColor: "#5C5A4E"
+  psychotype: AshfallPsychotypeCynic
+  stressWeaknessLoc: ashfall-lifepath-step3-cynic-weakness
+  matchingTags: [origin-corporate, origin-urban, origin-logistics, origin-station]
+  variants:
+  - requiresTags: [origin-corporate]
+    description: ashfall-lifepath-step3-cynic-corporate-desc
+
+# ==============================================================================
+# Step 5: Motivation & Personal Hook («Что привело тебя на эту станцию?»)
+# ==============================================================================
+
+- type: ashfallLifepathOption
+  id: LifepathArchetypeBalance
+  step: 5
+  title: ashfall-lifepath-step4-balance-title
+  description: ashfall-lifepath-step4-balance-desc
+  indicatorColor: "#7D6B58"
+  hookFragment: AshfallPersonalHook1
+  quirkDescription: ashfall-lifepath-step4-balance-quirk
+  matchingTags: [origin-corporate, origin-logistics]
+  variants:
+  - requiresTags: [age-young]
+    description: ashfall-lifepath-step4-balance-young-desc
+
+- type: ashfallLifepathOption
+  id: LifepathArchetypeDecay
+  step: 5
+  title: ashfall-lifepath-step4-decay-title
+  description: ashfall-lifepath-step4-decay-desc
+  indicatorColor: "#52575C"
+  hookFragment: AshfallPersonalHook2
+  quirkDescription: ashfall-lifepath-step4-decay-quirk
+  matchingTags: [origin-frontier, origin-urban]
+
+- type: ashfallLifepathOption
+  id: LifepathArchetypeIndifference
+  step: 5
+  title: ashfall-lifepath-step4-indifference-title
+  description: ashfall-lifepath-step4-indifference-desc
+  indicatorColor: "#4A5A66"
+  hookFragment: AshfallPersonalHook3
+  quirkDescription: ashfall-lifepath-step4-indifference-quirk
+  matchingTags: [origin-industrial, origin-ship]
+
+- type: ashfallLifepathOption
+  id: LifepathArchetypeStubborn
+  step: 5
+  title: ashfall-lifepath-step4-stubborn-title
+  description: ashfall-lifepath-step4-stubborn-desc
+  indicatorColor: "#8C4A3A"
+  hookFragment: AshfallPersonalHook4
+  quirkDescription: ashfall-lifepath-step4-stubborn-quirk
+  matchingTags: [origin-clan, origin-security]
+
+- type: ashfallLifepathOption
+  id: LifepathArchetypePredator
+  step: 5
+  title: ashfall-lifepath-step4-predator-title
+  description: ashfall-lifepath-step4-predator-desc
+  indicatorColor: "#913838"
+  hookFragment: AshfallPersonalHook5
+  quirkDescription: ashfall-lifepath-step4-predator-quirk
+  matchingTags: [origin-corporate, origin-science]
+  variants:
+  - requiresTags: [age-elder]
+    description: ashfall-lifepath-step4-predator-elder-desc
+
+- type: ashfallLifepathOption
+  id: LifepathArchetypeIdealist
+  step: 5
+  title: ashfall-lifepath-step4-idealist-title
+  description: ashfall-lifepath-step4-idealist-desc
+  indicatorColor: "#4B7552"
+  hookFragment: AshfallPersonalHook6
+  quirkDescription: ashfall-lifepath-step4-idealist-quirk
+  matchingTags: [origin-medical, origin-service]
+
+- type: ashfallLifepathOption
+  id: LifepathArchetypeGhost
+  step: 5
+  title: ashfall-lifepath-step4-ghost-title
+  description: ashfall-lifepath-step4-ghost-desc
+  indicatorColor: "#615D70"
+  hookFragment: AshfallPersonalHook7
+  quirkDescription: ashfall-lifepath-step4-ghost-quirk
+  matchingTags: [origin-mining, origin-station]
+  variants:
+  - requiresTags: [age-elder]
+    description: ashfall-lifepath-step4-ghost-elder-desc
+
+- type: ashfallLifepathOption
+  id: LifepathArchetypeFatalist
+  step: 5
+  title: ashfall-lifepath-step4-fatalist-title
+  description: ashfall-lifepath-step4-fatalist-desc
+  indicatorColor: "#856A3E"
+  hookFragment: AshfallPersonalHook8
+  quirkDescription: ashfall-lifepath-step4-fatalist-quirk
+  matchingTags: [origin-industrial, origin-agricultural]

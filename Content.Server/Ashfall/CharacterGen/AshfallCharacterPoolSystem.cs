@@ -1,12 +1,15 @@
 using Content.Shared.Ashfall.CharacterGen;
+using Content.Shared.Ashfall.CharacterGen.Lifepath;
 using Content.Shared.Preferences;
 using Robust.Shared.Configuration;
 using Robust.Shared.Network;
 using Robust.Shared.Player;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
+using Robust.Shared.Log;
 using Content.Shared.Humanoid;
 using Content.Shared.Humanoid.Markings;
+using Content.Shared.Mobs;
 using Content.Shared.Ashfall;
 using Content.Shared.Ashfall.CharacterGen.Prototypes;
 using Robust.Shared.Timing;
@@ -15,7 +18,9 @@ using Content.Shared.Roles;
 using Content.Server.GameTicking.Events;
 using Content.Server.GameTicking;
 using Robust.Server.Player;
+using Content.Shared.CCVar;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Content.Server.Ashfall.CharacterGen;
 
@@ -33,14 +38,46 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
     [Dependency] private IRobustRandom _random = default!;
     [Dependency] private IPlayerManager _playerManager = default!;
 
+    private ISawmill _sawmill = default!;
     private AshfallCharacterGenerator _generator = default!;
     private AshfallPersonGenerator _personGenerator = default!;
 
     private static readonly ProtoId<CharacterGenConstraintsPrototype> HumanConstraints = "HumanDefaultConstraints";
 
+    // Same name rules as HumanoidCharacterProfile.EnsureValid: the lifepath custom name is
+    // the only client-supplied string that reaches the spawn profile, so it gets the same
+    // treatment instead of raw client text.
+    private static readonly Regex RestrictedNameRegex = new(@"[^A-Za-zА-Яа-яЁё0-9 '\-]");
+    private static readonly Regex ICNameCaseRegex = new(@"^(?<word>\w)|\b(?<word>\w)(?=\w*$)");
+
+    private string SanitizeCustomName(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return string.Empty;
+
+        var result = name.Trim();
+        var maxNameLength = _cfg.GetCVar(CCVars.MaxNameLength);
+        if (result.Length > maxNameLength)
+            result = result[..maxNameLength];
+
+        if (_cfg.GetCVar(CCVars.RestrictedNames))
+            result = RestrictedNameRegex.Replace(result, string.Empty);
+
+        if (_cfg.GetCVar(CCVars.ICNameCase))
+            result = ICNameCaseRegex.Replace(result, m => m.Groups["word"].Value.ToUpper());
+
+        return result.Trim();
+    }
+
+    private static bool IsSlotLocked(PrioritySlot? slot)
+    {
+        return slot is { } found && found.Status is AshfallSlotStatus.OnShift or AshfallSlotStatus.Ready;
+    }
+
     private readonly Dictionary<NetUserId, PlayerCandidatePool> _playerPools = new();
 
     public const int PrioritySlotCount = 5;
+    public const int CharacterSlotCount = 3;
 
     /// <summary>
     ///     One pinned Candidate + Job combination. The full candidate DTO is retained so the
@@ -51,6 +88,8 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
     {
         public AshfallCharacterCandidate Candidate { get; set; } = default!;
         public ProtoId<JobPrototype> Job { get; set; }
+        public AshfallSlotStatus Status { get; set; } = AshfallSlotStatus.Ready;
+        public EntityUid? SpawnedMob { get; set; }
     }
 
     internal sealed class PlayerCandidatePool
@@ -84,6 +123,7 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
     {
         base.Initialize();
 
+        _sawmill = Logger.GetSawmill("ashfall.pool");
         _generator = new AshfallCharacterGenerator(_protoManager, _markingManager, _namingSystem);
         _personGenerator = new AshfallPersonGenerator(_protoManager, _generator);
 
@@ -93,8 +133,14 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
         _netManager.RegisterNetMessage<MsgAshfallPinCandidate>(OnPinCandidate);
         _netManager.RegisterNetMessage<MsgAshfallClearPrioritySlot>(OnClearPrioritySlot);
         _netManager.RegisterNetMessage<MsgAshfallMovePrioritySlot>(OnMovePrioritySlot);
+        _netManager.RegisterNetMessage<MsgAshfallLifepathSubmit>(OnLifepathSubmit);
+        _netManager.RegisterNetMessage<MsgAshfallSelectSlot>(OnSelectSlot);
+        _netManager.RegisterNetMessage<MsgAshfallResetSlot>(OnResetSlot);
 
         SubscribeLocalEvent<RoundRestartCleanupEvent>(OnRoundRestart);
+        SubscribeLocalEvent<PlayerSpawnCompleteEvent>(OnPlayerSpawnComplete);
+        SubscribeLocalEvent<MobStateChangedEvent>(OnMobStateChanged);
+        SubscribeLocalEvent<RoundEndMessageEvent>(OnRoundEnd);
     }
 
     private void OnRoundRestart(RoundRestartCleanupEvent ev)
@@ -171,6 +217,187 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
         SendPoolResponse(msg.MsgChannel, GetOrCreatePool(player));
     }
 
+    private void OnLifepathSubmit(MsgAshfallLifepathSubmit msg)
+    {
+        var player = msg.MsgChannel.UserId;
+        var pool = GetOrCreatePool(player);
+        var slotIdx = msg.Choices.TargetSlotIndex;
+
+        if (slotIdx < 0 || slotIdx >= CharacterSlotCount)
+            return;
+
+        // The submission is valid only against the pool view the questionnaire was filled
+        // in. Any player-initiated slot mutation since (reset, clear, pin, reorder, another
+        // submit) bumps the revision, so a delayed or repeated submission cannot repopulate
+        // a released slot as if it were a fresh choice. Lifecycle transitions (death,
+        // evacuation) push no response to the client and are guarded by the locked check
+        // below instead, which runs against the slot state at processing time.
+        if (msg.PoolRevision != pool.Revision)
+        {
+            SendPoolResponse(msg.MsgChannel, pool);
+            return;
+        }
+
+        var existingSlot = pool.PrioritySlots[slotIdx];
+        // Ready slots are pinned like OnShift ones: only death or a played shift releases
+        // them, so resubmitting the questionnaire cannot silently reroll the candidate.
+        if (IsSlotLocked(existingSlot))
+        {
+            _sawmill.Warning($"Player {player} attempted to modify pinned slot {slotIdx} (status: {existingSlot!.Status})!");
+            SendPoolResponse(msg.MsgChannel, pool);
+            return;
+        }
+
+        msg.Choices.CustomName = SanitizeCustomName(msg.Choices.CustomName);
+
+        var (candidate, structure) = _personGenerator.GenerateFromLifepath(msg.Choices, _random);
+
+        var eligibleJobs = AshfallJobScorer.ScoreEligibleJobs(structure, _protoManager);
+        var selectedJobId = msg.Choices.SelectedJob.Id;
+        string? jobId = null;
+
+        if (!string.IsNullOrEmpty(selectedJobId) &&
+            eligibleJobs.Contains(selectedJobId) &&
+            _protoManager.TryIndex<AshfallJobCareerPrototype>(selectedJobId, out var selectedCareer) &&
+            selectedCareer.Domain == structure.PrimaryDomain &&
+            _protoManager.TryIndex<JobPrototype>(selectedJobId, out var selectedJob) &&
+            selectedJob.SetPreference &&
+            IsJobAllowed(player, selectedJob.ID, candidate.Profile))
+        {
+            jobId = selectedJob.ID;
+        }
+
+        if (jobId == null)
+        {
+            foreach (var eligibleJobId in eligibleJobs.OrderByDescending(id =>
+                         _protoManager.Index<AshfallJobCareerPrototype>(id).Domain == structure.PrimaryDomain))
+            {
+                if (!_protoManager.TryIndex<JobPrototype>(eligibleJobId, out var eligibleJob) ||
+                    !eligibleJob.SetPreference ||
+                    !IsJobAllowed(player, eligibleJob.ID, candidate.Profile))
+                {
+                    continue;
+                }
+
+                jobId = eligibleJob.ID;
+                break;
+            }
+        }
+
+        if (jobId == null ||
+            !_protoManager.TryIndex<JobPrototype>(jobId, out var job) ||
+            !job.SetPreference ||
+            !eligibleJobs.Contains(job.ID) ||
+            !candidate.CompatibleJobs.Contains(job.ID) ||
+            !IsJobAllowed(player, job.ID, candidate.Profile))
+        {
+            SendPoolResponse(msg.MsgChannel, pool);
+            return;
+        }
+
+        pool.PrioritySlots[slotIdx] = new PrioritySlot
+        {
+            Candidate = candidate,
+            Job = jobId,
+            Status = AshfallSlotStatus.Ready,
+        };
+
+        pool.ConfirmedPriorityIndex = slotIdx;
+        pool.Revision++;
+        SendPoolResponse(msg.MsgChannel, pool);
+    }
+
+    private void OnSelectSlot(MsgAshfallSelectSlot msg)
+    {
+        var player = msg.MsgChannel.UserId;
+        var pool = GetOrCreatePool(player);
+        if (msg.SlotIndex >= 0 && msg.SlotIndex < CharacterSlotCount &&
+            pool.PrioritySlots[msg.SlotIndex] is { } slot &&
+            slot.Status != AshfallSlotStatus.Dead)
+        {
+            pool.ConfirmedPriorityIndex = msg.SlotIndex;
+            pool.Revision++;
+        }
+        SendPoolResponse(msg.MsgChannel, pool);
+    }
+
+    private void OnResetSlot(MsgAshfallResetSlot msg)
+    {
+        var player = msg.MsgChannel.UserId;
+        var pool = GetOrCreatePool(player);
+        if (msg.SlotIndex >= 0 && msg.SlotIndex < CharacterSlotCount)
+        {
+            var slot = pool.PrioritySlots[msg.SlotIndex];
+            // A pinned candidate is only released by a played shift (evacuation) or death;
+            // otherwise players would reroll endlessly hunting for high-value roles.
+            if (IsSlotLocked(slot))
+            {
+                _sawmill.Warning($"Player {player} attempted to reset pinned slot {msg.SlotIndex} (status: {slot!.Status})!");
+                SendPoolResponse(msg.MsgChannel, pool);
+                return;
+            }
+
+            pool.PrioritySlots[msg.SlotIndex] = null;
+            pool.Revision++;
+            UpdateConfirmedIndex(pool);
+        }
+        SendPoolResponse(msg.MsgChannel, pool);
+    }
+
+    private void OnPlayerSpawnComplete(PlayerSpawnCompleteEvent ev)
+    {
+        if (ev.Player.UserId is { } userId && _playerPools.TryGetValue(userId, out var pool) &&
+            pool.TryGetConfirmedSlot(out var slot) &&
+            slot.Status == AshfallSlotStatus.Ready)
+        {
+            slot.Status = AshfallSlotStatus.OnShift;
+            slot.SpawnedMob = ev.Mob;
+        }
+    }
+
+    private void OnMobStateChanged(MobStateChangedEvent ev)
+    {
+        if (ev.NewMobState != MobState.Dead)
+            return;
+
+        foreach (var pool in _playerPools.Values)
+        {
+            for (var i = 0; i < pool.PrioritySlots.Length; i++)
+            {
+                var slot = pool.PrioritySlots[i];
+                if (slot != null && slot.SpawnedMob == ev.Target)
+                {
+                    slot.Status = AshfallSlotStatus.Dead;
+                    slot.SpawnedMob = null;
+
+                    // A dead candidate must never stay selected: resolve the confirmation to
+                    // the next non-dead pinned candidate, so ready/late-join paths can neither
+                    // respawn the dead person nor silently fall back to the legacy profile.
+                    if (pool.ConfirmedPriorityIndex == i)
+                        UpdateConfirmedIndex(pool);
+
+                    break;
+                }
+            }
+        }
+    }
+
+    private void OnRoundEnd(RoundEndMessageEvent ev)
+    {
+        foreach (var pool in _playerPools.Values)
+        {
+            for (var i = 0; i < pool.PrioritySlots.Length; i++)
+            {
+                var slot = pool.PrioritySlots[i];
+                if (slot != null && slot.Status == AshfallSlotStatus.OnShift)
+                {
+                    slot.Status = AshfallSlotStatus.Evacuated;
+                    slot.SpawnedMob = null;
+                }
+            }
+        }
+    }
+
     internal bool TryPin(NetUserId player, int slotIndex, Guid candidateId, string jobId, int poolRevision)
     {
         var pool = GetOrCreatePool(player);
@@ -187,13 +414,30 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
             return false;
         }
 
+        // A pinned or on-shift slot keeps its combination (and its spawned-mob association)
+        // until death or evacuation; reordering happens via MovePrioritySlot instead.
+        if (IsSlotLocked(pool.PrioritySlots[slotIndex]))
+        {
+            _sawmill.Warning($"Player {player} attempted to pin over locked slot {slotIndex} (status: {pool.PrioritySlots[slotIndex]!.Status})!");
+            return false;
+        }
+
         // Re-pinning a candidate into another slot moves the combination there; a candidate
         // may never occupy two slots at once.
         var existing = FindPinnedSlotIndex(pool, candidateId);
         if (existing is { } oldSlot && oldSlot != slotIndex)
+        {
+            if (IsSlotLocked(pool.PrioritySlots[oldSlot]))
+            {
+                _sawmill.Warning($"Player {player} attempted to move a locked pin out of slot {oldSlot}!");
+                return false;
+            }
+
             pool.PrioritySlots[oldSlot] = null;
+        }
 
         pool.PrioritySlots[slotIndex] = new PrioritySlot { Candidate = candidate, Job = job.ID };
+        pool.Revision++;
         UpdateConfirmedIndex(pool);
         return true;
     }
@@ -202,10 +446,19 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
     {
         var pool = GetOrCreatePool(player);
 
-        if (slotIndex < 0 || slotIndex >= PrioritySlotCount || pool.PrioritySlots[slotIndex] == null)
+        if (slotIndex < 0 || slotIndex >= PrioritySlotCount || pool.PrioritySlots[slotIndex] is not { } slot)
             return false;
 
+        // Same lifecycle rule as reset and resubmission: Ready and OnShift slots are
+        // released only by death or a played shift.
+        if (IsSlotLocked(slot))
+        {
+            _sawmill.Warning($"Player {player} attempted to clear locked slot {slotIndex} (status: {slot.Status})!");
+            return false;
+        }
+
         pool.PrioritySlots[slotIndex] = null;
+        pool.Revision++;
         UpdateConfirmedIndex(pool);
         return true;
     }
@@ -224,19 +477,35 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
             return false;
         }
 
-        (pool.PrioritySlots[from], pool.PrioritySlots[to]) = (pool.PrioritySlots[to], pool.PrioritySlots[from]);
+        var source = pool.PrioritySlots[from];
+        var target = pool.PrioritySlots[to];
+        var crossesLifepathRange = (from < CharacterSlotCount) != (to < CharacterSlotCount);
+
+        // Locked candidates may only swap with another occupied slot inside the lifepath
+        // range. Moving one to an empty slot would expose the old slot to a fresh submission.
+        if ((crossesLifepathRange || target == null) &&
+            (IsSlotLocked(source) || IsSlotLocked(target)))
+        {
+            _sawmill.Warning($"Player {player} attempted to move a locked slot across the lifepath range or into an empty slot!");
+            return false;
+        }
+
+        (pool.PrioritySlots[from], pool.PrioritySlots[to]) = (target, source);
+        pool.Revision++;
         UpdateConfirmedIndex(pool);
         return true;
     }
 
     // Pinning is the confirmation: the wake-up selection always resolves to the first occupied
-    // priority slot; a later allocation pass can walk slots top-down from there.
+    // priority slot; a later allocation pass can walk slots top-down from there. Dead slots
+    // are skipped: a dead candidate is never a valid confirmation, so resolving to one would
+    // leave no confirmed profile and drop the player back onto their legacy preferences.
     private static void UpdateConfirmedIndex(PlayerCandidatePool pool)
     {
         pool.ConfirmedPriorityIndex = -1;
         for (var i = 0; i < pool.PrioritySlots.Length; i++)
         {
-            if (pool.PrioritySlots[i] != null)
+            if (pool.PrioritySlots[i] is { } slot && slot.Status != AshfallSlotStatus.Dead)
             {
                 pool.ConfirmedPriorityIndex = i;
                 break;
@@ -404,6 +673,7 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
                 SlotIndex = i,
                 Candidate = slot.Candidate,
                 JobId = slot.Job,
+                Status = slot.Status,
             });
         }
 

@@ -36,6 +36,18 @@ public sealed class ProfilePortraitSpriteView : ProfilePreviewSpriteView
     [ViewVariables(VVAccess.ReadWrite)]
     public float HorizontalOffset { get; set; }
 
+    [ViewVariables(VVAccess.ReadWrite)]
+    public ShaderInstance? MorphShader { get; set; }
+
+    [ViewVariables(VVAccess.ReadWrite)]
+    public float MorphProgress { get; set; } = 1.0f;
+
+    [ViewVariables(VVAccess.ReadWrite)]
+    public float MorphTime { get; set; }
+
+    [ViewVariables(VVAccess.ReadWrite)]
+    public bool IsSilhouette { get; set; }
+
     private EntityUid? _boundsDummy;
     private Box2 _lastBounds;
 
@@ -98,7 +110,20 @@ public sealed class ProfilePortraitSpriteView : ProfilePreviewSpriteView
         tint.A = 1;
         world.Modulate *= tint;
 
+        if (MorphShader != null)
+        {
+            MorphShader.SetParameter("progress", MorphProgress);
+            MorphShader.SetParameter("time", MorphTime);
+            MorphShader.SetParameter("isSilhouette", IsSilhouette ? 1.0f : 0.0f);
+            world.UseShader(MorphShader);
+        }
+
         renderHandle.DrawEntity(PreviewDummy, position, scale, null, EyeRotation, OverrideDirection, sprite, xform, transformSystem);
+
+        if (MorphShader != null)
+        {
+            world.UseShader(null);
+        }
         world.Modulate = oldModulate;
     }
 }

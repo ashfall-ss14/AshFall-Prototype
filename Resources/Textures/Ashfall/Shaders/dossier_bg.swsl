@@ -1,0 +1,49 @@
+// Calm deep space backdrop with subtle cosmic dust and animated film grain noise.
+// Based on GodotShaders film grain and animated starfield patterns.
+
+highp float hash(highp vec2 p) {
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p.x * p.y);
+}
+
+void fragment() {
+    // 1. Fine 2x2 pixel grid for crisp retro look without chunkiness
+    highp float pixelBlock = 2.0;
+    highp vec2 pixelGrid = floor(FRAGCOORD.xy / pixelBlock);
+    highp vec2 fragCoord = pixelGrid * pixelBlock;
+    highp vec2 uv = fragCoord * SCREEN_PIXEL_SIZE.xy;
+
+    highp float aspect = SCREEN_PIXEL_SIZE.y / SCREEN_PIXEL_SIZE.x;
+    highp vec2 p = (uv - vec2(0.5)) * vec2(1.0, 1.0 / aspect) * 1.6;
+
+    highp float t = TIME * 0.08;
+
+    // 2. Calm, gentle cosmic ash nebula (smooth waves, zero concentric rings)
+    highp float w1 = sin(p.x * 1.2 + t * 0.3) * cos(p.y * 0.9 - t * 0.25);
+    highp float w2 = cos(p.x * 0.8 - t * 0.2 + w1 * 0.5) * sin(p.y * 1.1 + t * 0.35);
+    highp float nebula = clamp((w1 + w2) * 0.4 + 0.5, 0.0, 1.0);
+    nebula = smoothstep(0.25, 0.85, nebula);
+
+    // 3. Toned-down colors: deep dark void (#080A0D) to faint ash-slate (#14181F)
+    highp vec3 colVoid = vec3(0.031, 0.039, 0.051);
+    highp vec3 colNebula = vec3(0.065, 0.075, 0.090);
+    highp vec3 colWarm = vec3(0.085, 0.080, 0.075);
+
+    highp vec3 color = mix(colVoid, colNebula, nebula);
+    color = mix(color, colWarm, smoothstep(0.5, 0.95, nebula) * 0.35);
+
+    // 4. Subtle, tiny pixel stars in deep space (1-pixel scale, low brightness)
+    highp float starHash = hash(pixelGrid);
+    if (starHash > 0.998) {
+        highp float twinkle = sin(t * 3.0 + starHash * 6.28) * 0.25 + 0.75;
+        color += vec3(0.12, 0.13, 0.15) * twinkle;
+    }
+
+    // 5. Film grain noise animation (GodotShaders white noise algorithm)
+    highp float grainSeed = fract(TIME * 18.23);
+    highp float noise = (fract(sin(dot(uv + vec2(grainSeed), vec2(12.9898, 78.233))) * 43758.5453) - 0.5) * 2.0;
+    color += noise * 0.035;
+
+    COLOR = vec4(color, 1.0);
+}

@@ -100,6 +100,11 @@ public sealed class AshfallFireTests : GameTest
             Assert.That(flammableSys.ActiveFires.Contains(entity), Is.True);
             Assert.That(comp.OnFire, Is.True);
 
+            var beforeExplosionIgnite = comp.FireStacks;
+            flammableSys.AdjustFireStacks(entity, 2f, comp);
+            flammableSys.Ignite(entity, entity, comp);
+            Assert.That(comp.FireStacks, Is.GreaterThan(beforeExplosionIgnite));
+
             flammableSys.TryExtinguish((entity, comp));
             Assert.That(flammableSys.ActiveFires.Contains(entity), Is.False);
             Assert.That(comp.OnFire, Is.False);

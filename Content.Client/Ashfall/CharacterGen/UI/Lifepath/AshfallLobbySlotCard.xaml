@@ -1,0 +1,69 @@
+<PanelContainer xmlns="https://spacestation14.io"
+                xmlns:graphics="clr-namespace:Robust.Client.Graphics;assembly=Robust.Client"
+                xmlns:ashfall="clr-namespace:Content.Client.Ashfall.CharacterGen.UI"
+                MinWidth="300" MaxWidth="350" MinHeight="540"
+                HorizontalExpand="True" VerticalExpand="True">
+    <PanelContainer Name="CardPanel" HorizontalExpand="True" VerticalExpand="True">
+        <PanelContainer.PanelOverride>
+            <graphics:StyleBoxFlat BackgroundColor="#151618" BorderColor="#2C2E33" BorderThickness="1" />
+        </PanelContainer.PanelOverride>
+
+        <BoxContainer Orientation="Vertical" Margin="12" SeparationOverride="10" HorizontalExpand="True" VerticalExpand="True">
+            <!-- Header: Slot Number & Status Badge -->
+            <BoxContainer Orientation="Horizontal" HorizontalExpand="True">
+                <Label Name="SlotNumberLabel" StyleClasses="AshfallDossierLabel" Text="СЛОТ #1" VAlign="Center" />
+                <Control HorizontalExpand="True" />
+                <PanelContainer Name="StatusBadgePanel" Margin="4 0">
+                    <PanelContainer.PanelOverride>
+                        <graphics:StyleBoxFlat BackgroundColor="#242629" BorderColor="#3D4045" BorderThickness="1" />
+                    </PanelContainer.PanelOverride>
+                    <Label Name="StatusBadgeLabel" Margin="7 3" StyleClasses="AshfallDossierChip" Text="ВАКАНТНО" />
+                </PanelContainer>
+            </BoxContainer>
+
+            <!-- Center Content: Empty State OR Character FullBody Sprite -->
+            <PanelContainer Name="PreviewContainer" MinHeight="260" HorizontalExpand="True" VerticalExpand="True">
+                <PanelContainer.PanelOverride>
+                    <graphics:StyleBoxFlat BackgroundColor="#0E0F10" BorderColor="#1E2024" BorderThickness="1" />
+                </PanelContainer.PanelOverride>
+
+                <!-- Occupied View -->
+                <ashfall:ProfileFullBodySpriteView Name="PreviewSprite" HorizontalExpand="True" VerticalExpand="True" />
+
+                <!-- Empty View: ghost title + mono hint, no icon -->
+                <BoxContainer Name="EmptyContainer" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" SeparationOverride="10">
+                    <Label Name="EmptyTitleLabel" Text="{Loc 'ashfall-lobby-slot-empty'}" StyleClasses="AshfallDossierDisplaySubtle"
+                           HorizontalAlignment="Center" />
+                    <Label Name="EmptyHintLabel" Text="{Loc 'ashfall-lobby-slot-create'}" StyleClasses="AshfallDossierLabel"
+                           HorizontalAlignment="Center" />
+                </BoxContainer>
+
+                <!-- Full Area Click Button for Empty Slot -->
+                <Button Name="EmptySlotButton" StyleClasses="ButtonOpenBoth" HorizontalExpand="True" VerticalExpand="True" Visible="False" />
+            </PanelContainer>
+
+            <!-- Character Info (Occupied) -->
+            <BoxContainer Name="InfoContainer" Orientation="Vertical" SeparationOverride="4" HorizontalExpand="True">
+                <Label Name="NameLabel" StyleClasses="AshfallDossierDisplaySubtle" FontColorOverride="#E6E8E6" ClipText="True" />
+                <BoxContainer Orientation="Horizontal" SeparationOverride="6">
+                    <PanelContainer Name="JobColorBar" SetSize="3 14" VerticalAlignment="Center">
+                        <PanelContainer.PanelOverride>
+                            <graphics:StyleBoxFlat BackgroundColor="#D48944" />
+                        </PanelContainer.PanelOverride>
+                    </PanelContainer>
+                    <Label Name="JobLabel" FontColorOverride="#D48944" StyleClasses="AshfallDossierLabel" ClipText="True" HorizontalExpand="True" />
+                </BoxContainer>
+                <Label Name="BioLabel" StyleClasses="AshfallDossierLabel" ClipText="True" />
+                <Label Name="FlawLabel" FontColorOverride="#878C87" />
+            </BoxContainer>
+
+            <!-- Action Buttons Footer -->
+            <BoxContainer Name="ActionsContainer" Orientation="Horizontal" SeparationOverride="8" HorizontalExpand="True" Margin="0 4 0 0">
+                <Button Name="SelectButton" Text="{Loc 'ashfall-lobby-slot-button-select'}"
+                        StyleClasses="AshfallNavigationAction" HorizontalExpand="True" MinHeight="32" />
+                <Button Name="ResetButton" Text="{Loc 'ashfall-lobby-slot-button-reset'}"
+                        StyleClasses="AshfallDestructiveAction" MinHeight="32" />
+            </BoxContainer>
+        </BoxContainer>
+    </PanelContainer>
+</PanelContainer>
