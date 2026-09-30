@@ -131,7 +131,7 @@ namespace Content.Server.Atmos.EntitySystems
                 return;
             }
 
-            flammable.FireStacks += component.FireStacks;
+            AdjustFireStacks(otherEnt, component.FireStacks, flammable);
             Ignite(otherEnt, uid, flammable);
             component.Count--;
 
@@ -385,6 +385,9 @@ namespace Content.Server.Atmos.EntitySystems
             if (_containers.TryGetContainingContainer((ignitionSource, null), out var container) && container.Owner == uid)
                 return;
 
+            var wasOnFire = flammable.OnFire;
+            var oldStacks = flammable.FireStacks;
+
             if (flammable.AlwaysCombustible)
             {
                 flammable.FireStacks = Math.Max(flammable.FirestacksOnIgnite, flammable.FireStacks);
@@ -403,7 +406,11 @@ namespace Content.Server.Atmos.EntitySystems
                 RaiseLocalEvent(uid, ref extinguished);
             }
 
-            Dirty(uid, flammable);
+            // Update ticks Ignite for every entity inside a burning tile: only send state
+            // when something changed. Callers that mutate FireStacks beforehand report their
+            // own change via AdjustFireStacks.
+            if (flammable.OnFire != wasOnFire || !oldStacks.Equals(flammable.FireStacks))
+                Dirty(uid, flammable);
             UpdateAppearance(uid, flammable);
         }
 
@@ -425,7 +432,7 @@ namespace Content.Server.Atmos.EntitySystems
                     return;
 
                 // Ignite that sucker
-                flammable.FireStacks += component.FireStacks;
+                AdjustFireStacks(uid, component.FireStacks, flammable);
                 Ignite(uid, uid, flammable);
             }
 
