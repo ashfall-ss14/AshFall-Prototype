@@ -216,26 +216,12 @@ public sealed class AshfallPersonGenerator
             }
         }
 
+        var eligible = AshfallJobScorer.ScoreEligibleJobs(person, _prototypes);
+        // A requested job is a preference only. It never adds qualification evidence.
         if (!string.IsNullOrEmpty(choices.SelectedJob.Id) &&
             _prototypes.TryIndex<AshfallJobCareerPrototype>(choices.SelectedJob.Id, out var selectedCareer) &&
-            selectedCareer.Domain == domain)
-        {
-            foreach (var (reqComp, reqLevel) in selectedCareer.RequiredCompetencies)
-            {
-                var curLevel = person.GetLevel(reqComp);
-                if (curLevel < reqLevel)
-                {
-                    var neededExp = AshfallCareerLevels.ThresholdFor(reqLevel) - person.GetOrAddCompetency(reqComp).Experience;
-                    if (neededExp > 0)
-                        person.AddExperience(reqComp, neededExp, AshfallProvenanceSource.Career, selectedCareer.ID);
-                }
-            }
-            if (selectedCareer.RequiresLeadershipHistory)
-                person.LeadershipHistory = true;
-        }
-
-        var eligible = AshfallJobScorer.ScoreEligibleJobs(person, _prototypes);
-        if (!string.IsNullOrEmpty(choices.SelectedJob.Id) && eligible.Contains(choices.SelectedJob))
+            selectedCareer.Domain == domain &&
+            eligible.Contains(choices.SelectedJob))
         {
             eligible.Remove(choices.SelectedJob);
             eligible.Insert(0, choices.SelectedJob);
@@ -1049,7 +1035,7 @@ public sealed class AshfallPersonGenerator
         foreach (var certId in person.Certifications)
         {
             if (_prototypes.TryIndex(certId, out var cert))
-                educationLines.Add("• " + Loc.GetString(cert.Text, ("sex", sexKey)));
+                educationLines.Add("• " + CertTag(cert) + Loc.GetString(cert.Text, ("sex", sexKey)));
         }
 
         if (person.RetrainingCount > 0)

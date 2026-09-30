@@ -165,8 +165,8 @@ public sealed class AshfallPrioritySlotTests : GameTest
         var server = pair.Server;
         var user = pair.Client.User!.Value;
 
-        Guid firstId = default, secondId = default;
-        ProtoId<JobPrototype> firstJob = default!, secondJob = default!;
+        Guid firstId = default, secondId = default, thirdId = default;
+        ProtoId<JobPrototype> firstJob = default!, secondJob = default!, thirdJob = default!;
 
         await server.WaitAssertion(() =>
         {
@@ -175,8 +175,10 @@ public sealed class AshfallPrioritySlotTests : GameTest
             var pool = sys.GetOrCreatePool(user);
             firstId = pool.Candidates[0].CandidateId;
             secondId = pool.Candidates[1].CandidateId;
+            thirdId = pool.Candidates[2].CandidateId;
             firstJob = pool.Candidates[0].CompatibleJobs[0];
             secondJob = pool.Candidates[1].CompatibleJobs[0];
+            thirdJob = pool.Candidates[2].CompatibleJobs[0];
 
             Assert.That(sys.TryPin(user, 0, firstId, firstJob, pool.Revision), Is.True);
             Assert.That(sys.TryPin(user, 1, secondId, secondJob, pool.Revision), Is.True);
@@ -193,10 +195,22 @@ public sealed class AshfallPrioritySlotTests : GameTest
             Assert.That(pool.PrioritySlots[1]!.Candidate.CandidateId, Is.EqualTo(firstId));
             Assert.That(pool.ConfirmedPriorityIndex, Is.EqualTo(0));
 
-            // Empty target: the pin moves, the source slot is freed.
-            Assert.That(sys.MovePrioritySlot(user, 1, 4), Is.True);
-            Assert.That(pool.PrioritySlots[1], Is.Null);
-            Assert.That(pool.PrioritySlots[4]!.Candidate.CandidateId, Is.EqualTo(firstId));
+            // A locked pin cannot move into an empty visible or overflow slot.
+            Assert.That(sys.MovePrioritySlot(user, 1, 2), Is.False);
+            Assert.That(sys.MovePrioritySlot(user, 1, 4), Is.False);
+            Assert.That(pool.PrioritySlots[1]!.Candidate.CandidateId, Is.EqualTo(firstId));
+            Assert.That(pool.PrioritySlots[2], Is.Null);
+            Assert.That(pool.PrioritySlots[4], Is.Null);
+
+            // An unlocked (evacuated) slot can move out, but cannot swap a locked slot out.
+            Assert.That(sys.TryPin(user, 2, thirdId, thirdJob, pool.Revision), Is.True);
+            pool.PrioritySlots[2]!.Status = AshfallSlotStatus.Evacuated;
+            Assert.That(sys.MovePrioritySlot(user, 2, 4), Is.True);
+            Assert.That(pool.PrioritySlots[2], Is.Null);
+            Assert.That(pool.PrioritySlots[4]!.Candidate.CandidateId, Is.EqualTo(thirdId));
+            Assert.That(sys.MovePrioritySlot(user, 4, 0), Is.False);
+            Assert.That(pool.PrioritySlots[0]!.Candidate.CandidateId, Is.EqualTo(secondId));
+            Assert.That(pool.PrioritySlots[4]!.Candidate.CandidateId, Is.EqualTo(thirdId));
 
             // Guard rails: no-op, moving an empty slot, out-of-range target.
             Assert.That(sys.MovePrioritySlot(user, 4, 4), Is.False);
@@ -319,6 +333,18 @@ public sealed class AshfallPrioritySlotTests : GameTest
             firstId = pool.Candidates[0].CandidateId;
             job = pool.Candidates[0].CompatibleJobs[0];
             Assert.That(sys.TryPin(user, 0, firstId, job, pool.Revision), Is.True);
+
+            var overflow = pool.Candidates[1];
+            Assert.That(sys.TryPin(user, 3, overflow.CandidateId, overflow.CompatibleJobs[0], pool.Revision), Is.True);
+            pool.PrioritySlots[3]!.Status = AshfallSlotStatus.Evacuated;
+
+            var beforeMoves = pool.Revision;
+            Assert.That(sys.MovePrioritySlot(user, 0, 3), Is.False, "a locked pin cannot move to overflow");
+            Assert.That(sys.MovePrioritySlot(user, 3, 0), Is.False, "an unlocked overflow slot cannot swap a locked pin out");
+            Assert.That(sys.MovePrioritySlot(user, 0, 1), Is.False, "a locked pin cannot move into an empty visible slot");
+            Assert.That(pool.Revision, Is.EqualTo(beforeMoves), "rejected moves must not authorize a fresh submit");
+            Assert.That(pool.PrioritySlots[0]!.Candidate.CandidateId, Is.EqualTo(firstId));
+            Assert.That(pool.PrioritySlots[3]!.Candidate.CandidateId, Is.EqualTo(overflow.CandidateId));
             revision = pool.Revision;
         });
         await pair.RunTicksSync(5);
@@ -349,6 +375,52 @@ public sealed class AshfallPrioritySlotTests : GameTest
             Assert.That(pool.PrioritySlots[2], Is.Not.Null,
                 "an empty slot must still accept a valid lifepath submission");
             Assert.That(pool.ConfirmedPriorityIndex, Is.EqualTo(2));
+        });
+    }
+
+    [Test]
+    public async Task IneligibleLifepathJobFallsBackToEligibleCareer()
+    {
+        var pair = Pair;
+        var server = pair.Server;
+        var client = pair.Client;
+        var user = client.User!.Value;
+        var choices = new AshfallLifepathChoices
+        {
+            TargetSlotIndex = 0,
+            Step1Origin = "LifepathOriginMining",
+            Step2Vector = "LifepathVectorEngineering",
+            Step3Flaw = "LifepathFlawPedant",
+            Step4Luggage = "LifepathArchetypeBalance",
+            SelectedJob = "HeadOfSecurity",
+            ExperienceTier = 0,
+            SelectedSex = Sex.Male,
+        };
+
+        var revision = -1;
+        await server.WaitAssertion(() =>
+        {
+            var sys = server.EntMan.System<AshfallCharacterPoolSystem>();
+            ResetSlots(sys, user);
+            revision = sys.GetOrCreatePool(user).Revision;
+        });
+        await pair.RunTicksSync(5);
+
+        await client.WaitPost(() =>
+            client.Resolve<INetManager>().ClientSendMessage(new MsgAshfallLifepathSubmit
+            {
+                PoolRevision = revision,
+                Choices = choices,
+            }));
+        await PoolManager.WaitUntil(server, () =>
+            server.EntMan.System<AshfallCharacterPoolSystem>().GetOrCreatePool(user).PrioritySlots[0] != null,
+            maxTicks: 60);
+
+        await server.WaitAssertion(() =>
+        {
+            var slot = server.EntMan.System<AshfallCharacterPoolSystem>().GetOrCreatePool(user).PrioritySlots[0]!;
+            Assert.That(slot.Job.Id, Is.Not.EqualTo("HeadOfSecurity"));
+            Assert.That(slot.Candidate.CompatibleJobs, Does.Contain(slot.Job));
         });
     }
 

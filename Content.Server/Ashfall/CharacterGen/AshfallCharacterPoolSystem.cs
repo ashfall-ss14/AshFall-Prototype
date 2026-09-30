@@ -252,24 +252,48 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
 
         var (candidate, structure) = _personGenerator.GenerateFromLifepath(msg.Choices, _random);
 
-        var selectedJobId = msg.Choices.SelectedJob.Id;
-        var jobId = !string.IsNullOrEmpty(msg.Choices.SelectedJob.Id)
-            ? msg.Choices.SelectedJob.Id
-            : (candidate.CompatibleJobs.Count > 0 ? candidate.CompatibleJobs[0].Id : "Passenger");
-
         var eligibleJobs = AshfallJobScorer.ScoreEligibleJobs(structure, _protoManager);
-        if (!_protoManager.TryIndex<JobPrototype>(jobId, out var job) ||
+        var selectedJobId = msg.Choices.SelectedJob.Id;
+        string? jobId = null;
+
+        if (!string.IsNullOrEmpty(selectedJobId) &&
+            eligibleJobs.Contains(selectedJobId) &&
+            _protoManager.TryIndex<AshfallJobCareerPrototype>(selectedJobId, out var selectedCareer) &&
+            selectedCareer.Domain == structure.PrimaryDomain &&
+            _protoManager.TryIndex<JobPrototype>(selectedJobId, out var selectedJob) &&
+            selectedJob.SetPreference &&
+            IsJobAllowed(player, selectedJob.ID, candidate.Profile))
+        {
+            jobId = selectedJob.ID;
+        }
+
+        if (jobId == null)
+        {
+            foreach (var eligibleJobId in eligibleJobs.OrderByDescending(id =>
+                         _protoManager.Index<AshfallJobCareerPrototype>(id).Domain == structure.PrimaryDomain))
+            {
+                if (!_protoManager.TryIndex<JobPrototype>(eligibleJobId, out var eligibleJob) ||
+                    !eligibleJob.SetPreference ||
+                    !IsJobAllowed(player, eligibleJob.ID, candidate.Profile))
+                {
+                    continue;
+                }
+
+                jobId = eligibleJob.ID;
+                break;
+            }
+        }
+
+        if (jobId == null ||
+            !_protoManager.TryIndex<JobPrototype>(jobId, out var job) ||
             !job.SetPreference ||
+            !eligibleJobs.Contains(job.ID) ||
             !candidate.CompatibleJobs.Contains(job.ID) ||
-            (!string.IsNullOrEmpty(selectedJobId) && !eligibleJobs.Contains(job.ID)) ||
             !IsJobAllowed(player, job.ID, candidate.Profile))
         {
             SendPoolResponse(msg.MsgChannel, pool);
             return;
         }
-
-        if (!candidate.CompatibleJobs.Contains(jobId))
-            candidate.CompatibleJobs.Insert(0, jobId);
 
         pool.PrioritySlots[slotIdx] = new PrioritySlot
         {
@@ -453,11 +477,20 @@ public sealed partial class AshfallCharacterPoolSystem : EntitySystem
             return false;
         }
 
-        // Deliberately no locked-status check here: a swap preserves both slots' candidates
-        // and any spawned-mob association, so it cannot discard a locked slot the way pin,
-        // clear and reset would. Which candidate is confirmed stays freely selectable via
-        // OnSelectSlot regardless, so reordering grants nothing the lifecycle locks protect.
-        (pool.PrioritySlots[from], pool.PrioritySlots[to]) = (pool.PrioritySlots[to], pool.PrioritySlots[from]);
+        var source = pool.PrioritySlots[from];
+        var target = pool.PrioritySlots[to];
+        var crossesLifepathRange = (from < CharacterSlotCount) != (to < CharacterSlotCount);
+
+        // Locked candidates may only swap with another occupied slot inside the lifepath
+        // range. Moving one to an empty slot would expose the old slot to a fresh submission.
+        if ((crossesLifepathRange || target == null) &&
+            (IsSlotLocked(source) || IsSlotLocked(target)))
+        {
+            _sawmill.Warning($"Player {player} attempted to move a locked slot across the lifepath range or into an empty slot!");
+            return false;
+        }
+
+        (pool.PrioritySlots[from], pool.PrioritySlots[to]) = (target, source);
         pool.Revision++;
         UpdateConfirmedIndex(pool);
         return true;

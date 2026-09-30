@@ -12,6 +12,7 @@ using Content.Shared.Humanoid.Prototypes;
 using Content.Shared.Preferences;
 using Content.Shared.Roles;
 using NUnit.Framework;
+using Robust.Shared.Localization;
 using Robust.Shared.Maths;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
@@ -408,6 +409,42 @@ public sealed class AshfallCharacterGenTests : GameTest
         Assert.That(unskilledJobs, Is.Not.Empty, "fallback assignments must always exist");
         Assert.That(unskilledJobs.All(jobId => _protoMan.Index<AshfallJobCareerPrototype>(jobId).FallbackOnly),
             Is.True, "unskilled person should only receive fallback jobs");
+    }
+
+    [Test]
+    [RunOnSide(Side.Server)]
+    public void SelectedJobCannotCreateCareerEvidenceTest()
+    {
+        foreach (var selectedJobId in new[] { "Warden", "HeadOfSecurity" })
+        {
+            for (var seed = 0; seed < 25; seed++)
+            {
+                var choices = new AshfallLifepathChoices
+                {
+                    Step1Origin = "LifepathOriginMining",
+                    Step2Vector = "LifepathVectorSecurity",
+                    Step3Flaw = "LifepathFlawPedant",
+                    Step4Luggage = "LifepathArchetypeBalance",
+                    SelectedJob = selectedJobId,
+                    ExperienceTier = 0,
+                };
+                var random = new RobustRandom();
+                random.SetSeed(seed);
+
+                var (candidate, structure) = PersonGenerator.GenerateFromLifepath(choices, random);
+                var requestedJobEvidence = structure.Competencies.Values
+                    .SelectMany(state => state.Provenance)
+                    .Where(source => source.SourceId == selectedJobId)
+                    .ToArray();
+
+                Assert.That(requestedJobEvidence, Is.Empty, $"{selectedJobId}, seed {seed}");
+                Assert.That(structure.LeadershipHistory, Is.EqualTo(structure.Career.Any(stint => stint.Leadership)),
+                    $"{selectedJobId}, seed {seed}: leadership must come from career history");
+                Assert.That(candidate.CompatibleJobs,
+                    Is.EquivalentTo(AshfallJobScorer.ScoreEligibleJobs(structure, _protoMan)),
+                    $"{selectedJobId}, seed {seed}: request must not alter eligible jobs");
+            }
+        }
     }
 
     [Test]
