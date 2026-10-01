@@ -31,7 +31,7 @@
   ### Evolution
 
   <Box>
-    <GuideEntityEmbed Entity="ActionRetractableItemArmBlade" Caption="ArmBlade"/>
+    <GuideEntityEmbed Entity="ActionRetractableItemArmblade" Caption="ArmBlade"/>
     <GuideEntityEmbed Entity="ActionChangelingStingDna" Caption="Extract DNA"/>
     <GuideEntityEmbed Entity="ActionChangelingNightVision" Caption="Night Vision"/>
   </Box>
