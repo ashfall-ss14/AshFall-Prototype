@@ -1,16 +1,13 @@
-using Robust.Shared.Serialization;
-
 namespace Content.Shared.Botany.Events;
 
 /// <summary>
 /// Event of plant growing ticking.
 /// </summary>
 [ByRefEvent]
-[Serializable, NetSerializable]
-public readonly record struct PlantGrowEvent(NetEntity Tray);
+public readonly record struct PlantGrowEvent(EntityUid Tray);
 
 /// <summary>
-/// Event raised when a harvest is attempted.
+/// Event raised when a harvest is attempted. Cancel to prevent the harvest.
 /// </summary>
 [ByRefEvent]
 public record struct PlantHarvestAttemptEvent(EntityUid User, EntityUid Target, EntityUid? Used = null, bool Cancelled = false);

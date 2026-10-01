@@ -683,7 +683,7 @@
     state: icon
   effects:
   - !type:Polymorph
-    prototype: AdminVulpSmite
+    prototype: AdminVeiruSmite
     force: true
 
 - type: adminVerb
