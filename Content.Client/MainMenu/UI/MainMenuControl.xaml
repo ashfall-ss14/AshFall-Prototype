@@ -1,40 +1,67 @@
-<Control xmlns="https://spacestation14.io"
+﻿<Control xmlns="https://spacestation14.io"
+         xmlns:pllax="clr-namespace:Content.Client.Parallax"
          xmlns:clog="clr-namespace:Content.Client.Changelog"
-         xmlns:controls="clr-namespace:Content.Client.UserInterface.Controls">
-    <TextureRect Name="Background"
-                 Stretch="KeepAspectCovered"
-                 HorizontalExpand="True"
-                 VerticalExpand="True" />
-    <BoxContainer Name="VBox" Orientation="Vertical" MinWidth="410" MaxWidth="460">
-        <PanelContainer StyleClasses="AshfallPanel">
+         xmlns:system="clr-namespace:System;assembly=System.Runtime">
+    <pllax:ParallaxControl
+        Name="BackgroundParallax"
+        SpeedX="5"
+        SpeedY="20"
+        ScaleX="3"
+        ScaleY="3" />
+    <BoxContainer Name="VBox"
+                  Orientation="Vertical"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  HorizontalExpand="True"
+                  VerticalExpand="True"
+                  SeparationOverride="24">
+        <TextureRect Name="Logo"
+                     Stretch="KeepCentered" />
+        <PanelContainer StyleClasses="BackgroundPanel">
             <BoxContainer Orientation="Vertical"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          HorizontalExpand="True"
+                          VerticalExpand="True"
                           StyleIdentifier="mainMenuVBox"
-                          SeparationOverride="8"
-                          Margin="12">
-                <Label Text="{Loc 'ashfall-main-menu-terminal-title'}"
-                       StyleClasses="AshfallTerminalHeader" />
-                <controls:HLine StyleClasses="highlight" Thickness="1" />
-                <GridContainer Columns="2" Margin="0 4" HSeparationOverride="12" VSeparationOverride="8">
-                    <Label Text="{Loc 'main-menu-username-label'}" VAlign="Center" />
-                    <LineEdit Name="UsernameBox" Access="Public"
-                              PlaceHolder="{Loc 'main-menu-username-text'}" HorizontalExpand="True" />
-                    <Label Text="{Loc 'main-menu-address-label'}" VAlign="Center" />
-                    <LineEdit Name="AddressBox" Access="Public" Text="localhost"
-                              PlaceHolder="{Loc 'ashfall-main-menu-address-placeholder'}" HorizontalExpand="True" />
+                          MinWidth="320"
+                          Margin="0 4 0 12">
+                <GridContainer Columns="2" Margin="0 4">
+                    <Label Text="{Loc 'main-menu-username-label'}" />
+                    <LineEdit Name="UsernameBox"
+                              Access="Public"
+                              PlaceHolder="{Loc 'main-menu-username-text'}"
+                              HorizontalExpand="True" />
+                    <Label Text="{Loc 'main-menu-address-label'}" />
+                    <LineEdit Name="AddressBox"
+                              Access="Public"
+                              Text="localhost"
+                              PlaceHolder="server address:port"
+                              HorizontalExpand="True" />
                 </GridContainer>
-                <Label Name="ConnectionStatus" Access="Public" Text="{Loc 'ashfall-main-menu-status-connecting'}"
-                       StyleClasses="AshfallStatus" Visible="False" Margin="0 2" />
-                <Button Name="DirectConnectButton" Access="Public"
-                        Text="{Loc 'main-menu-direct-connect-button'}" TextAlign="Center"
-                        StyleIdentifier="mainMenu" StyleClasses="AshfallPrimaryAction" MinHeight="40" />
-                <clog:ChangelogButton Name="ChangelogButton" Access="Public"
-                                      StyleIdentifier="mainMenu" StyleClasses="AshfallNavigationAction" MinHeight="34" />
-                <Button Name="OptionsButton" Access="Public"
-                        Text="{Loc 'main-menu-options-button'}" TextAlign="Center"
-                        StyleIdentifier="mainMenu" StyleClasses="AshfallUtilityAction" MinHeight="34" />
-                <Button Name="QuitButton" Access="Public"
-                        Text="{Loc 'main-menu-quit-button'}" TextAlign="Center"
-                        StyleIdentifier="mainMenu" StyleClasses="AshfallDestructiveAction" MinHeight="34" />
+                <Button Name="DirectConnectButton"
+                        Access="Public"
+                        Text="{Loc 'main-menu-direct-connect-button'}"
+                        TextAlign="Center"
+                        StyleClasses="OpenLeft"
+                        StyleIdentifier="mainMenu" />
+                <clog:ChangelogButton
+                    Name="ChangelogButton"
+                    StyleIdentifier="mainMenu"
+                    StyleClasses="OpenBoth"
+                    Access="Public" />
+                <Button Name="OptionsButton"
+                        Access="Public"
+                        Text="{Loc 'main-menu-options-button'}"
+                        TextAlign="Center"
+                        StyleClasses="OpenBoth"
+                        StyleIdentifier="mainMenu" />
+                <Button Name="QuitButton"
+                        Access="Public"
+                        Text="{Loc 'main-menu-quit-button'}"
+                        TextAlign="Center"
+                        StyleIdentifier="mainMenu"
+                        StyleClasses="negative OpenRight" />
             </BoxContainer>
         </PanelContainer>
     </BoxContainer>

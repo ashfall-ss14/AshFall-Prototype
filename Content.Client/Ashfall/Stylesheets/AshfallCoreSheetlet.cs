@@ -5,6 +5,7 @@ using Content.Client.Stylesheets;
 using Content.Client.Stylesheets.Fonts;
 using Content.Client.Stylesheets.Sheetlets;
 using Content.Client.UserInterface.Controls;
+using Content.Client.UserInterface.Systems.Chat.Controls;
 using Robust.Client.Graphics;
 using Robust.Client.ResourceManagement;
 using Robust.Client.UserInterface;
@@ -81,7 +82,7 @@ public sealed class AshfallCoreSheetlet : Sheetlet<AshfallStylesheet>
             E<PanelContainer>().Class(AshfallStylesheet.LobbyInsetClass).Panel(lobbyInset),
             E<PanelContainer>().Class(AshfallStylesheet.LobbyHeaderClass).Panel(lobbyHeader),
             E<PanelContainer>().Class(AshfallStylesheet.LobbyChatPanelClass).Panel(lobbyChat),
-            E<PanelContainer>().Class(StyleNano.StyleClassChatPanel).Panel(chatBg),
+            E<PanelContainer>().Class(ChatInputBox.StyleClassChatPanel).Panel(chatBg),
             E<OutputPanel>().Class(AshfallStylesheet.ChatLogPanelClass)
                 .Prop(OutputPanel.StylePropertyStyleBox, new StyleBoxEmpty()),
             E<Content.Client.Ashfall.UI.Chat.Controls.CustomOutputPanel>()

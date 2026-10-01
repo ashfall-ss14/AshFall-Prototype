@@ -10,7 +10,7 @@
                 <Label Text="{Loc 'ashfall-character-setup-file-title'}" StyleClasses="AshfallSectionHeader" FontColorOverride="#A3A8A3" HorizontalExpand="True" />
                 <Label Text="{Loc 'ashfall-character-setup-status'}" StyleClasses="AshfallStatus" />
             </BoxContainer>
-            <controls:HLine StyleClasses="highlight" Thickness="1" />
+            <controls:Separator Orientation="Horizontal" StyleClasses="highlight" Thickness="1" />
             <BoxContainer Name="Loaded" Orientation="Horizontal" SeparationOverride="10" Visible="False">
                 <PanelContainer Name="PortraitFrame" StyleClasses="AshfallLobbyInset">
                     <BoxContainer Name="ViewBox" Orientation="Horizontal" HorizontalAlignment="Center">

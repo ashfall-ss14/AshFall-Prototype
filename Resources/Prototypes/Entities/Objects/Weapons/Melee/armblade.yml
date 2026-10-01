@@ -1,7 +1,7 @@
 - type: entity
   name: armblade
   parent: BaseItem
-  id: ArmBlade
+  id: Armblade
   description: A grotesque blade made out of bone and flesh that can pry open doors and cleaves through people as a hot knife through butter.
   components:
   - type: Tool
@@ -31,7 +31,7 @@
     pryPowered: true
 
 - type: entity
-  parent: ArmBlade
+  parent: Armblade
   id: ArmbladeDull
   suffix: Dull
   components:

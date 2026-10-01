@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System.Collections.Generic;
 using Content.Client.IoC;
 using Content.Client.Parallax.Managers;
@@ -41,7 +41,7 @@ public sealed partial class TestPair : RobustIntegrationTest.TestPair
         var settings = (PoolSettings)Settings;
         if (!settings.DummyTicker)
         {
-            var gameTicker = Server.System<GameTicker>();
+            var gameTicker = Server.System<ServerGameTicker>();
             await Server.WaitPost(() => gameTicker.RestartRound());
         }
     }

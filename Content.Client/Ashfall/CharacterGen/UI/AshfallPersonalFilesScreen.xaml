@@ -17,7 +17,7 @@
                 </BoxContainer>
             </PanelContainer>
 
-            <controls:HLine StyleClasses="highlight" Thickness="1" />
+            <controls:Separator Orientation="Horizontal" StyleClasses="highlight" Thickness="1" />
 
             <BoxContainer Orientation="Horizontal" HorizontalExpand="True" VerticalExpand="True" SeparationOverride="10">
                 <!-- LEFT: candidates (upper) + assignment selection + priority slots (lower) -->
@@ -42,7 +42,7 @@
 
                             <Control Name="LeftFlowSpacer" VerticalExpand="True" Visible="False" />
 
-                            <controls:HLine StyleClasses="highlight" Thickness="1" />
+                            <controls:Separator Orientation="Horizontal" StyleClasses="highlight" Thickness="1" />
 
                             <BoxContainer Orientation="Vertical" HorizontalExpand="True" Margin="4 2" SeparationOverride="6">
                                 <Label Name="PriorityHeading" Text="{Loc 'ashfall-personal-files-priority-heading'}" StyleClasses="FancyWindowTitle" FontColorOverride="#D48944" ToolTip="{Loc 'ashfall-personal-files-priority-help'}" />
@@ -112,7 +112,7 @@
                                 <Label Name="DossierSelectionLabel" FontColorOverride="#D48944" Margin="0 2 0 0" />
 
                                 <!-- Passport block separator: dim cool rule, quieter than the amber HLines. -->
-                                <controls:HLine StyleClasses="highlight" Thickness="1" ModulateSelfOverride="#2E3033" />
+                                <controls:Separator Orientation="Horizontal" StyleClasses="highlight" Thickness="1" ModulateSelfOverride="#2E3033" />
 
                                 <BoxContainer Name="DossierSections" Orientation="Vertical" HorizontalExpand="True" SeparationOverride="8" />
                             </BoxContainer>
@@ -121,7 +121,7 @@
                 </layout:LayoutContainer>
             </BoxContainer>
 
-            <controls:HLine StyleClasses="highlight" Thickness="1" />
+            <controls:Separator Orientation="Horizontal" StyleClasses="highlight" Thickness="1" />
             <BoxContainer Orientation="Horizontal" HorizontalExpand="True" SeparationOverride="10" MinHeight="40">
                 <Button Name="RefreshButton" Text="{Loc 'ashfall-personal-files-refresh'}" StyleClasses="AshfallSecondaryAction" MinHeight="36" MinWidth="220" />
                 <Label Name="CooldownLabel" VAlign="Center" StyleClasses="Status" ClipText="True" />

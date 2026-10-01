@@ -25,7 +25,7 @@
   ### Loss of Surprise
 
   <Box>
-    <TextureEmbed Sprite="Structures/Storage/closet.rsi" State="cardboard_special"/>
+    <TextureEmbed Sprite="Structures/Storage/closet.rsi" State="cardboard"/>
   </Box>
 
   In the silence of an opening, the ninja moves like a whisper in the wind.
