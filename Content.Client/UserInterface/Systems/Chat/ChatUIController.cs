@@ -5,6 +5,7 @@ using Content.Client.Administration.Managers;
 using Content.Client.Chat;
 using Content.Client.Chat.Managers;
 using Content.Client.Chat.TypingIndicator;
+using Content.Shared.Chat.TypingIndicator;
 using Content.Client.Chat.UI;
 using Content.Client.Examine;
 using Content.Client.Gameplay;
@@ -935,6 +936,51 @@ public sealed partial class ChatUIController : UIController
     {
         return MapLocalIfGhost(PreferredChannel);
     }
+
+    // WL-Changes: Alt Typing Indicators Start
+    public ChatSelectChannel CurrentChannel = ChatSelectChannel.None;
+    private static readonly ProtoId<TypingIndicatorPrototype> WhisperID = "whisper";
+    private static readonly ProtoId<TypingIndicatorPrototype> EmoteID = "emote";
+    private static readonly ProtoId<TypingIndicatorPrototype> OocID = "ooc";
+    private static readonly ProtoId<TypingIndicatorPrototype> RadioID = "radio";
+
+    public void NotifySpecificChatTextChange(ChatSelectChannel selectedChannel, string text = "")
+    {
+        var channel = selectedChannel;
+        if (!string.IsNullOrEmpty(text))
+        {
+            var (prefixChannel, _, _) = SplitInputContents(text.ToLower());
+            if (prefixChannel != ChatSelectChannel.None)
+                channel = prefixChannel;
+        }
+
+        CurrentChannel = channel;
+
+        switch (channel)
+        {
+            case ChatSelectChannel.Whisper:
+                _typingIndicator?.ClientAlternateTyping(WhisperID);
+                break;
+
+            case ChatSelectChannel.Radio:
+                _typingIndicator?.ClientAlternateTyping(RadioID);
+                break;
+
+            case ChatSelectChannel.Emotes:
+                _typingIndicator?.ClientAlternateTyping(EmoteID);
+                break;
+
+            case ChatSelectChannel.LOOC:
+            case ChatSelectChannel.OOC:
+                _typingIndicator?.ClientAlternateTyping(OocID);
+                break;
+
+            default:
+                _typingIndicator?.ClientChangedChatText();
+                break;
+        }
+    }
+    // WL-Changes: Alt Typing Indicators End
 
     public void NotifyChatTextChange()
     {
