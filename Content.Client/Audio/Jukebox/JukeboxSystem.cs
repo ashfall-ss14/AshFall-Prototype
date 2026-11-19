@@ -1,17 +1,32 @@
+using Content.Shared.Audio;
 using Content.Shared.Audio.Jukebox;
+using Content.Shared.CCVar;
 using Robust.Client.Animations;
 using Robust.Client.GameObjects;
+using Robust.Shared.Audio.Components;
+using Robust.Shared.Audio.Systems;
+using Robust.Shared.Configuration;
 using Robust.Shared.Prototypes;
+using Content.Shared.Containers.ItemSlots;
+using JukeboxComponent = Content.Shared.Audio.Jukebox.JukeboxComponent;
 
 namespace Content.Client.Audio.Jukebox;
 
 
-public sealed partial class JukeboxSystem : SharedJukeboxSystem
+public sealed class JukeboxSystem : SharedJukeboxSystem
 {
-    [Dependency] private AnimationPlayerSystem _animationPlayer = default!;
-    [Dependency] private SharedAppearanceSystem _appearanceSystem = default!;
-    [Dependency] private SharedUserInterfaceSystem _uiSystem = default!;
-    [Dependency] private SpriteSystem _sprite = default!;
+    [Dependency] private readonly IPrototypeManager _protoManager = default!;
+    [Dependency] private readonly AnimationPlayerSystem _animationPlayer = default!;
+    [Dependency] private readonly SharedAppearanceSystem _appearanceSystem = default!;
+    [Dependency] private readonly SharedUserInterfaceSystem _uiSystem = default!;
+    [Dependency] private readonly SpriteSystem _sprite = default!;
+
+    // ADT-Tweak start
+    [Dependency] private readonly IConfigurationManager _cfg = default!;
+    [Dependency] private readonly SharedAudioSystem _audio = default!;
+
+    private static float _ambientMusicSlider;
+    // / ADT-Tweak end
 
     public override void Initialize()
     {
@@ -20,13 +35,14 @@ public sealed partial class JukeboxSystem : SharedJukeboxSystem
         SubscribeLocalEvent<JukeboxComponent, AnimationCompletedEvent>(OnAnimationCompleted);
         SubscribeLocalEvent<JukeboxComponent, AfterAutoHandleStateEvent>(OnJukeboxAfterState);
 
-        ProtoMan.PrototypesReloaded += OnProtoReload;
+        _protoManager.PrototypesReloaded += OnProtoReload;
+        _cfg.OnValueChanged(CCVars.AmbientMusicVolume, OnAmbientMusicVolumeChanged, true); // ADT-Tweak
     }
 
     public override void Shutdown()
     {
         base.Shutdown();
-        ProtoMan.PrototypesReloaded -= OnProtoReload;
+        _protoManager.PrototypesReloaded -= OnProtoReload;
     }
 
     private void OnProtoReload(PrototypesReloadedEventArgs obj)
@@ -142,4 +158,42 @@ public sealed partial class JukeboxSystem : SharedJukeboxSystem
         _sprite.LayerSetAutoAnimated(sprite.AsNullable(), layer, true);
         _sprite.LayerSetRsiState(sprite.AsNullable(), layer, state);
     }
+
+    // ADT-Tweak-Start
+    public override void Update(float frameTime)
+    {
+        base.Update(frameTime);
+
+        var query = EntityQueryEnumerator<JukeboxComponent>();
+        while (query.MoveNext(out var uid, out var comp))
+        {
+            if (!comp.AudioStream.HasValue || !Exists(comp.AudioStream.Value))
+                continue;
+
+            if (!TryComp(comp.AudioStream.Value, out AudioComponent? audioComp))
+                continue;
+
+            if (!audioComp.Playing)
+                continue;
+
+            var baseVolume = MapToRange(comp.Volume, comp.MinSlider, comp.MaxSlider, comp.MinVolume, comp.MaxVolume);
+            var newVolume = baseVolume + _ambientMusicSlider;
+            _audio.SetVolume(uid, newVolume, audioComp);
+        }
+    }
+
+    private void OnAmbientMusicVolumeChanged(float obj)
+    {
+        _ambientMusicSlider = SharedAudioSystem.GainToVolume(obj);
+    }
+
+    protected override void UpdateMusicList(Entity<JukeboxComponent> ent)
+    {
+        if (!_uiSystem.TryGetOpenUi<JukeboxBoundUserInterface>(ent.Owner, JukeboxUiKey.Key, out var bui))
+            return;
+
+        bui.PopulateMusic();
+        bui.UpdateDiskInfo();
+    }
+    // ADT-Tweak-End
 }
