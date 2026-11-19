@@ -8,6 +8,9 @@
         <Label Name="Gender"/>
         <Label Name="Fingerprint"/>
         <Label Name="Dna"/>
-        <Button Visible="False" Name="DeleteButton" Text="{Loc 'general-station-record-console-delete'}"/>
+        <BoxContainer Orientation="Horizontal" Margin="0 4 0 0" SeparationOverride="8">
+            <Button Name="DossierButton" Text="{Loc 'general-station-record-console-dossier'}" StyleClasses="AshfallSecondaryAction"/>
+            <Button Visible="False" Name="DeleteButton" Text="{Loc 'general-station-record-console-delete'}"/>
+        </BoxContainer>
     </BoxContainer>
 </Control>

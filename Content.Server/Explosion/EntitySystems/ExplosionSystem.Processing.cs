@@ -501,7 +501,7 @@ public sealed partial class ExplosionSystem
         {
             if (_flammableQuery.TryGetComponent(uid, out var flammable))
             {
-                flammable.FireStacks += fireStacksOnIgnite.Value;
+                _flammableSystem.AdjustFireStacks(uid, fireStacksOnIgnite.Value, flammable);
                 _flammableSystem.Ignite(uid, uid, flammable);
             }
 

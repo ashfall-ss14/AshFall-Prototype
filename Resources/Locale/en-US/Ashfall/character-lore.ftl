@@ -562,6 +562,8 @@ ashfall-psychotype-pedant = Pedant
 ashfall-psychotype-diplomat = Diplomat
 ashfall-psychotype-daredevil = Daredevil
 ashfall-psychotype-stoic = Stoic
+ashfall-psychotype-sadist = Sadist
+ashfall-psychotype-cynic = Cynic
 
 # --- DEMEANOR ---
 ashfall-lore-demeanor-pragmatist-1 = sparing with praise; judges colleagues and management strictly by their practical output during the shift.

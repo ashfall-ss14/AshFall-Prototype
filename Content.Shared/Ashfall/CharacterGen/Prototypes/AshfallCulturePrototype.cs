@@ -3,6 +3,7 @@ using Content.Shared.Humanoid.Markings;
 using Content.Shared.Humanoid.Prototypes;
 using Robust.Shared.Maths;
 using Robust.Shared.Prototypes;
+using Robust.Shared.Serialization;
 
 namespace Content.Shared.Ashfall.CharacterGen.Prototypes;
 
@@ -63,4 +64,31 @@ public sealed partial class AshfallCulturePrototype : IPrototype
     /// </summary>
     [DataField]
     public List<ProtoId<MarkingPrototype>> CultureHairstyles { get; private set; } = new();
+
+    /// <summary>
+    ///     Lifepath affinities: soft weight multipliers that make some careers and traits more
+    ///     likely for this culture's members. Nothing is locked, the environment only predisposes.
+    /// </summary>
+    [DataField]
+    public List<AshfallCultureLifepathAffinity> LifepathAffinities { get; private set; } = new();
+}
+
+/// <summary>
+///     A soft sampling weight for lifepath options whose tags match this affinity.
+/// </summary>
+[DataDefinition]
+[Serializable, NetSerializable]
+public sealed partial class AshfallCultureLifepathAffinity
+{
+    /// <summary>
+    ///     Any-of tags matched against an option's tags and matching tags.
+    /// </summary>
+    [DataField(required: true)]
+    public List<string> Tags { get; private set; } = new();
+
+    /// <summary>
+    ///     Weight multiplier applied to matching options; 1.0 is neutral.
+    /// </summary>
+    [DataField]
+    public float Weight { get; private set; } = 1f;
 }

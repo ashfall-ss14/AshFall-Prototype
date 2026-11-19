@@ -4,6 +4,7 @@ using System.Linq;
 using Content.IntegrationTests.Fixtures;
 using Content.IntegrationTests.Fixtures.Attributes;
 using Content.Shared.Ashfall.CharacterGen;
+using Content.Shared.Ashfall.CharacterGen.Lifepath;
 using Content.Shared.Ashfall.CharacterGen.Prototypes;
 using Content.Shared.Humanoid;
 using Content.Shared.Humanoid.Markings;
@@ -11,6 +12,7 @@ using Content.Shared.Humanoid.Prototypes;
 using Content.Shared.Preferences;
 using Content.Shared.Roles;
 using NUnit.Framework;
+using Robust.Shared.Localization;
 using Robust.Shared.Maths;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Random;
@@ -136,7 +138,7 @@ public sealed class AshfallCharacterGenTests : GameTest
 
     [Test]
     [RunOnSide(Side.Server)]
-    public void GeneratedProfileCanBeNetworkSerializedTest()
+    public void CandidateCanBeNetworkSerializedTest()
     {
         Assert.That(_protoMan.TryIndex(HumanConstraints, out var constraints), Is.True);
         var (expected, _) = PersonGenerator.GenerateCandidate(constraints!, _random);
@@ -242,6 +244,7 @@ public sealed class AshfallCharacterGenTests : GameTest
         }
 
         // Generative invariants across many seeds.
+        var generatedCertificationCount = 0;
         for (var seed = 100; seed < 600; seed++)
         {
             var random = new RobustRandom();
@@ -278,7 +281,24 @@ public sealed class AshfallCharacterGenTests : GameTest
             Assert.That(candidate.Dossier.Sections, Has.All.Matches<AshfallDossierSection>(s =>
                 !string.IsNullOrWhiteSpace(s.Title) && s.Lines.Count > 0 && s.Lines.All(l => !string.IsNullOrWhiteSpace(l))),
                 $"seed {seed}");
+
+            var educationLines = candidate.Dossier.Sections.Single(s => s.Kind == "education").Lines;
+            var certificationLines = educationLines.Where(line => line.StartsWith("• ")).ToArray();
+            Assert.That(certificationLines, Has.Length.EqualTo(structure.Certifications.Count), $"seed {seed}");
+            Assert.That(certificationLines, Has.All.Contains("[color="), $"seed {seed}");
+
+            for (var i = 0; i < certificationLines.Length; i++)
+            {
+                var certification = _protoMan.Index(structure.Certifications[i]);
+                var labelKey = certification.Kind == AshfallCertificationKind.Specialization
+                    ? "ashfall-cert-kind-specialization"
+                    : "ashfall-cert-kind-course";
+                Assert.That(certificationLines[i], Does.Contain(Loc.GetString(labelKey)), $"seed {seed}");
+                generatedCertificationCount++;
+            }
         }
+
+        Assert.That(generatedCertificationCount, Is.GreaterThan(0), "no generated candidates had certifications");
     }
 
     [Test]
@@ -389,6 +409,91 @@ public sealed class AshfallCharacterGenTests : GameTest
         Assert.That(unskilledJobs, Is.Not.Empty, "fallback assignments must always exist");
         Assert.That(unskilledJobs.All(jobId => _protoMan.Index<AshfallJobCareerPrototype>(jobId).FallbackOnly),
             Is.True, "unskilled person should only receive fallback jobs");
+    }
+
+    [Test]
+    [RunOnSide(Side.Server)]
+    public void SelectedJobCannotCreateCareerEvidenceTest()
+    {
+        foreach (var selectedJobId in new[] { "Warden", "HeadOfSecurity" })
+        {
+            for (var seed = 0; seed < 25; seed++)
+            {
+                var choices = new AshfallLifepathChoices
+                {
+                    Step1Origin = "LifepathOriginMining",
+                    Step2Vector = "LifepathVectorSecurity",
+                    Step3Flaw = "LifepathFlawPedant",
+                    Step4Luggage = "LifepathArchetypeBalance",
+                    SelectedJob = selectedJobId,
+                    ExperienceTier = 0,
+                };
+                var random = new RobustRandom();
+                random.SetSeed(seed);
+
+                var (candidate, structure) = PersonGenerator.GenerateFromLifepath(choices, random);
+                var requestedJobEvidence = structure.Competencies.Values
+                    .SelectMany(state => state.Provenance)
+                    .Where(source => source.SourceId == selectedJobId)
+                    .ToArray();
+
+                Assert.That(requestedJobEvidence, Is.Empty, $"{selectedJobId}, seed {seed}");
+                Assert.That(structure.LeadershipHistory, Is.EqualTo(structure.Career.Any(stint => stint.Leadership)),
+                    $"{selectedJobId}, seed {seed}: leadership must come from career history");
+                Assert.That(candidate.CompatibleJobs,
+                    Is.EquivalentTo(AshfallJobScorer.ScoreEligibleJobs(structure, _protoMan)),
+                    $"{selectedJobId}, seed {seed}: request must not alter eligible jobs");
+            }
+        }
+    }
+
+    [Test]
+    [RunOnSide(Side.Server)]
+    public void LifepathIdentityIsRebuiltServerSideTest()
+    {
+        var origin = _protoMan.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 2);
+        var vector = _protoMan.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 3);
+        var flaw = _protoMan.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 4);
+        var luggage = _protoMan.EnumeratePrototypes<AshfallLifepathOptionPrototype>().First(o => o.Step == 5);
+        var expectedSpecies = origin.Species?.Id ?? "Human";
+        var species = _protoMan.Index<SpeciesPrototype>(expectedSpecies);
+
+        for (var seed = 0; seed < 50; seed++)
+        {
+            var random = new RobustRandom();
+            random.SetSeed(seed);
+
+            var choices = new AshfallLifepathChoices
+            {
+                Step1Origin = origin.ID,
+                Step2Vector = vector.ID,
+                Step3Flaw = flaw.ID,
+                Step4Luggage = luggage.ID,
+                ExperienceTier = 2,
+                SelectedSex = Sex.Female,
+            };
+
+            var (candidate, _) = PersonGenerator.GenerateFromLifepath(choices, random);
+            var profile = candidate.Profile;
+
+            Assert.That(profile.Species.Id, Is.EqualTo(expectedSpecies), $"seed {seed}");
+            Assert.That(profile.Age, Is.InRange(44, 60), $"seed {seed}: veteran tier age range");
+            Assert.That(species.Sexes, Does.Contain(profile.Sex), $"seed {seed}");
+            Assert.That(profile.Name, Is.Not.Empty, $"seed {seed}");
+        }
+
+        // A rerolled custom name is the only client-authored field that survives submission.
+        var custom = new AshfallLifepathChoices
+        {
+            Step1Origin = origin.ID,
+            Step2Vector = vector.ID,
+            Step3Flaw = flaw.ID,
+            Step4Luggage = luggage.ID,
+            CustomName = "Тест Кандидат",
+            SelectedSex = Sex.Female,
+        };
+        var named = PersonGenerator.GenerateFromLifepath(custom, _random).Candidate;
+        Assert.That(named.Profile.Name, Is.EqualTo("Тест Кандидат"));
     }
 
     [Test]

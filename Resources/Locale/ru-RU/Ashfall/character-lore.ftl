@@ -1265,6 +1265,8 @@ ashfall-psychotype-pedant = Педант
 ashfall-psychotype-diplomat = Дипломат
 ashfall-psychotype-daredevil = Сорвиголова
 ashfall-psychotype-stoic = Стоик
+ashfall-psychotype-sadist = Садист
+ashfall-psychotype-cynic = Циник
 
 # --- ХАРАКТЕР (DEMEANOR) ---
 ashfall-lore-demeanor-pragmatist-1 = Скуп на похвалу; коллег и руководство оценивает исключительно по их реальной отдаче в смене.

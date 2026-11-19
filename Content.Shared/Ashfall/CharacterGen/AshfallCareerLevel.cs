@@ -36,6 +36,15 @@ public static class AshfallCareerLevels
         return AshfallCareerLevel.Trainee;
     }
 
+    public static float ThresholdFor(AshfallCareerLevel level) => level switch
+    {
+        AshfallCareerLevel.Senior => SeniorThreshold,
+        AshfallCareerLevel.Experienced => ExperiencedThreshold,
+        AshfallCareerLevel.Qualified => QualifiedThreshold,
+        AshfallCareerLevel.Junior => JuniorThreshold,
+        _ => 0f,
+    };
+
     /// <summary>
     ///     Number of full level steps between two levels, negative when <paramref name="actual"/> is below <paramref name="required"/>.
     /// </summary>
