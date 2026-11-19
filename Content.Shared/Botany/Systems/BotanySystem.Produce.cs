@@ -46,6 +46,9 @@ public sealed partial class BotanySystem
                 _entityEffects.TryApplyEffect(ent.Owner, mutation.Effect);
         }
 
+        if (chems.Chemicals.Count == 0)
+            return;
+
         _solutionContainer.EnsureSolution(ent.Owner, ent.Comp.TargetSolution, out var solution);
         solution.Comp.Solution.RemoveAllSolution();
 

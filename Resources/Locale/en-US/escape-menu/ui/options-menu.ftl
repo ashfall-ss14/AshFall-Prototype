@@ -191,6 +191,7 @@ ui-options-function-drop = Drop item
 ui-options-function-examine-entity = Examine
 ui-options-function-swap-hands = Swap hands
 ui-options-function-swap-hands-reverse = Swap hands (other direction)
+ui-options-function-interact-with-other-hand = Interact with other hand
 ui-options-function-move-stored-item = Move stored item
 ui-options-function-rotate-stored-item = Rotate stored item
 ui-options-function-save-item-location = Save item location

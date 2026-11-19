@@ -18,6 +18,7 @@
   - type: RadarConsole
     maxRange: 256
     followEntity: true
+    rotateWithEye: true
   - type: Appearance
   - type: BatteryVisuals
   - type: GenericVisualizer

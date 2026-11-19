@@ -86,6 +86,31 @@ namespace Content.IntegrationTests.Tests.DoAfter
         }
 
         [Test]
+        public async Task CancelWhenTargetIsDeleted()
+        {
+            var server = Pair.Server;
+            var map = await Pair.CreateTestMap();
+            var ev = new TestDoAfterEvent();
+
+            await server.WaitAssertion(() =>
+            {
+                var user = SSpawnAtPosition("DoAfterDummy", map.GridCoords);
+                var target = SSpawnAtPosition("DoAfterDummy", map.GridCoords);
+                var args = new DoAfterArgs(SEntMan, user, 5f, ev, user, target)
+                {
+                    BreakOnMove = true,
+                    BreakOnWeightlessMove = true,
+                };
+
+                Assert.That(SEntMan.System<SharedDoAfterSystem>().TryStartDoAfter(args), Is.True);
+                SEntMan.DeleteEntity(target);
+            });
+
+            await server.WaitRunTicks(1);
+            Assert.That(ev.Cancelled, Is.True);
+        }
+
+        [Test]
         public async Task TestCancelled()
         {
             var pair = Pair;

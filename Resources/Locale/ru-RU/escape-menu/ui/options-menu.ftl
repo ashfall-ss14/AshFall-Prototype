@@ -191,6 +191,7 @@ ui-options-function-drop = Положить предмет
 ui-options-function-examine-entity = Осмотреть
 ui-options-function-swap-hands = Поменять руки
 ui-options-function-swap-hands-reverse = Поменять руки (в другую сторону)
+ui-options-function-interact-with-other-hand = Взаимодействовать со второй рукой
 ui-options-function-move-stored-item = Переместить хранящийся объект
 ui-options-function-rotate-stored-item = Повернуть хранящийся объект
 ui-options-function-save-item-location = Сохранить расположение объекта

@@ -21,6 +21,7 @@ public sealed partial class ShuttleNavControl : BaseShuttleControl
     private readonly SharedMapSystem _maps;
     private readonly SharedShuttleSystem _shuttles;
     private readonly SharedTransformSystem _transform;
+    private readonly IEyeManager _eyeManager;
 
     /// <summary>
     /// Used to transform all of the radar objects. Typically is a shuttle console parented to a grid.
@@ -33,6 +34,7 @@ public sealed partial class ShuttleNavControl : BaseShuttleControl
     private EntityUid? _consoleEntity;
 
     private Angle? _rotation;
+    private bool _rotateWithEye;
 
     private Dictionary<NetEntity, List<DockingPortState>> _docks = new();
 
@@ -55,6 +57,7 @@ public sealed partial class ShuttleNavControl : BaseShuttleControl
         _maps = EntManager.System<SharedMapSystem>();
         _shuttles = EntManager.System<SharedShuttleSystem>();
         _transform = EntManager.System<SharedTransformSystem>();
+        _eyeManager = IoCManager.Resolve<IEyeManager>();
     }
 
     public void SetMatrix(EntityCoordinates? coordinates, Angle? angle)
@@ -78,11 +81,7 @@ public sealed partial class ShuttleNavControl : BaseShuttleControl
             return;
         }
 
-        var a = InverseScalePosition(args.RelativePosition);
-        var relativeWorldPos = new Vector2(a.X, -a.Y);
-        relativeWorldPos = _rotation.Value.RotateVec(relativeWorldPos);
-        var coords = _coordinates.Value.Offset(relativeWorldPos);
-        OnRadarClick?.Invoke(coords);
+        OnRadarClick.Invoke(GetRadarCoordinates(args.RelativePosition, _coordinates.Value, _rotation.Value));
     }
 
     /// <summary>
@@ -97,12 +96,21 @@ public sealed partial class ShuttleNavControl : BaseShuttleControl
         }
 
         var pos = screen.Position / UIScale - GlobalPosition;
+        return GetRadarCoordinates(pos, _coordinates.Value, _rotation.Value);
+    }
 
-        var a = InverseScalePosition(pos);
-        var relativeWorldPos = new Vector2(a.X, -a.Y);
-        relativeWorldPos = _rotation.Value.RotateVec(relativeWorldPos);
-        var coords = _coordinates.Value.Offset(relativeWorldPos);
-        return coords;
+    private EntityCoordinates GetRadarCoordinates(Vector2 position, EntityCoordinates origin, Angle rotation)
+    {
+        if (_rotateWithEye)
+        {
+            if (!EntManager.TryGetComponent<TransformComponent>(origin.EntityId, out var originTransform))
+                return EntityCoordinates.Invalid;
+
+            rotation -= _eyeManager.CurrentEye.Rotation + _transform.GetWorldRotation(originTransform);
+        }
+
+        var offset = InverseScalePosition(position);
+        return origin.Offset(rotation.RotateVec(new Vector2(offset.X, -offset.Y)));
     }
 
     public void UpdateState(NavInterfaceState state)
@@ -122,6 +130,7 @@ public sealed partial class ShuttleNavControl : BaseShuttleControl
         ActualRadarRange = Math.Clamp(ActualRadarRange, WorldMinRange, WorldMaxRange);
 
         RotateWithEntity = state.RotateWithEntity;
+        _rotateWithEye = state.RotateWithEye;
 
         _docks = state.Docks;
     }
@@ -152,6 +161,9 @@ public sealed partial class ShuttleNavControl : BaseShuttleControl
         var mapPos = _transform.ToMapCoordinates(_coordinates.Value);
         var posMatrix = Matrix3Helpers.CreateTransform(_coordinates.Value.Position, _rotation.Value);
         var ourEntRot = RotateWithEntity ? _transform.GetWorldRotation(xform) : _rotation.Value;
+        if (_rotateWithEye)
+            ourEntRot = -_eyeManager.CurrentEye.Rotation;
+
         var ourEntMatrix = Matrix3Helpers.CreateTransform(_transform.GetWorldPosition(xform), ourEntRot);
         var shuttleToWorld = Matrix3x2.Multiply(posMatrix, ourEntMatrix);
         Matrix3x2.Invert(shuttleToWorld, out var worldToShuttle);
