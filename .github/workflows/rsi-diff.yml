@@ -13,6 +13,9 @@ concurrency:
 jobs:
   diff:
     name: Diff
+    permissions:
+      contents: read
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
