@@ -56,6 +56,7 @@
   description: A wild mushroom. There's no telling what effect it could have...
   components:
   - type: Produce
+    plantId: SpaceshroomPlants
   - type: Sprite
     sprite: Objects/Misc/spaceshroom.rsi
     state: object

@@ -130,3 +130,67 @@ imports:
       speech capture via this fork's Content.Shared.Speech ListenEvent + ActiveListenerComponent;
       UI adapted to this fork's SimpleRadialMenu radial BUI API and ItemSlots Entity<T> API;
       visuals via GenericVisualizer on vendored sprites.
+  - name: Goob Station
+    repository: https://github.com/Goob-Station/Goob-Station
+    revision: b0d9854ce25fa0703a7207e2326b1cd992d3e6a5
+    license: AGPL-3.0-or-later
+    paths:
+      - Content.Client/Shuttles/UI/ShuttleNavControl.xaml.cs
+      - Content.Server/Shuttles/Systems/RadarConsoleSystem.cs
+      - Content.Shared/Shuttles/BUIStates/NavInterfaceState.cs
+      - Content.Shared/Shuttles/Components/RadarConsoleComponent.cs
+      - Resources/Prototypes/Entities/Objects/Tools/handheld_mass_scanner.yml
+    role: Camera-relative orientation for the handheld mass scanner
+    adaptations: Apply camera rotation to the radar's coordinate conversion as well as its drawing.
+  - name: Trauma-Station
+    repository: https://github.com/Trauma-Station/Trauma-Station
+    revision: 3f443d1c394dadbaacd81bc608519eaa1cb4f0c2
+    license: AGPL-3.0-or-later
+    paths:
+      - Content.Shared/Trauma/Medical/Shared/Surgery/SharedSurgerySystem.Steps.cs
+    role: Limit organ surgery to the selected body part and its per-step healing budget
+    adaptations: Apply the organ treatment fix within the existing shared surgery system and keep the modifier snapshot.
+  - name: Starlight
+    repository: https://github.com/ss14Starlight/space-station-14
+    revision: 5a17531145c4dfd55f7b8c4c986a88603d918002
+    license: MIT
+    paths:
+      - Content.Shared/Stunnable/SharedStunSystem.Knockdown.cs
+    role: Run automatic stand-up on the server to avoid repeated predicted progress bars
+    adaptations: Skip the automatic stand-up loop on the client.
+  - name: Space Station 14
+    repository: https://github.com/space-wizards/space-station-14
+    revision: b237988f2b4db996899a62e63a6f03babf8dc905
+    license: MIT
+    paths:
+      - Content.Shared/DoAfter/SharedDoAfterSystem.Update.cs
+    role: Cancel a timed action when its target disappears
+  - name: Space Station 14
+    repository: https://github.com/space-wizards/space-station-14
+    revision: d2f4ff794105c62a7351dfdba7d9b2485ecca59e
+    license: MIT
+    paths:
+      - Content.Shared/Nutrition/EntitySystems/IngestionSystem.cs
+    role: Prevent one actor from starting concurrent eating or feeding actions
+  - name: Starlight
+    repository: https://github.com/ss14Starlight/space-station-14
+    revision: 9540d3a01cdefb4555ab30513252bd1a66314ecd
+    license: MIT
+    paths:
+      - Content.Shared/Input/ContentKeyFunctions.cs
+      - Content.Shared/Hands/EntitySystems/SharedHandsSystem.Interactions.cs
+      - Content.Client/Input/ContentContexts.cs
+      - Content.Client/Options/UI/Tabs/KeyRebindTab.xaml.cs
+    role: Optional keybind for interacting with an item held in the other hand
+    adaptations: Use the existing shared hand interaction and input handlers.
+  - name: Goob Station
+    repository: https://github.com/Goob-Station/Goob-Station
+    revision: f4fda3bb893cd763a2d2f3db027f48a86df394dd
+    license: AGPL-3.0-or-later for code and prototypes; CC-BY-SA-3.0 for sprites
+    paths:
+      - Content.Shared/Botany/Systems/BotanySystem.Produce.cs
+      - Resources/Prototypes/Ashfall/Botany/spaceshroom.yml
+      - Resources/Prototypes/Entities/Objects/Misc/spaceshroom.yml
+      - Resources/Textures/Ashfall/Objects/Specific/Hydroponics/spaceshroom.rsi
+    role: Cultivate spaceshrooms from spores extracted from wild mushrooms
+    adaptations: Use plant entity prototypes and keep the existing produce solution for plants with no reagent recipe.

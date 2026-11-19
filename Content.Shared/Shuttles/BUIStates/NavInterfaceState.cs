@@ -22,6 +22,8 @@ public sealed class NavInterfaceState
 
     public bool RotateWithEntity = true;
 
+    public bool RotateWithEye;
+
     public NavInterfaceState(
         float maxRange,
         NetCoordinates? coordinates,

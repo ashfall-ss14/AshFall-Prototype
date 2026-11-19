@@ -466,27 +466,36 @@ public abstract partial class SharedSurgerySystem
         switch (ent.Comp.TraumaType)
         {
             case TraumaType.OrganDamage:
-                foreach (var organ in _body.GetInternalOrgans(args.Body))
+                foreach (var organ in _part.GetPartOrgans(args.Part).Values)
                 {
-                    foreach (var modifier in organ.Comp.IntegrityModifiers.ToArray())
+                    if (!TryComp<InternalChildOrganComponent>(organ, out var internalOrgan))
+                        continue;
+
+                    foreach (var modifier in internalOrgan.IntegrityModifiers.ToArray())
                     {
-                        var delta = healAmount - modifier.Value;
-                        if (delta > 0)
+                        if (modifier.Value <= 0)
+                            continue;
+
+                        if (healAmount >= modifier.Value)
                         {
-                            healAmount -= modifier.Value;
-                            _trauma.TryRemoveOrganDamageModifier(
-                                organ.AsNullable(),
+                            if (!_trauma.TryRemoveOrganDamageModifier(
+                                (organ.Owner, internalOrgan),
                                 modifier.Key.Item2,
-                                modifier.Key.Item1);
+                                modifier.Key.Item1))
+                                continue;
+
+                            healAmount -= modifier.Value;
+                            if (healAmount == 0)
+                                return;
                         }
                         else
                         {
-                            _trauma.TryChangeOrganDamageModifier(
-                                organ.AsNullable(),
+                            if (_trauma.TryChangeOrganDamageModifier(
+                                (organ.Owner, internalOrgan),
                                 -healAmount,
                                 modifier.Key.Item2,
-                                modifier.Key.Item1);
-                            break;
+                                modifier.Key.Item1))
+                                return;
                         }
                     }
                 }

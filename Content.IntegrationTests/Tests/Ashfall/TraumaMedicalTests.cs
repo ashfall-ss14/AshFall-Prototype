@@ -9,6 +9,7 @@ using Content.Medical.Common.Traumas;
 using Content.Medical.Server.Surgery;
 using Content.Medical.Shared.Body;
 using Content.Medical.Shared.DelayedDeath;
+using Content.Medical.Shared.Surgery;
 using Content.Medical.Shared.Surgery.Tools;
 using Content.Medical.Shared.Traumas;
 using Content.Medical.Shared.Wounds;
@@ -50,6 +51,36 @@ public sealed class TraumaMedicalTests : GameTest
     private static readonly ProtoId<OrganCategoryPrototype> Heart = "Heart";
     private static readonly ProtoId<OrganCategoryPrototype> Lungs = "Lungs";
     private static readonly ProtoId<OrganCategoryPrototype> LeftArm = "ArmLeft";
+
+    [TestCase(17, 0)]
+    [TestCase(25, 8)]
+    [RunOnSide(Side.Server)]
+    public void OrganSurgeryTreatsOnlySelectedPart(int eyeDamage, int remainingEyeDamage)
+    {
+        var body = SEntMan.System<BodySystem>();
+        var trauma = SEntMan.System<TraumaSystem>();
+        var patient = SSpawn("MobHuman");
+        var head = body.GetOrgan(patient, Head)!.Value;
+        var eyes = body.GetOrgan(patient, EyesSystem.EyesCategory)!.Value;
+        var heart = body.GetOrgan(patient, Heart)!.Value;
+        var tool = SSpawn("Hemostat");
+        var step = SSpawn("SurgeryStepHealOrgans");
+
+        Assert.That(trauma.TryCreateOrganDamageModifier(eyes, eyeDamage, tool, "test"), Is.True);
+        Assert.That(trauma.TryCreateOrganDamageModifier(heart, 10, tool, "test"), Is.True);
+
+        var ev = new SurgeryStepEvent(patient, patient, head, tool, step, step, true);
+        SEntMan.EventBus.RaiseLocalEvent(step, ref ev);
+
+        var eyeOrgan = SComp<InternalChildOrganComponent>(eyes);
+        var heartOrgan = SComp<InternalChildOrganComponent>(heart);
+        Assert.Multiple(() =>
+        {
+            Assert.That(eyeOrgan.OrganIntegrity, Is.EqualTo(eyeOrgan.IntegrityCap - remainingEyeDamage));
+            Assert.That(eyeOrgan.IntegrityModifiers.ContainsKey(("test", tool)), Is.EqualTo(remainingEyeDamage > 0));
+            Assert.That(heartOrgan.OrganIntegrity, Is.EqualTo(heartOrgan.IntegrityCap - 10));
+        });
+    }
 
     [TestCase("Scalpel")]
     [TestCase("Hemostat")]

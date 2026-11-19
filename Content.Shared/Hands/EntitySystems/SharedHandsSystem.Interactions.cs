@@ -32,6 +32,7 @@ public abstract partial class SharedHandsSystem : EntitySystem
             .Bind(ContentKeyFunctions.AltUseItemInHand, InputCmdHandler.FromDelegate(HandleAltUseInHand, handle: false, outsidePrediction: false))
             .Bind(ContentKeyFunctions.SwapHands, InputCmdHandler.FromDelegate(SwapHandsPressed, handle: false, outsidePrediction: false))
             .Bind(ContentKeyFunctions.SwapHandsReverse, InputCmdHandler.FromDelegate(SwapHandsReversePressed, handle: false, outsidePrediction: false))
+            .Bind(ContentKeyFunctions.InteractWithOtherHand, InputCmdHandler.FromDelegate(InteractWithOtherHandPressed, handle: false, outsidePrediction: false))
             .Bind(ContentKeyFunctions.Drop, new PointerInputCmdHandler(DropPressed))
             .Register<SharedHandsSystem>();
     }
@@ -93,6 +94,20 @@ public abstract partial class SharedHandsSystem : EntitySystem
             return;
 
         SwapHands(player, true, true);
+    }
+
+    private void InteractWithOtherHandPressed(ICommonSession? session)
+    {
+        if (session?.AttachedEntity is not { } actor ||
+            !TryComp<HandsComponent>(actor, out var hands) ||
+            hands.ActiveHandId == null ||
+            EnumerateHands((actor, hands)).Skip(1).FirstOrDefault() is not { } otherHand)
+            return;
+
+        if (ActiveHandIsEmpty((actor, hands)))
+            TryMoveHeldEntityToActiveHand(actor, otherHand, handsComp: hands);
+        else
+            TryInteractHandWithActiveHand(actor, otherHand, hands);
     }
 
     private bool DropPressed(ICommonSession? session, EntityCoordinates coords, EntityUid netEntity)

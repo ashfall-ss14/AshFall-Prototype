@@ -17,6 +17,7 @@ using Content.Shared.Standing;
 using Robust.Shared.Audio;
 using Robust.Shared.Configuration;
 using Robust.Shared.Input.Binding;
+using Robust.Shared.Network;
 using Robust.Shared.Physics;
 using Robust.Shared.Physics.Systems;
 using Robust.Shared.Player;
@@ -35,6 +36,7 @@ public abstract partial class SharedStunSystem
     [Dependency] private SharedPhysicsSystem _physics = default!;
     [Dependency] private StandingStateSystem _standingState = default!;
     [Dependency] private IConfigurationManager _cfgManager = default!;
+    [Dependency] private INetManager _netManager = default!;
 
     [Dependency] private EntityQuery<CrawlerComponent> _crawlerQuery = default!;
     [Dependency] private EntityQuery<FixturesComponent> _fixtureQuery = default!;
@@ -83,6 +85,9 @@ public abstract partial class SharedStunSystem
     public override void Update(float frameTime)
     {
         base.Update(frameTime);
+
+        if (_netManager.IsClient)
+            return;
 
         var query = EntityQueryEnumerator<KnockedDownComponent>();
 

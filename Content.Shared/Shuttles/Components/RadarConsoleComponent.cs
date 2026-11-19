@@ -25,4 +25,10 @@ public sealed partial class RadarConsoleComponent : Component
     /// </summary>
     [DataField]
     public bool FollowEntity = false;
+
+    /// <summary>
+    /// Whether a radar following an entity uses the player's camera orientation.
+    /// </summary>
+    [DataField]
+    public bool RotateWithEye;
 }

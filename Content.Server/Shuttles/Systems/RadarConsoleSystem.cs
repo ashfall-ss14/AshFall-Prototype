@@ -54,6 +54,7 @@ public sealed partial class RadarConsoleSystem : SharedRadarConsoleSystem
             }
 
             state.RotateWithEntity = !component.FollowEntity;
+            state.RotateWithEye = component.FollowEntity && component.RotateWithEye;
 
             _uiSystem.SetUiState(uid, RadarConsoleUiKey.Key, new NavBoundUserInterfaceState(state));
         }

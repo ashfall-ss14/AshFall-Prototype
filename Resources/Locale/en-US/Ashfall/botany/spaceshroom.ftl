@@ -1,0 +1,1 @@
+seeds-spaceshroom-name = spaceshroom

@@ -1,0 +1,37 @@
+- type: entity
+  parent: BasePlant
+  id: SpaceshroomPlants
+  name: spaceshroom
+  components:
+  - type: Sprite
+    sprite: Ashfall/Objects/Specific/Hydroponics/spaceshroom.rsi
+  - type: PlantData
+    name: seeds-spaceshroom-name
+    noun: seeds-noun-spores
+    packetPrototype: SpaceshroomSeeds
+    productPrototypes: [ FoodSpaceshroom ]
+  - type: Plant
+    lifespan: 25
+    maturation: 10
+    production: 5
+    yield: 3
+    potency: 1
+    growthStages: 3
+  - type: PlantHarvest
+    harvestRepeat: Repeat
+  - type: PlantGrowth
+    waterConsumption: 1
+    nutrientConsumption: 0.4
+  - type: PlantAtmospheric
+    lowHeatTolerance: 278
+    highHeatTolerance: 298
+
+- type: entity
+  parent: SeedBase
+  id: SpaceshroomSeeds
+  name: packet of spaceshroom spores
+  components:
+  - type: Seed
+    plantId: SpaceshroomPlants
+  - type: Sprite
+    sprite: Ashfall/Objects/Specific/Hydroponics/spaceshroom.rsi
